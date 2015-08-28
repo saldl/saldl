@@ -1,0 +1,34 @@
+SALDL_VERSION = `git describe --dirty`
+
+COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute -D_FILE_OFFSET_BITS=64 -D__USE_MINGW_ANSI_STDIO=1 -DHAVE__MKDIR -DHAVE_GETTIMEOFDAY -DCURL_STATICLIB -DSALDL_VERSION=\"$(SALDL_VERSION)\" -I${CURL_INCLUDE_PATH} -I${LIBEVENT_INCLUDE_PATH}
+COMMON_LDFLAGS = -Wl,-O1,--sort-common -L${CURL_LIB_PATH} -L${LIBEVENT_LIB_PATH}
+
+OBJS = common.o log.o utime.o exit.o events.o progress.o resume.o status.o ctrl.o merge.o queue.o utils.o saldl.o
+HEADERS = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ctrl.h merge.h queue.h saldl.h saldl_params.h structs.h utils.h vt100.h
+
+STRIP_FLAGS := --strip-all
+
+MINGW_CFLAGS := -Og -ggdb -fvar-tracking-assignments -fno-omit-frame-pointer
+
+all: prep saldl
+mingw: prep-mingw saldl
+
+prep:
+	$(eval CFLAGS = ${COMMON_CFLAGS} ${MINGW_CFLAGS} ${CFLAGS})
+	$(eval LDFLAGS = ${COMMON_LDFLAGS} ${LDFLAGS})
+	$(eval LIBS = ${COMMON_LIBS} ${LIBS})
+
+prep-mingw: prep
+	$(eval CFLAGS += ${MINGW_FLAGS})
+
+*.o: ${@:.o=.c} $(HEADERS)
+	${CC} -c ${@:.o=.c} -o ${@} ${CFLAGS}
+
+libsaldl.a: $(OBJS)
+	${AR} rs -o libsaldl.a ${OBJS}
+
+saldl: libsaldl.a main.o
+	${CC} -o saldl.exe main.o libsaldl.a ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a ${CURL_LIB_PATH}/libcurl.a ${CURL_LIB_PATH}/libidn.a ${CURL_LIB_PATH}/librtmp.a ${CURL_LIB_PATH}/libssh2.a ${CURL_LIB_PATH}/libssl.a ${CURL_LIB_PATH}/libcrypto.a ${CURL_LIB_PATH}/libz.a -lgdi32 -lwinmm -lwldap32 -lws2_32
+
+clean:
+	-rm -f $(OBJS) main.o libsaldl.a saldl.exe
