@@ -1,8 +1,8 @@
-= saldl
+# saldl
 
 A lightweight chunked in-order multi-connection CLI downloader based on libcurl.
 
-== Build
+# Build
 
 ./waf clean
 
@@ -10,6 +10,6 @@ A lightweight chunked in-order multi-connection CLI downloader based on libcurl.
 
 ./waf
 
-== run
+# run
 
 ./build/saldl
