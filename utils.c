@@ -252,6 +252,7 @@ semi_fatal_check_response_retry:
     case CURLE_WRITE_ERROR: /* Caused by *_write_function() returning 0 */
       break;
     case CURLE_SSL_CONNECT_ERROR:
+    case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
       semi_fatal++;
       if (semi_fatal <= SEMI_FATAL_RETRIES) {
         info_msg(FN, "libcurl returned semi-fatal (%d: %s) while trying to get remote info, retrying...\n", ret, tmp->err_buf);
@@ -1069,6 +1070,7 @@ void saldl_perform(thread_s *thread) {
         }
         break;
       case CURLE_SSL_CONNECT_ERROR:
+      case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
         semi_fatal++;
         if (semi_fatal <= SEMI_FATAL_RETRIES) {
           info_msg(FN, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).\n", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
