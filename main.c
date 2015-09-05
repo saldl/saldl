@@ -150,7 +150,7 @@ int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
         break;
     }
   }
-  set_verbosity(&params_ptr->verbosity);
+  set_verbosity(&params_ptr->verbosity, &params_ptr->libcurl_verbosity);
 
   opt_idx = 0 , optind = 0;
   while (1) {
@@ -291,7 +291,7 @@ int main(int argc,char **argv) {
 
   /* Set to defaults before parsing opts */
   set_color(&params.no_color);
-  set_verbosity(&params.verbosity);
+  set_verbosity(&params.verbosity, &params.libcurl_verbosity);
 
   /* As argv is not re-allocatable, copy argv elements' pointers into full_argv */
   for (counter = 0; counter < argc; counter++) {

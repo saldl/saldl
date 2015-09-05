@@ -850,7 +850,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
   curl_easy_setopt(thread->ehandle,CURLOPT_FAILONERROR,1l); /* Fail on 4xx errors */
   curl_easy_setopt(thread->ehandle,CURLOPT_FOLLOWLOCATION,1l); /* Handle redirects */
 
-  if (params_ptr->verbosity == MAX_VERBOSITY) {
+  if (params_ptr->libcurl_verbosity) {
     debug_msg(FN, "enabling libcurl verbose output.\n");
     curl_easy_setopt(thread->ehandle,CURLOPT_VERBOSE,1l);
   }

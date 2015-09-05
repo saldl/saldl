@@ -25,6 +25,7 @@
 
 #include <assert.h>
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,7 +34,7 @@
 #define FN __func__
 #define LN __LINE__
 
-#define MAX_VERBOSITY 6
+#define MAX_VERBOSITY 7
 #define MAX_NO_COLOR 2
 
 #ifdef __MINGW32__
@@ -87,4 +88,4 @@ void null_msg();
 
 int tty_width();
 void set_color(size_t *no_color);
-void set_verbosity(size_t *verbosity);
+void set_verbosity(size_t *verbosity, bool *libcurl_verbosity);

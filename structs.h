@@ -23,7 +23,6 @@
 #error redefining _SALDL_STRUCTS_H
 #endif
 
-#include <stdbool.h>
 #include <pthread.h>
 #include <event2/thread.h>
 #include <event2/event.h>

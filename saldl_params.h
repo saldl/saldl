@@ -23,6 +23,8 @@
 #error redefining _SALDL_SALDL_PARAMS_H
 #endif
 
+#include <stdbool.h>
+
 /* Defaults */
 #define SALDL_DEF_CHUNK_SIZE (size_t)1*1024*1024 /* 1.00 MiB */
 #define SALDL_DEF_NUM_CONNECTIONS (size_t)6
@@ -31,6 +33,7 @@ typedef struct {
   bool dry_run;
   size_t no_color;
   size_t verbosity;
+  bool libcurl_verbosity;
   char* url;
   char* root_dir;
   char* filename;

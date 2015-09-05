@@ -38,11 +38,12 @@ int sal_dl(saldl_params *params_ptr) {
 
   /* Need to be set as early as possible */
   set_color(&params_ptr->no_color);
-  set_verbosity(&params_ptr->verbosity);
+  set_verbosity(&params_ptr->verbosity, &params_ptr->libcurl_verbosity);
 
   /* should run only once */
   curl_global_init(CURL_GLOBAL_ALL);
 
+  /* get/set initial info */
   check_url(params_ptr->url);
   remote_info(&info);
   set_info(&info);

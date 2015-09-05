@@ -97,9 +97,10 @@ void set_color(size_t *no_color) {
   sprintf(finish_msg, "%s%s%s%s%s", erase_screen_after, bold, finish_color, FINISH_MSG_TXT, end);
 }
 
-void set_verbosity(size_t *verbosity) {
+void set_verbosity(size_t *verbosity, bool *libcurl_verbosity) {
 
   assert(verbosity);
+  assert(libcurl_verbosity);
 
   debug_event_msg = debug_msg = info_msg = warn_msg = err_msg = (log_func *)null_msg;
 
@@ -109,8 +110,10 @@ void set_verbosity(size_t *verbosity) {
 
   switch (*verbosity) {
     case MAX_VERBOSITY:
-    case 5:
+    case 6:
       debug_event_msg = &def_debug_event_msg;
+    case 5:
+      *libcurl_verbosity = true;
     case 4:
       debug_msg = &def_debug_msg;
     case 3:
