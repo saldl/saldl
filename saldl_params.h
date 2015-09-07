@@ -30,6 +30,7 @@
 #define SALDL_DEF_NUM_CONNECTIONS (size_t)6
 
 typedef struct {
+  bool print_version;
   bool dry_run;
   size_t no_color;
   size_t verbosity;

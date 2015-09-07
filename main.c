@@ -29,61 +29,31 @@
 #define SALDL_VERSION "(unknown version)"
 #endif
 
-void usage(char *caller) {
-  fprintf(stderr, "VERSION\n");
-  fprintf(stderr, " %s %s\n", SALDL_NAME, SALDL_VERSION);
-  fprintf(stderr, " built against libcurl %s\n", LIBCURL_VERSION);
-  fprintf(stderr, " loaded %s\n", curl_version() );
-  fprintf(stderr, "USAGE\n");
-  fprintf(stderr, " %s [ -r ] [ -f ] [ -n ] [ -d ] [ -t ] [ -T ] [ -w ] [ -F ] [ -S ] [ -x <proxy> | -X <proxy> ] [ -e <referer> ] [ -E ] [ -k <cookies> ] [ -K <cookie_file> ] [-u <user-agent> ] [ -U ] [-p <post>] [-P <raw_post>] [ -N ] [ -A ] [ -V <num> ] [ -c <num> ] [ -R <rate>  ]  [ -s <size> ] [ -l <size> ] [ -a <num> ] [ -D <dir> ] [ -o <filename> ] url\n", caller);
-  fprintf(stderr, "  -D <dir> --root-dir=<dir>\n    Prepend dir to filename. \n");
-  fprintf(stderr, "  -o <filename> --output-filename=<filename>\n    save output in this file. \n");
-  fprintf(stderr, "  -c <num>  --connections=<num>\n    no. of connections. (default: %zu) \n", SALDL_DEF_NUM_CONNECTIONS);
-  fprintf(stderr, "  -R <num>  --connection-max-rate=<num>\n    maximum rate per connection (default: 0 [unlimited]) \n");
-  fprintf(stderr, "  -s <size> --chunk-size=size\n    chunk size (one char from [bBkKmMgG] can be appended). (default: %.2lf%s) \n", human_size(SALDL_DEF_CHUNK_SIZE), human_size_suffix(SALDL_DEF_CHUNK_SIZE));
-  fprintf(stderr, "  -l <num> --last-chunks_first=<num>\n    the number of last chunks that should be downloaded first. (default: 0) \n");
-  fprintf(stderr, "  -A --no-attachment-detection\n    Do not use Content-Disposition attachment filename if present. \n");
-  fprintf(stderr, "  -S --single\n    a single chunk single connection mode (wget-like). \n");
-  fprintf(stderr, "  -r --resume\n    resume download / only if started by %s. \n", caller);
-  fprintf(stderr, "  -f --force\n    overwrite .part file if not resuming from a non-zero offset. \n");
-  fprintf(stderr, "  -d --dry-run\n    do not download, only display information. \n");
-  fprintf(stderr, "  -n --no-path\n    assume path is relative, replace all / or : with _. \n");
-  fprintf(stderr, "  -G --keep-GET-attrs\n    keep GET attributes at the end of a filename(not needed with -o/--output-filename).\n");
-  fprintf(stderr, "  -t --auto-trunc\n    truncate filename if name or path is too long. \n");
-  fprintf(stderr, "  -T --smart-trunc\n    same as --auto-trunc but tries to keep the file extension. (overrides -t/--auto-trunc) \n");
-  fprintf(stderr, "  -a <num> --auto-size=<num>\n    modify (chunk size/no. of connections) so that chunk progress can fit in <num> lines. \n");
-  fprintf(stderr, "  -w --whole-file\n    make %s work like other accelerators (multiple connections, no chunking). (-s becomes a minimum) \n", caller);
-  fprintf(stderr, "  -m --memory-buffers\n    Use memory buffers instead of temp files for downloading segments. \n"); /* TODO: Update with disadvantages */
-  fprintf(stderr, "  -N --no-proxy\n    disable all proxies even if set in the environment. \n");
-  fprintf(stderr, "  -O --no-timeouts\n    disable all timeouts. \n");
-  fprintf(stderr, "  -E --auto-referer\n    auto set referer in case of a redirect. \n");
-  fprintf(stderr, "  -e <referer> --referer=<referer>\n    set referer. \n");
-  fprintf(stderr, "  -K <cookie_file> --cookie-file=<cookie_file>\n    File to read cookies from. \n");
-  fprintf(stderr, "  -k <cookies> --inline-cookies=<cookies>\n    Add cookies. \n");
-  fprintf(stderr, "  -p <post> --post=<post>\n    Send those fields in a simple POST request (no multipart). \n");
-  fprintf(stderr, "  -P <raw_post> --raw-post=<raw_post>\n    Send this POST request as-is including headers (supports multipart) \n");
-  fprintf(stderr, "  -U --no-user-agent\n    Don't set user agent (disables default agent). \n");
-  fprintf(stderr, "  -u <agent> --user-agent=<agent>\n    set user agent. \n");
-  fprintf(stderr, "  -x <proxy> --proxy=<proxy>\n    set proxy. \n");
-  fprintf(stderr, "  -X <proxy> --tunnel-proxy=<proxy>\n    similar to --proxy but tunneling all traffic through it. \n");
-  fprintf(stderr, "  -V  --verbosity\n    Increase verbosity level. \n");
-  fprintf(stderr, "  -C --no-color\n    Disable colors in output. Passing it twice will disable all other formattings. \n");
-  fprintf(stderr, " The following options only exist in long form because they should be used with care:\n");
-  fprintf(stderr, "  --TLS-no-verify\n      skip TLS/SSL verification.\n");
-  fprintf(stderr, " The following options exist for debugging purposes or to help in rare setups:\n");
-  fprintf(stderr, "  -H --use-HEAD\n");
-  fprintf(stderr, "  -I --no-remote-info\n");
-  fprintf(stderr, "  -F --assume-partial-support\n");
-  fprintf(stderr, "ENVIRONMENT\n");
-  fprintf(stderr, " In addition to all environment variables that affect libcurl, the following variables are supported:\n");
-  fprintf(stderr, "  SALDL_EXTRA_ARGS\n    Append extra arguments to argv\n");
-  exit(EXIT_FAILURE);
+#ifndef SALDL_WWW
+#define SALDL_WWW "https://github.com/saldl/saldl"
+#endif
+
+static int saldl_version() {
+  fprintf(stderr, "%s %s (%s)\n", SALDL_NAME, SALDL_VERSION, SALDL_WWW);
+  fprintf(stderr, "Built against: libcurl %s\n", LIBCURL_VERSION);
+  fprintf(stderr, "Loaded: %s\n", curl_version() );
+  return 0;
 }
 
-int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
+static int usage(char *caller) {
+  fprintf(stderr, "\n");
+  saldl_version();
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Usage: %s [OPTIONS] URL\n", caller);
+  fprintf(stderr, "Detailed documentation is available in the manual.\n");
+  return EXIT_FAILURE;
+}
+
+static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
   int opt_idx = 0, c = 0;
   static struct option long_opts[] = {
     {"verbosity" , no_argument, 0, 'V'},
+    {"version" , no_argument, 0, 'v'},
     {"no-color" , no_argument, 0, 'C'},
     {"chunk-size" , required_argument, 0, 's'},
     {"last-chunks-first" , required_argument, 0, 'l'},
@@ -119,11 +89,11 @@ int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
     {"whole-file", no_argument, 0, 'w'},
     {"memory-buffers", no_argument, 0, 'm'},
     /* long only */
-    {"TLS-no-verify", no_argument, 0, CHAR_MAX+1},
+    {"skip-TLS-verification", no_argument, 0, CHAR_MAX+1},
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVCK:k:p:P:e:Eu:U";
+  const char *opts = "s:l:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:U";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -159,6 +129,9 @@ int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
     switch (c) {
       case 'C':
       case 'V':
+        break;
+      case 'v':
+        params_ptr->print_version = true;
         break;
       case 's':
         params_ptr->user_chunk_size = parse_num_z(optarg, 1);
@@ -310,7 +283,15 @@ int main(int argc,char **argv) {
 
   /* Parse opts */
   if ( parse_opts(&params, full_argc, full_argv) ) {
-    usage(argv[0]);
+    /* We want --version to work, no matter what */
+    if (params.print_version) {
+      return saldl_version();
+    } else
+      return usage(argv[0]);
+  }
+
+  if (params.print_version) {
+    return saldl_version();
   }
 
   sal_dl(&params);
