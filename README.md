@@ -30,7 +30,7 @@ Many options are available. They are documented in the [manual page](https://sal
 
 # Build
 
-./waf configure --prefix=PREFIX [ --bindir=BINDIR --mandir=MANDIR  --disabla-man ]
+./waf configure [ --prefix=PREFIX --bindir=BINDIR --mandir=MANDIR  --disable-man ]
 
 ./waf
 
