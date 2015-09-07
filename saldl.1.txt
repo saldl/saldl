@@ -1,0 +1,359 @@
+SALDL(1)
+=========
+:doctype: manpage
+:toc:
+
+NAME
+----
+
+saldl - a CLI downloader with unique primed features based on libcurl.
+
+
+SYNOPSIS
+--------
+
+*{manname}* <<OPTIONS>> 'URL'
+
+
+DESCRIPTION
+-----------
+
+*{manname}* is a CLI downloader based on libcurl. +
+
+By default, it splits a download into  fixed-sized chunks and download
+them in-order with multiple concurrent connections.
+
+Many <<OPTIONS,OPTIONS>> are available to change the default behavior.
+
+
+Files and Dirs
+---------------
+
+'<filename>.part.sal'::
+  The incomplete/partial file that will eventually be renamed to '<filename>'.
+
+'<filename>.ctrl.sal'::
+  This file contains the minimal information required about the download
+  progress to allow resuming.
+
+'<filename>.tmp.sal/'::
+  By default, *{manname}* uses temporary files to store chunks before they are
+  merged. Those files are created in this dir.
+
+
+Chunk Progress States
+----------------------
+
+*4*::
+  Chunk already merged in '<filename>.part.sal'
+
+*3*::
+  Chunk downloaded, but still not merged. +
+  +
+  This state should be transient. If it's not, your system might have
+  load problems. Otherwise, you might benefit from storing chunks in
+  memory buffers as detailed in
+  <<temp-files_vs_mem-bufs,*Temporary Files vs. Memory Buffers*>>.
+
+*2*::
+  Chunk download is in progress.
+
+*1*::
+  Chunk is queued for download. +
+  +
+  This is a transient state you shouldn't see.
+  Unless you have serious load/congestion problems in your system.
+
+*0*::
+  Chunk still not queued for download.
+
+[NOTE]
+=============
+When resuming from a previous session, an incomplete chunk would
+initially have state '0'. That doesn't mean it will be emptied and
+downloaded from scratch. Sub-chunk resume will work as expected.
+=============
+
+
+[[OPTIONS]]
+OPTIONS
+---------
+
+[[gen-opts]]
+General
+~~~~~~~~
+
+*-d, --dry-run*::
+  do not download, only display information. 
+
+*-m, --memory-buffers*::
+  Use memory buffers instead of temp files for downloading chunks. +
+  See <<temp-files_vs_mem-bufs,Temporary Files vs. Memory Buffers>>
+  for details.
+
+[[ui-opts]]
+UI Options
+~~~~~~~~~~~
+
+*-V , --verbosity*::
+  Increase verbosity level. +
+  (See <<v-levels,*Verbosity Levels*>> for details.)
+
+*-C, --no-color*::
+  Disable colors in output. +
+  Pass it twice (*-CC*) to disable all other formattings
+  (auto-set if not tty).
+
+Resume Options
+~~~~~~~~~~~~~~~
+
+*-r, --resume*::
+  resume download. +
+  (requires a '<filename>.ctrl.sal' to exist with a matching filesize)
+
+*-f, --force*::
+  If not resuming, and '<filename>.part.sal' exists, truncate the file
+  and start over.
+
+[[ch-sz-conn]]
+Chunk sizes and connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+*-S, --single*::
+  a single chunk single connection mode (wget-like). 
+
+*-s 'size', --chunk-size='size'*::
+  Set size for chunks in bytes. <<unit-suf,*A unit suffix*>> can
+  be used.
+  (*default*: '1m')
+
+*-c 'num', --connections='num'*::
+  number of concurrent connections.
+  (*default*: '6')
+
+*-l 'num', --last-chunks-first='num'*::
+  the number of last chunks that should be downloaded first. 
+  (*default*: '0')
+
+*-a 'num', --auto-size='num'*::
+  modify chunk size so that chunk progress can fit in 'num' lines. 
+
+*-w, --whole-file*::
+  work like typical download accelerators
+  (no. of chunks = no. of connections).
+
+
+Filename Options
+~~~~~~~~~~~~~~~~
+
+*-o 'filename', --output-filename='filename'*::
+  Use this filename instead of the detected name.
+
+*-n, --no-path*::
+  assume path is relative, replace '/' and ':' with '_'. 
+
+*-D 'dirname', --root-dir='dirname'*::
+  Prepend filename with this path.
+
+*-G, --keep-GET-attrs*::
+  keep GET attributes at the end of a filename.
+  (This option has no effect if *-o*/*--output-filename* is used)
+
+*-A, --no-attachment-detection*::
+  Do not use Content-Disposition attachment filename if present. 
+
+*-t, --auto-trunc*::
+  truncate filename if name or path is too long. 
+
+*-T, --smart-trunc*::
+  same as *-t/--auto-trunc* but tries to keep the file extension.
+  (overrides *-t*/*--auto-trunc*) 
+
+
+Network Options
+~~~~~~~~~~~~~~~~
+
+*-R 'bandwidth', --connection-max-rate='bandwidth'*::
+  maximum rate per connection in bytes/s. <<unit-suf,*A unit suffix*>>
+  can be used.
+  (*default*: '0' [unlimited])
+
+*-O, --no-timeouts*::
+  disable all timeouts. 
+
+*-x 'proxy', --proxy='proxy'*::
+  set proxy. 
+
+*-X 'proxy', --tunnel-proxy='proxy'*::
+  similar to --proxy but tunneling all traffic through it. 
+
+*-N, --no-proxy*::
+  disable all proxies even if set in the environment. 
+
+*--skip-TLS-verification*::
+  Skip TLS/SSL verification. Use at your own risk.
+
+
+Custom Request Options
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+*-E, --auto-referer*::
+  auto set referer in case of a redirect. 
+
+*-e 'referer', --referer='referer'*::
+  set referer. 
+
+*-K 'cookie-file', --cookie-file='cookie-file'*::
+  File to read cookies from .
+
+*-k 'cookies', --inline-cookies='cookies'*::
+  Set cookies.
+
+*-p 'post-data', --post='post-data'*::
+  Send 'post-data' in a simple POST request (no multipart).
+
+*-P 'raw-post-data', --raw-post='raw-post-data'*::
+  Send 'raw-post-data' as-is including headers (supports multipart).
+
+*-U, --no-user-agent*::
+  Don't set user agent (disables default agent).
+
+*-u 'agent', --user-agent='agent'*::
+  set user agent.
+
+The following settings should not be generally used, but might help in rare
+cases:
+
+*-H, --use-HEAD*::
+  Use 'HEAD' instead of 'GET' to retrieve download information from
+  servers.
+
+*-I, --no-remote-info*::
+  Just 'GET'. Don't do anything else.
+  (*-S*/*--signle* is forced, *-r*/*--resume* is disabled)
+
+*-F, --assume-partial-support*::
+  Don't use this. The wrong data will probably be download.
+
+ENVIRONMENT
+------------
+
+In addition to all environment variables affecting *libcurl(3)*.
+The following variable(s) can affect *{manname}*:
+
+*SALDL_EXTRA_ARGS*::
+  Append these arguments to argv.
+
+
+[[unit-suf]]
+Unit Suffixes
+-------------
+
+<<OPTIONS,OPTIONS>> that take an argument representing a byte value
+can be suffixed with one of the following letters:
+
+ ;;
+  *K* or *k*::
+    multiply size by 1024 (KiB).
+  *M* or *m*::
+    multiply size by 1024*1024 (MiB).
+  *G* or *g*::
+    multiply size by 1024*1024*1024 (GiB).
+
+[[v-levels]]
+Verbosity Levels
+------------------
+
+*{manname}* only shows essential information with the default verbosity
+level. You can pass <<ui-opts,*-V*/*--verbosity*>> multiple times to
+increase verbosity.
+
+[NOTE]
+===============
+Verbosity levels are incremental. Each level includes all messages from
+lower levels.
+===============
+
+*-V*::
+  Show non-fatal errors.
+
+*-VV*::
+  Show warnings.
+
+*-VVV*::
+  Show informational messages.
+
+[WARNING]
+==============
+The following levels are noisy. They should only be used for
+debugging/tracing purposes.
+==============
+ 
+*-VVVV*::
+  Show debug messages.
+
+*-VVVVV*::
+  Enable verbose output in libcurl.
+
+*-VVVVVV*::
+  Show debug messages from event loops.
+
+
+[[temp-files_vs_mem-bufs]]
+Temporary Files vs. Memory Buffers
+-----------------------------------
+
+By default, *{manname}* stores chunks in temporary files. Until they
+are fully downloaded. Then, *{manname}* merges those completed chunks
+in '<filename>.part.sal', and deletes the temporary files.
+
+This approach allows us to have sub-chunk resumability. And we avoid
+losing any already downloaded data in case of a failure or interruption.
+
+This works very well in most cases. But there exists scenarios
+where this approach is clearly suboptimal.
+
+Suppose you have one of those cheap NAND flash memory devices. Or you
+are using a network file-system. Or your network speed is so fast
+that your storage device can't keep up. In those cases, it is advisable
+to avoid any IO activity that is not absolutely necessary.
+
+To optimize for those scenarios, *{manname}* can use memory buffers
+(the option <<gen-opts,*-m/--memory-buffers*>>) instead of temporary
+files. But this comes at a cost of losing sub-chunk resumability and
+memory overhead. So, use this option wisely. You should definitely not use
+this option with <<ch-sz-conn,*-w/--whole-file*>>.
+
+[NOTE]
+============
+If <<ch-sz-conn,Single mode>> is enabled, downloaded data is written
+directly to '<filename>.part.sal'
+============
+
+
+EXIT STATUS
+-----------
+*0*::
+    Success
+
+*1*::
+   A 'fatal' error happened. A helpful message should explain the message. 
+
+WWW
+----
+https://github.com/saldl/saldl
+
+
+BUGS
+-----
+https://github.com/saldl/saldl/issues
+
+AUTHOR
+------
+Mohammad AlSaleh (MoSal@Github).
+
+COPYING
+-------
+Copyright \(C) 2014-2015 Mohammad AlSaleh. Free use of this software is
+granted under the terms of the GNU Affero General Public License (AGPL).
+
