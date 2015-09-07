@@ -6,8 +6,83 @@ from os import path
 
 # waf imports
 from waflib.Configure import conf
+from waflib import TaskGen
+import waflib.Context as ctx
 
 #------------------------------------------------------------------------------
+
+TaskGen.declare_chain(
+        name   = 'asciidoc-man-1',
+        #rule   = '${ASCIIDOC} -b docbook -a a2x-format=manpage -d manpage -o ${TGT} ${SRC}',
+        rule   = '${ASCIIDOC} -b docbook -a a2x-format=manpage -d manpage -o ${tsk.outputs[0].name} ${SRC}',
+        ext_in = '.1.txt',
+        ext_out = '.1',
+        install_path = '${MANDIR}',
+        shell = False,
+        reentrant = False
+        )
+
+
+#------------------------------------------------------------------------------
+
+def options(opt):
+    opt.load('compiler_c')
+    
+    ins_gr = opt.get_option_group('Installation and uninstallation options')
+    bld_gr = opt.get_option_group('Build and installation options')
+    conf_gr = opt.get_option_group('Configuration options')
+
+    def_asciidoc = 'asciidoc'
+    conf_gr.add_option(
+            '--asciidoc',
+            dest = 'asciidoc',
+            default = def_asciidoc,
+            help = 'asciidoc executable. (default: %s)' % def_asciidoc
+            )
+
+
+    def_mandir = 'share/man'
+    conf_gr.add_option(
+            '--mandir',
+            dest = 'mandir',
+            default = def_mandir,
+            help = 'Relative to PREFIX if not absoloute. Otherwise. relative to DESTDIR. (default: %s)' % def_mandir
+            )
+
+    def_disable_man = False
+    conf_gr.add_option(
+            '--disable-man',
+            dest = 'disable_man',
+            default = def_disable_man,
+            action= "store_true",
+            help = "Don't build manpage. (default: %s)" % def_disable_man
+            )
+
+#------------------------------------------------------------------------------
+
+@conf
+def get_conf_opts(conf):
+    conf.env['DISABLE_MAN'] = conf.options.disable_man
+    conf.env['ASCIIDOC'] = conf.options.asciidoc
+
+    if conf.options.mandir[0] == '/':
+        conf.env['MANDIR'] = conf.options.mandir
+    else:
+        conf.env['MANDIR'] = conf.env['PREFIX'] + path.sep + conf.options.mandir
+
+
+@conf
+def get_saldl_version(conf):
+
+    conf.start_msg('Get saldl version from GIT')
+
+    try:
+        saldl_version = conf.cmd_and_log(['git', 'describe', '--dirty']).rstrip()
+        conf.end_msg(saldl_version)
+        conf.env.append_value('DEFINES', 'SALDL_VERSION="%s"' % saldl_version)
+    except:
+        conf.end_msg('(failed)')
+
 
 @conf
 def check_timer_support(conf):
@@ -76,9 +151,8 @@ def check_sanitize_cflags(conf):
         os_flags = 1
     else:
         sanitizers = [
-                # I built saldl-nolib with -fPIE, but the thread sanitizer still complained
-                #['-fsanitize=thread'],
-                ['-fsanitize=leak'],
+                #['-fsanitize=leak'], # Can't use this if either address or thread is enabled.
+                #['-fsanitize=thread'], Does not work with new kernels
                 ['-fsanitize=undefined'],
                 ['-fsanitize=address'],
                 ['-fsanitize-recover=all']
@@ -277,16 +351,22 @@ def check_pkg_deps(conf):
             conf.env.LIB.extend(conf.env['LIB_' + pkg_name.upper()])
 
     # More things to do for custom libcurl name
-    check_curl_name_headers(conf, curl_name)
-
-
-def options(opt):
-        opt.load('compiler_c')
+    if curl_name != 'curl':
+        check_curl_name_headers(conf, curl_name)
 
 #------------------------------------------------------------------------------
 
 def configure(conf):
+
+    # Get opts
+        get_conf_opts(conf)
+
+    # Get version
+        get_saldl_version(conf)
+
+    # C support
         conf.load('compiler_c')
+
 
     # Defines
         conf.env.append_value('DEFINES', '_FILE_OFFSET_BITS=64')
@@ -304,8 +384,7 @@ def configure(conf):
     # Required FLAGS
         # We don't use append_unique() in case the flag is overridden
         conf.env.append_value('CFLAGS', '-std=c99')
-        conf.env.append_value('CFLAGS', '-fPIC') # This is default for shlib, but we need it for stlib too
-        #conf.env.append_value('CFLAGS', '-fPIE') # Thread sanitizer, does not work, even with nolib
+        conf.env.append_value('CFLAGS', '-fPIE') # Thread sanitizer, does not work, even with nolib
         conf.env.append_value('LINKFLAGS', '-pie')
 
     # Other FLAGS
@@ -318,7 +397,7 @@ def configure(conf):
 
         check_link_flags(conf)
         # Note: core files are useless when lto is used
-        #check_lto_flags(conf)
+        check_lto_flags(conf)
 
     # Deps
         conf.env.LIB = []
@@ -329,12 +408,10 @@ def configure(conf):
         # Deps with no pkg-config support
         conf.env.append_value('LIB', 'pthread')
 
-    # TODO: Remove this crap
-        conf.env.append_value('RPATH', conf.path.abspath() + '/build')
-
 #------------------------------------------------------------------------------
 
 def build(bld):
+
     bld.objects(
             source = [
                 'progress.c',
@@ -349,38 +426,8 @@ def build(bld):
                 'log.c',
                 'utime.c',
                 'utils.c',
-                #'saldl.c'
                 ],
             target = ['saldl-objs']
-            )
-
-    bld.shlib(
-            source = [
-                'saldl.c'
-                ],
-            use = ['saldl-objs'],
-            vnum = '0.1.0', # Note: Has to be A.B.C
-            target = 'saldl-core'
-            )
-
-    bld.stlib(
-            source = [
-                'saldl.c'
-                ],
-            use = ['saldl-objs'],
-            target = 'saldl-core-static'
-            )
-
-    bld.program(
-            use = ['saldl-core'],
-            source = ['main.c'],
-            target = 'saldl-shared-lib'
-            )
-
-    bld.program(
-            use = ['saldl-core-static'],
-            source = ['main.c'],
-            target = 'saldl-static-lib'
             )
 
     bld.program(
@@ -389,12 +436,17 @@ def build(bld):
             target = 'saldl'
             )
 
-#    bld.program(
-#            bld.env.append_value('SHLIB_MARKER', '-Wl,-Bstatic'),
-#            linkflags = ['-static'],
-#            use = ['saldl-objs'],
-#            source = ['main.c', 'saldl.c'],
-#            target = 'saldl-static'
+    if not bld.env['DISABLE_MAN']:
+        bld(
+                source = ['saldl.1.txt'],
+                )
+
+#    bld(
+#            #rule = 'a2x -f manpage ${SRC} --destination-dir %s' % ctx.out_dir,
+#            rule = 'asciidoc -b docbook -a a2x-format=manpage -d manpage -o ${TGT} ${SRC}',
+#            source = 'saldl.1.txt',
+#            target = 'share/man/saldl.1'
 #            )
+#    bld.install_files('${PREFIX}/share/man', ['share/man/saldl.1'])
 
 #------------------------------------------------------------------------------
