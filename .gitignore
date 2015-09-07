@@ -4,3 +4,6 @@
 build/*
 .waf*
 .lock*
+*.pyc
+*.html
+*.1
