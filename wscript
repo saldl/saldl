@@ -96,7 +96,22 @@ def options(opt):
 #------------------------------------------------------------------------------
 
 @conf
-def get_conf_opts(conf):
+def get_saldl_version(conf):
+
+    conf.start_msg('Get saldl version from GIT')
+
+    try:
+        saldl_version = conf.cmd_and_log(['git', 'describe', '--dirty']).rstrip()
+        conf.end_msg(saldl_version)
+        conf.env.append_value('DEFINES', 'SALDL_VERSION="%s"' % saldl_version)
+    except:
+        conf.end_msg('(failed)')
+
+
+@conf
+def prep_man(conf):
+
+    # We set this in the environment because it will be used in build()
     conf.env['DISABLE_MAN'] = conf.options.DISABLE_MAN
 
     if not conf.env['DISABLE_MAN']:
@@ -112,8 +127,32 @@ def get_conf_opts(conf):
         conf.end_msg(conf.env['MANDIR'])
 
 
+@conf
+def set_defines(conf):
+    conf.env.append_value('DEFINES', '_FILE_OFFSET_BITS=64')
+    conf.env.append_value('DEFINES', '_GNU_SOURCE')
+    conf.env.append_value('DEFINES', '_XOPEN_SOURCE=501')
+
+
+@conf
+def check_api(conf):
+    print('Checking API support:')
+    check_function_mkdir(conf)
+    check_timer_support(conf)
+    conf.check_cc(function_name='strcasestr', header_name="string.h", mandatory=False)
+    conf.check_cc(function_name='strsignal', header_name="string.h", mandatory=False)
+    conf.check_cc(function_name='sigaction', header_name="signal.h", mandatory=False)
+    conf.check_cc(function_name='sigaddset', header_name="signal.h", mandatory=False)
+
+@conf
+def check_flags(conf):
     # Load this before checking flags
     conf.load('compiler_c')
+
+    check_required_flags(conf)
+
+    # Enable supported warning flags
+    check_warning_cflags(conf)
 
     if conf.options.ENABLE_DEBUG and conf.options.ENABLE_LTO:
         conf.fatal('Both --enable-debug and --enable-lto were passed.')
@@ -135,16 +174,17 @@ def get_conf_opts(conf):
 
 
 @conf
-def get_saldl_version(conf):
+def check_required_flags(conf):
+    # TODO: Check.
+    # We don't use append_unique() in case the flag is overridden
+    conf.check_cc(cflags = '-std=c99', uselib_store='SAL_C99', mandatory=False)
+    conf.check_cc(cflags = '-fPIE', uselib_store='SAL_PIE', mandatory=False)
+    conf.check_cc(linkflags = '-pie', uselib_store='SAL_PIE', mandatory=False)
+    #conf.env.append_value('CFLAGS', '-std=c99')
+    #conf.env.append_value('CFLAGS', '-fPIE')
+    #conf.env.append_value('LINKFLAGS', '-pie')
 
-    conf.start_msg('Get saldl version from GIT')
 
-    try:
-        saldl_version = conf.cmd_and_log(['git', 'describe', '--dirty']).rstrip()
-        conf.end_msg(saldl_version)
-        conf.env.append_value('DEFINES', 'SALDL_VERSION="%s"' % saldl_version)
-    except:
-        conf.end_msg('(failed)')
 
 
 @conf
@@ -190,11 +230,21 @@ def check_warning_cflags(conf):
                 ['-Wextra'],
                 ['-Werror'],
                 ['-Wmissing-format-attribute'],
-                #['-Wno-missing-field-initializers'] # Silence stupid clang warnings
         ]
 
     for w in warn_flags:
         conf.check_cc(cflags = w, uselib_store='SAL_WARNING', mandatory=False)
+
+    # Disable stupid clang warnings
+    if conf.env['CC_NAME'] == 'clang':
+        clang_no_warn_flags = [
+                ['-Wno-newline-eof'], # Fails CLOCK_MONOTONIC_RAW test.
+                ['-Wno-missing-field-initializers'] # Fails {0} initializations.
+        ]
+
+        for no_w in clang_no_warn_flags:
+            conf.check_cc(cflags = no_w, uselib_store='SAL_WARNING', mandatory=False)
+
 
     if conf.env['CFLAGS_SAL_WARNING']:
         conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_WARNING'])
@@ -395,45 +445,20 @@ def check_pkg_deps(conf):
 #------------------------------------------------------------------------------
 
 def configure(conf):
-
-    # Get version
-        get_saldl_version(conf)
-
-    # Get opts
-        get_conf_opts(conf)
-
-    # Enable supported warning flags
-        check_warning_cflags(conf)
-
-    # Defines
-        conf.env.append_value('DEFINES', '_FILE_OFFSET_BITS=64')
-        conf.env.append_value('DEFINES', '_GNU_SOURCE')
-        conf.env.append_value('DEFINES', '_XOPEN_SOURCE=501')
-
-    # Check availability of some functions
-        print('Checking API support:')
-        check_function_mkdir(conf)
-        check_timer_support(conf)
-        conf.check_cc(function_name='strcasestr', header_name="string.h", mandatory=False)
-        conf.check_cc(function_name='strsignal', header_name="string.h", mandatory=False)
-        conf.check_cc(function_name='sigaction', header_name="signal.h", mandatory=False)
-        conf.check_cc(function_name='sigaddset', header_name="signal.h", mandatory=False)
-
-    # Required FLAGS
-        # TODO: Check.
-        # We don't use append_unique() in case the flag is overridden
-        conf.env.append_value('CFLAGS', '-std=c99')
-        conf.env.append_value('CFLAGS', '-fPIE')
-        conf.env.append_value('LINKFLAGS', '-pie')
+    get_saldl_version(conf)
+    prep_man(conf)
+    check_flags(conf)
+    set_defines(conf)
+    check_api(conf)
 
     # Deps
-        conf.env.LIB = []
-        conf.env.INCLUDES = ['.']
+    conf.env.LIB = []
+    conf.env.INCLUDES = ['.']
 
-        check_pkg_deps(conf)
+    check_pkg_deps(conf)
 
-        # Deps with no pkg-config support
-        conf.env.append_value('LIB', 'pthread')
+    # Deps with no pkg-config support
+    conf.env.append_value('LIB', 'pthread')
 
 #------------------------------------------------------------------------------
 
