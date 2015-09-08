@@ -381,40 +381,15 @@ def check_lto_flags(conf):
         if not (l_os_flags or c_os_flags):
             print('lto flags not supported by the compiler!')
 
-@conf
-def check_curl_name_headers(conf, curl_name):
-
-    curl_includedir = conf.env['LIB' +  curl_name.upper() + '_includedir']
-
-    if curl_includedir:
-
-        # Check if dirname including libcurl headers is also renamed
-        if path.isdir(curl_includedir + '/' + curl_name):
-            # Add to INCLUDES
-            conf.env.append_value('INCLUDES', curl_includedir + '/' + curl_name)
-            conf.define('HAVE_CURL_INCLUDE_DIR', 1)
-
-            # Also check if the header file is renamed
-            if path.exists(curl_includedir + '/' + curl_name + '/' + curl_name + '.h'):
-                # Create a header file in build/ that includes the renamed header file
-                curl_include_header = conf.bldnode.make_node('curl_include.h')
-                curl_include_header.write('#include <' + curl_name + '.h>\n')
-                conf.define('HAVE_CURL_INCLUDE_HEADER', 1)
 
 @conf
 def check_pkg_deps(conf):
 
     print('Check pkg-config dependencies:')
 
-    if 'CURL_NAME' in os_env:
-        curl_name = os_env['CURL_NAME']
-    else:
-        curl_name = 'curl'
-
     pkg_deps = [
             # (pkg_name, [check_args])
-            #( 'lib%s' % curl_name, ['lib%s >= 7.41' % curl_name, '--cflags', '--libs'] ),
-            ( 'lib%s' % curl_name, ['lib%s' % curl_name, '--cflags', '--libs'] ),
+            ( 'libcurl', ['libcurl >= 7.42', '--cflags', '--libs'] ),
             ( 'libevent_pthreads', ['libevent_pthreads > 2.0', '--cflags', '--libs'] )
     ]
 
@@ -438,9 +413,6 @@ def check_pkg_deps(conf):
         if conf.env['LIB_' + pkg_name.upper()]:
             conf.env.LIB.extend(conf.env['LIB_' + pkg_name.upper()])
 
-    # More things to do for custom libcurl name
-    if curl_name != 'curl':
-        check_curl_name_headers(conf, curl_name)
 
 #------------------------------------------------------------------------------
 
