@@ -121,7 +121,7 @@ def get_conf_opts(conf):
     if conf.options.ENABLE_DEBUG:
         check_debug_cflags(conf)
 
-    if conf.options.EBABLE_SANITIZERS:
+    if conf.options.ENABLE_SANITIZERS:
         if not conf.options.ENABLE_DEBUG:
             conf.fatal('--enable-sanitizers require --enable-debug .')
         else:
