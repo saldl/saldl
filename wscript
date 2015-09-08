@@ -13,7 +13,6 @@ import waflib.Context as ctx
 
 TaskGen.declare_chain(
         name   = 'asciidoc-man-1',
-        #rule   = '${ASCIIDOC} -b docbook -a a2x-format=manpage -d manpage -o ${TGT} ${SRC}',
         rule   = '${ASCIIDOC} -b docbook -a a2x-format=manpage -d manpage -o ${tsk.outputs[0].name} ${SRC}',
         ext_in = '.1.txt',
         ext_out = '.1',
@@ -35,7 +34,7 @@ def options(opt):
     def_asciidoc = 'asciidoc'
     conf_gr.add_option(
             '--asciidoc',
-            dest = 'asciidoc',
+            dest = 'ASCIIDOC',
             default = def_asciidoc,
             help = 'asciidoc executable. (default: %s)' % def_asciidoc
             )
@@ -44,31 +43,95 @@ def options(opt):
     def_mandir = 'share/man'
     conf_gr.add_option(
             '--mandir',
-            dest = 'mandir',
+            dest = 'MANDIR',
             default = def_mandir,
-            help = 'Relative to PREFIX if not absoloute. Otherwise. relative to DESTDIR. (default: %s)' % def_mandir
+            help = 'Relative to PREFIX if not absoloute. (default: %s)' % def_mandir
             )
 
     def_disable_man = False
     conf_gr.add_option(
             '--disable-man',
-            dest = 'disable_man',
+            dest = 'DISABLE_MAN',
             default = def_disable_man,
             action= "store_true",
             help = "Don't build manpage. (default: %s)" % def_disable_man
+            )
+ 
+    def_enable_lto = False
+    conf_gr.add_option(
+            '--enable-lto',
+            dest = 'ENABLE_LTO',
+            default = def_enable_lto,
+            action= "store_true",
+            help = "Set lto flags. Conflicts with '--disable-debug'. (default: %s)" % def_enable_lto
+            )
+ 
+    def_enable_debug = False
+    conf_gr.add_option(
+            '--enable-debug',
+            dest = 'ENABLE_DEBUG',
+            default = def_enable_debug,
+            action= "store_true",
+            help = "Set debug flags. (default: %s)" % def_enable_debug
+            )
+ 
+    def_enable_sanitizers= False
+    conf_gr.add_option(
+            '--enable-sanitizers',
+            dest = 'ENABLE_SANITIZERS',
+            default = def_enable_sanitizers,
+            action= "store_true",
+            help = "Enable sanitizers. For developers only. Requires '--enable-debug' (default: %s)" % def_enable_sanitizers
+            )
+ 
+    def_enable_link_optimizations = False
+    conf_gr.add_option(
+            '--enable-link_optimizations',
+            dest = 'ENABLE_LINK_OPTIMIZATIONS',
+            default = def_enable_link_optimizations,
+            action= "store_true",
+            help = "Enable link optimization flags. (default: %s)" % def_enable_link_optimizations
             )
 
 #------------------------------------------------------------------------------
 
 @conf
 def get_conf_opts(conf):
-    conf.env['DISABLE_MAN'] = conf.options.disable_man
-    conf.env['ASCIIDOC'] = conf.options.asciidoc
+    conf.env['DISABLE_MAN'] = conf.options.DISABLE_MAN
 
-    if conf.options.mandir[0] == '/':
-        conf.env['MANDIR'] = conf.options.mandir
-    else:
-        conf.env['MANDIR'] = conf.env['PREFIX'] + path.sep + conf.options.mandir
+    if not conf.env['DISABLE_MAN']:
+        conf.find_program(conf.options.ASCIIDOC, var='ASCIIDOC')
+
+        conf.start_msg('Setting MANDIR')
+        
+        if conf.options.MANDIR[0] == path.sep:
+            conf.env['MANDIR'] = conf.options.MANDIR
+        else:
+            conf.env['MANDIR'] = conf.env['PREFIX'] + path.sep + conf.options.MANDIR
+            
+        conf.end_msg(conf.env['MANDIR'])
+
+
+    # Load this before checking flags
+    conf.load('compiler_c')
+
+    if conf.options.ENABLE_DEBUG and conf.options.ENABLE_LTO:
+        conf.fatal('Both --enable-debug and --enable-lto were passed.')
+
+    if conf.options.ENABLE_DEBUG:
+        check_debug_cflags(conf)
+
+    if conf.options.EBABLE_SANITIZERS:
+        if not conf.options.ENABLE_DEBUG:
+            conf.fatal('--enable-sanitizers require --enable-debug .')
+        else:
+            check_sanitize_flags(conf)
+
+    if conf.options.ENABLE_LINK_OPTIMIZATIONS:
+        check_link_flags(conf)
+        
+    if conf.options.ENABLE_LTO:
+        check_lto_flags(conf)
 
 
 @conf
@@ -114,7 +177,7 @@ def check_function_mkdir(conf):
 @conf
 def check_warning_cflags(conf):
 
-    print('\nChecking for warning CFLAGS support:')
+    print('Checking for warning CFLAGS support:')
     os_flags = 0
 
     if 'CFLAGS_SAL_WARNING' in os_env:
@@ -135,15 +198,15 @@ def check_warning_cflags(conf):
 
     if conf.env['CFLAGS_SAL_WARNING']:
         conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_WARNING'])
-        print('Added warning flags: ' + str(conf.env['CFLAGS_SAL_WARNING']))
+        #print('Added warning flags: ' + str(conf.env['CFLAGS_SAL_WARNING']))
     else:
         if not os_flags:
             conf.fatal('None of the warning CFLAGS are supported by the compiler!')
 
 @conf
-def check_sanitize_cflags(conf):
+def check_sanitize_flags(conf):
 
-    print('\nChecking for sanitize CFLAGS support:')
+    print('Checking for sanitize CFLAGS/LINKFLAGS support:')
     os_flags = 0
 
     if 'CFLAGS_SAL_SANITIZE' in os_env:
@@ -152,7 +215,7 @@ def check_sanitize_cflags(conf):
     else:
         sanitizers = [
                 #['-fsanitize=leak'], # Can't use this if either address or thread is enabled.
-                #['-fsanitize=thread'], Does not work with new kernels
+                #['-fsanitize=thread'], Does not work with new kernels.
                 ['-fsanitize=undefined'],
                 ['-fsanitize=address'],
                 ['-fsanitize-recover=all']
@@ -176,7 +239,7 @@ def check_sanitize_cflags(conf):
 @conf
 def check_debug_cflags(conf):
 
-    print('\nChecking for debug CFLAGS support:')
+    print('Checking for debug CFLAGS support:')
     os_flags = 0
 
     if 'CFLAGS_SAL_DEBUG' in os_env:
@@ -196,7 +259,7 @@ def check_debug_cflags(conf):
 
     if conf.env['CFLAGS_SAL_DEBUG']:
         conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_DEBUG'])
-        print('Added debug flags: ' + str(conf.env['CFLAGS_SAL_DEBUG']))
+        #print('Added debug flags: ' + str(conf.env['CFLAGS_SAL_DEBUG']))
     else:
         if not os_flags:
             conf.fatal('None of the debug CFLAGS are supported by the compiler!')
@@ -204,7 +267,7 @@ def check_debug_cflags(conf):
 @conf
 def check_link_flags(conf):
 
-    print('\nChecking for optimized LINKFLAGS support:')
+    print('Checking for optimized LINKFLAGS support:')
     os_flags = 0
 
     if 'LINKFLAGS_SAL' in os_env:
@@ -224,38 +287,13 @@ def check_link_flags(conf):
 
     if conf.env['LINKFLAGS_SAL']:
         conf.env.append_value('LINKFLAGS', conf.env['LINKFLAGS_SAL'])
-        print('Added linkflags: ' + str(conf.env['LINKFLAGS_SAL']))
+        #print('Added linkflags: ' + str(conf.env['LINKFLAGS_SAL']))
 
-@conf
-def check_optimize_cflags(conf):
-
-    print('\nChecking for optimization CFLAGS support:')
-    os_flags = 0
-
-    if 'CFLAGS_SAL_OPTIMIZE' in os_env:
-        cflags = [ os_env['CFLAGS_SAL_OPTIMIZE'] ]
-        os_flags = 1
-    else:
-        cflags = [
-                ['-Ofast'],
-                ['-O3 -ffast-math'],
-                ['-O3'],
-                ['-O2']
-        ]
-
-    for flags in cflags:
-        conf.check_cc(cflags = flags, uselib_store='SAL_OPTIMIZE', mandatory=False)
-        if conf.env['CFLAGS_SAL_OPTIMIZE']:
-            conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_OPTIMIZE'])
-            break
-
-    if not os_flags and not conf.env['CFLAGS_SAL_OPTIMIZE']:
-        conf.fatal('None of the optimization CFLAGS are supported by the compiler!')
 
 @conf
 def check_lto_flags(conf):
 
-    print('\nChecking for LTO CFLAGS/LINKFLAGS support:')
+    print('Checking for LTO CFLAGS/LINKFLAGS support:')
     c_os_flags = 0
     l_os_flags = 0
 
@@ -316,7 +354,7 @@ def check_curl_name_headers(conf, curl_name):
 @conf
 def check_pkg_deps(conf):
 
-    print('\nCheck pkg-config dependencies:')
+    print('Check pkg-config dependencies:')
 
     if 'CURL_NAME' in os_env:
         curl_name = os_env['CURL_NAME']
@@ -358,15 +396,14 @@ def check_pkg_deps(conf):
 
 def configure(conf):
 
-    # Get opts
-        get_conf_opts(conf)
-
     # Get version
         get_saldl_version(conf)
 
-    # C support
-        conf.load('compiler_c')
+    # Get opts
+        get_conf_opts(conf)
 
+    # Enable supported warning flags
+        check_warning_cflags(conf)
 
     # Defines
         conf.env.append_value('DEFINES', '_FILE_OFFSET_BITS=64')
@@ -374,6 +411,7 @@ def configure(conf):
         conf.env.append_value('DEFINES', '_XOPEN_SOURCE=501')
 
     # Check availability of some functions
+        print('Checking API support:')
         check_function_mkdir(conf)
         check_timer_support(conf)
         conf.check_cc(function_name='strcasestr', header_name="string.h", mandatory=False)
@@ -382,22 +420,11 @@ def configure(conf):
         conf.check_cc(function_name='sigaddset', header_name="signal.h", mandatory=False)
 
     # Required FLAGS
+        # TODO: Check.
         # We don't use append_unique() in case the flag is overridden
         conf.env.append_value('CFLAGS', '-std=c99')
-        conf.env.append_value('CFLAGS', '-fPIE') # Thread sanitizer, does not work, even with nolib
+        conf.env.append_value('CFLAGS', '-fPIE')
         conf.env.append_value('LINKFLAGS', '-pie')
-
-    # Other FLAGS
-        check_warning_cflags(conf)
-        # TODO: add opts to choose either debug or optimize, or none
-        # TODO: consider adding optional stripping if not debug
-        check_debug_cflags(conf)
-        #check_sanitize_cflags(conf) # core files creation takes forever
-        #check_optimize_cflags(conf)
-
-        check_link_flags(conf)
-        # Note: core files are useless when lto is used
-        check_lto_flags(conf)
 
     # Deps
         conf.env.LIB = []
@@ -441,12 +468,5 @@ def build(bld):
                 source = ['saldl.1.txt'],
                 )
 
-#    bld(
-#            #rule = 'a2x -f manpage ${SRC} --destination-dir %s' % ctx.out_dir,
-#            rule = 'asciidoc -b docbook -a a2x-format=manpage -d manpage -o ${TGT} ${SRC}',
-#            source = 'saldl.1.txt',
-#            target = 'share/man/saldl.1'
-#            )
-#    bld.install_files('${PREFIX}/share/man', ['share/man/saldl.1'])
 
 #------------------------------------------------------------------------------
