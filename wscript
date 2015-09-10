@@ -26,7 +26,7 @@ TaskGen.declare_chain(
 
 def options(opt):
     opt.load('compiler_c')
-    
+
     ins_gr = opt.get_option_group('Installation and uninstallation options')
     bld_gr = opt.get_option_group('Build and installation options')
     conf_gr = opt.get_option_group('Configuration options')
@@ -57,6 +57,24 @@ def options(opt):
             help = "Don't build manpage. (default: %s)" % def_disable_man
             )
  
+    def_disable_compiler_warnings = False
+    conf_gr.add_option(
+            '--disable-compiler-warnings',
+            dest = 'DISABLE_COMPILER_WARNINGS',
+            default = def_disable_compiler_warnings,
+            action= "store_true",
+            help = "Don't enable compiler warnings. (default: %s)" % def_disable_compiler_warnings
+            )
+
+    def_no_werror = False
+    conf_gr.add_option(
+            '--no-werror',
+            dest = 'NO_WERROR',
+            default = def_no_werror,
+            action= "store_true",
+            help = "Don't consider warnings fatal. (default: %s)" % def_no_werror
+            )
+
     def_enable_lto = False
     conf_gr.add_option(
             '--enable-lto',
@@ -65,7 +83,7 @@ def options(opt):
             action= "store_true",
             help = "Set lto flags. Conflicts with '--disable-debug'. (default: %s)" % def_enable_lto
             )
- 
+
     def_enable_debug = False
     conf_gr.add_option(
             '--enable-debug',
@@ -74,7 +92,7 @@ def options(opt):
             action= "store_true",
             help = "Set debug flags. (default: %s)" % def_enable_debug
             )
- 
+
     def_enable_sanitizers= False
     conf_gr.add_option(
             '--enable-sanitizers',
@@ -83,7 +101,7 @@ def options(opt):
             action= "store_true",
             help = "Enable sanitizers. For developers only. Requires '--enable-debug' (default: %s)" % def_enable_sanitizers
             )
- 
+
     def_enable_link_optimizations = False
     conf_gr.add_option(
             '--enable-link_optimizations',
@@ -91,6 +109,42 @@ def options(opt):
             default = def_enable_link_optimizations,
             action= "store_true",
             help = "Enable link optimization flags. (default: %s)" % def_enable_link_optimizations
+            )
+
+    def_libcurl_cflags = None # Use pkg-config or env
+    conf_gr.add_option(
+            '--libcurl-cflags',
+            dest = 'LIBCURL_CFLAGS',
+            default = def_libcurl_cflags,
+            action= "store",
+            help = "Skip pkg-config and set libcurl cflags explicitly (default: %s)" % def_libcurl_cflags
+            )
+
+    def_libcurl_libs = None # Use pkg-config or env
+    conf_gr.add_option(
+            '--libcurl-libs',
+            dest = 'LIBCURL_LIBS',
+            default = def_libcurl_libs,
+            action= "store",
+            help = "Skip pkg-config and set libcurl libs explicitly (default: %s)" % def_libcurl_libs
+            )
+
+    def_libevent_pthreads_cflags = None # Use pkg-config or env
+    conf_gr.add_option(
+            '--libevent-pthreads-cflags',
+            dest = 'LIBEVENT_PTHREADS_CFLAGS',
+            default = def_libevent_pthreads_cflags,
+            action= "store",
+            help = "Skip pkg-config and set libevent_pthreads cflags explicitly (default: %s)" % def_libevent_pthreads_cflags
+            )
+
+    def_libevent_pthreads_libs = None # Use pkg-config or env
+    conf_gr.add_option(
+            '--libevent-pthreads-libs',
+            dest = 'LIBEVENT_PTHREADS_LIBS',
+            default = def_libevent_pthreads_libs,
+            action= "store",
+            help = "Skip pkg-config and set libevent_pthreads libs explicitly (default: %s)" % def_libevent_pthreads_libs
             )
 
 #------------------------------------------------------------------------------
@@ -118,12 +172,12 @@ def prep_man(conf):
         conf.find_program(conf.options.ASCIIDOC, var='ASCIIDOC')
 
         conf.start_msg('Setting MANDIR')
-        
+
         if conf.options.MANDIR[0] == path.sep:
             conf.env['MANDIR'] = conf.options.MANDIR
         else:
             conf.env['MANDIR'] = conf.env['PREFIX'] + path.sep + conf.options.MANDIR
-            
+
         conf.end_msg(conf.env['MANDIR'])
 
 
@@ -151,8 +205,8 @@ def check_flags(conf):
 
     check_required_flags(conf)
 
-    # Enable supported warning flags
-    check_warning_cflags(conf)
+    if not conf.options.DISABLE_COMPILER_WARNINGS:
+        check_warning_cflags(conf)
 
     if conf.options.ENABLE_DEBUG and conf.options.ENABLE_LTO:
         conf.fatal('Both --enable-debug and --enable-lto were passed.')
@@ -168,7 +222,7 @@ def check_flags(conf):
 
     if conf.options.ENABLE_LINK_OPTIMIZATIONS:
         check_link_flags(conf)
-        
+
     if conf.options.ENABLE_LTO:
         check_lto_flags(conf)
 
@@ -221,14 +275,13 @@ def check_warning_cflags(conf):
     os_flags = 0
 
     if 'CFLAGS_SAL_WARNING' in os_env:
-        warn_flags = [ os_env['CFLAGS_SAL_WARNING'] ]
+        warn_flags = os_env['CFLAGS_SAL_WARNING'].split(' ')
         os_flags = 1
     else:
         warn_flags = [
                 ['-pedantic'],
                 ['-Wall'],
                 ['-Wextra'],
-                ['-Werror'],
                 ['-Wmissing-format-attribute'],
         ]
 
@@ -245,6 +298,13 @@ def check_warning_cflags(conf):
         for no_w in clang_no_warn_flags:
             conf.check_cc(cflags = no_w, uselib_store='SAL_WARNING', mandatory=False)
 
+    # Make warnings fatal unless explicitly told not to
+    if not conf.options.NO_WERROR:
+        conf.check_cc(cflags = ['-Werror'], uselib_store='SAL_WARNING', mandatory=False)
+    else:
+        conf.check_cc(cflags = ['-Wno-error'], uselib_store='SAL_WARNING', mandatory=False)
+
+
 
     if conf.env['CFLAGS_SAL_WARNING']:
         conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_WARNING'])
@@ -260,7 +320,7 @@ def check_sanitize_flags(conf):
     os_flags = 0
 
     if 'CFLAGS_SAL_SANITIZE' in os_env:
-        sanitizers = [ os_env['CFLAGS_SAL_SANITIZE'] ]
+        sanitizers = os_env['CFLAGS_SAL_SANITIZE'].split(' ')
         os_flags = 1
     else:
         sanitizers = [
@@ -274,7 +334,7 @@ def check_sanitize_flags(conf):
     for s in sanitizers:
         conf.check_cc(cflags = s, uselib_store='SAL_SANITIZE', mandatory=False)
         conf.check_cc(linkflags = s, uselib_store='SAL_SANITIZE', mandatory=False)
-    
+
     if conf.env['CFLAGS_SAL_SANITIZE'] or conf.env['LINKFLAGS_SAL_SANITIZE']:
         if conf.env['CFLAGS_SAL_SANITIZE']:
             conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_SANITIZE'])
@@ -293,7 +353,7 @@ def check_debug_cflags(conf):
     os_flags = 0
 
     if 'CFLAGS_SAL_DEBUG' in os_env:
-        debug_flags = [ os_env['CFLAGS_SAL_DEBUG'] ]
+        debug_flags = os_env['CFLAGS_SAL_DEBUG'].split(' ')
         os_flags = 1
     else:
         debug_flags = [
@@ -321,7 +381,7 @@ def check_link_flags(conf):
     os_flags = 0
 
     if 'LINKFLAGS_SAL' in os_env:
-        linkflags = [ os_env['LINKFLAGS_SAL'] ]
+        linkflags = os_env['LINKFLAGS_SAL'].split(' ')
         os_flags = 1
     else:
         linkflags = [
@@ -348,7 +408,7 @@ def check_lto_flags(conf):
     l_os_flags = 0
 
     if 'CFLAGS_SAL_LTO' in os_env:
-        lto_cflags = [ os_env['CFLAGS_SAL_LTO'] ]
+        lto_cflags = os_env['CFLAGS_SAL_LTO'].split(' ')
         c_os_flags = 1
     else:
         lto_cflags = [
@@ -356,7 +416,7 @@ def check_lto_flags(conf):
         ]
 
     if 'LINKFLAGS_SAL_LTO' in os_env:
-        lto_linkflags = [ os_env['LINKFLAGS_SAL_LTO'] ]
+        lto_linkflags = os_env['LINKFLAGS_SAL_LTO'].split(' ')
         l_os_flags = 1
     else:
         lto_linkflags = [
@@ -385,33 +445,71 @@ def check_lto_flags(conf):
 @conf
 def check_pkg_deps(conf):
 
-    print('Check pkg-config dependencies:')
+    print('Check dependencies:')
 
-    pkg_deps = [
-            # (pkg_name, [check_args])
-            ( 'libcurl', ['libcurl >= 7.42', '--cflags', '--libs'] ),
-            ( 'libevent_pthreads', ['libevent_pthreads > 2.0', '--cflags', '--libs'] )
-    ]
+    # Make sure LIB, INCLUDES, CFLAGS and LDFLAGS exist
+    for v in ['LIB', 'INCLUDES', 'CFLAGS' 'LDFLAGS']:
+        if not v in conf.env:
+            conf.env[v] = []
 
-    for d in pkg_deps:
+    check_libcurl(conf)
+    check_libevent_pthreads(conf)
 
-        if type(d) != tuple or len(d) != 2 or type(d[0]) != str or type(d[1]) != list :
-            conf.fatal('Invalid syntax in pkg_deps.')
+    # Deps with no pkg-config support
+    conf.env.append_value('LIB', 'pthread')
 
-        pkg_name = d[0]
-        check_args = d[1]
+@conf
+def check_libcurl(conf):
+    pkg_name = 'libcurl'
+    check_args = ['--cflags', '--libs']
+    min_ver = '7.42'
+    check_pkg(conf, pkg_name, check_args, min_ver)
 
-        conf.check_cfg(package = pkg_name, args = check_args)
+@conf
+def check_libevent_pthreads(conf):
+    pkg_name = 'libevent_pthreads'
+    check_args = ['--cflags', '--libs']
+    min_ver = '2.0.20'
+    check_pkg(conf, pkg_name, check_args, min_ver)
+
+
+@conf
+def check_pkg(conf, pkg_name, check_args, min_ver):
+
+    conf_opts_dict = eval( str(conf.options) )
+
+    opt_cflags_var = pkg_name.upper() + '_CFLAGS'
+    opt_libs_var = pkg_name.upper() + '_LIBS'
+
+    opt_cflags = conf_opts_dict[opt_cflags_var] != None
+    opt_libs = conf_opts_dict[opt_libs_var] != None
+    opt_total = opt_cflags + opt_libs
+
+    conf.start_msg('Checking %s:' % pkg_name)
+
+    if opt_total == 1:
+        conf.fatal('Either set both %s and %s or let pkg-config do the checking.' % (opt_cflags_var, opt_libs_var))
+
+    elif opt_total == 2:
+        conf.end_msg('user-provided')
+        conf.env['CFLAGS'] += conf_opts_dict[opt_cflags_var].split(' ')
+        conf.env['LDFLAGS'] += conf_opts_dict[opt_libs_var].split(' ')
+
+    else:
+        conf.end_msg('pkg-config')
+        conf.check_cfg(package = pkg_name, args = check_args, atleast_version = min_ver)
         conf.check_cfg(package = pkg_name, variables = ['includedir', 'prefix'])
 
-        if conf.env['INCLUDES_' + pkg_name.upper()]:
-            conf.env.INCLUDES.extend(conf.env['INCLUDES_' + pkg_name.upper()])
+        includes_var = 'INCLUDES_' + pkg_name.upper()
+        if conf.env[includes_var]:
+            conf.env.INCLUDES += conf.env[includes_var]
 
         if conf.env[pkg_name.upper() + '_includedir']:
-            conf.env.INCLUDES.extend([ conf.env[pkg_name.upper() + '_includedir'] ])
+            conf.env.INCLUDES += [ conf.env[pkg_name.upper() + '_includedir'] ]
 
-        if conf.env['LIB_' + pkg_name.upper()]:
-            conf.env.LIB.extend(conf.env['LIB_' + pkg_name.upper()])
+        lib_var = 'LIB_' + pkg_name.upper()
+        if conf.env[lib_var]:
+            conf.env.LIB += conf.env[lib_var]
 
 
 #------------------------------------------------------------------------------
@@ -422,15 +520,7 @@ def configure(conf):
     check_flags(conf)
     set_defines(conf)
     check_api(conf)
-
-    # Deps
-    conf.env.LIB = []
-    conf.env.INCLUDES = ['.']
-
     check_pkg_deps(conf)
-
-    # Deps with no pkg-config support
-    conf.env.append_value('LIB', 'pthread')
 
 #------------------------------------------------------------------------------
 
