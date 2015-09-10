@@ -50,11 +50,11 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
 }
 
 int saldl_mkdir(const char *path, mode_t mode) {
-#if defined(HAVE_MKDIR)
-  return mkdir(path, mode);
-#elif defined(HAVE__MKDIR)
+#if defined(HAVE__MKDIR)
   (void) mode;
   return _mkdir(path);
+#elif defined(HAVE_MKDIR)
+  return mkdir(path, mode);
 #else
 #error neither mkdir() nor _mkdir() available.
 #endif
