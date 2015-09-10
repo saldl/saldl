@@ -50,21 +50,19 @@ void saldl_unblock_sig_pth() {
 #endif
 }
 
-void ignore_sig(int sig, struct sigaction *sa_save) {
 #ifdef HAVE_SIGACTION
+void ignore_sig(int sig, struct sigaction *sa_save) {
   struct sigaction sa_ign;
   sigaction(sig, NULL, sa_save);
   sa_ign = *sa_save;
   sa_ign.sa_handler = SIG_IGN;
   sigaction(sig, &sa_ign, NULL);
-#endif
 }
 
 void restore_sig_handler(int sig, struct sigaction *sa_restore) {
-#ifdef HAVE_SIGACTION
   sigaction(sig, sa_restore, NULL);
-#endif
 }
+#endif
 
 void fputs_count(uintmax_t count, const char* str, FILE* stream) {
   for (uintmax_t loops = 1; loops <= count; loops++) {

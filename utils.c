@@ -1058,16 +1058,22 @@ void saldl_perform(thread_s *thread) {
 
 
   while (1) {
+
+#ifdef HAVE_SIGACTION
     /* shutdown code in OpenSSL sometimes raises SIGPIPE, and libcurl
      * should be already ignoring that signal, but for some reason, it's
      * still raised sometimes, so, we are ignoring it explicitly here */
+
     struct sigaction sa_orig;
     ignore_sig(SIGPIPE, &sa_orig);
+#endif
 
     ret = curl_easy_perform(thread->ehandle);
 
+#ifdef HAVE_SIGACTION
     /* Restore SIGPIPE handler */
     restore_sig_handler(SIGPIPE, &sa_orig);
+#endif
 
     /* Break if everything went okay */
     if (ret == CURLE_OK && thread->chunk->size_complete == thread->chunk->size) {

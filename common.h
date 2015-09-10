@@ -44,8 +44,12 @@
 
 void saldl_block_sig_pth();
 void saldl_unblock_sig_pth();
+
+#ifdef HAVE_SIGACTION
 void ignore_sig(int sig, struct sigaction *sa_save);
 void restore_sig_handler(int sig, struct sigaction *sa_restore);
+#endif
+
 void fputs_count(uintmax_t count, const char* str, FILE* stream);
 double human_size(double size);
 const char* human_size_suffix(double size);
