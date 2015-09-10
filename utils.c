@@ -36,7 +36,14 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
       // space
       sep[0] = '\0';
     }
+#ifdef HAVE_ASPRINTF
     asprintf(&cookie, "Set-Cookie: %s; ", curr);
+#else
+    {
+      size_t cookie_len = strlen("Set-Cookie: ") + strlen(curr) + strlen("; ") + 1;
+      cookie = saldl_malloc(cookie_len);
+    }
+#endif
     curl_easy_setopt(handle, CURLOPT_COOKIELIST, cookie);
     free(cookie);
     curr = next;
