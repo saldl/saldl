@@ -35,6 +35,7 @@ typedef struct {
   size_t no_color;
   size_t verbosity;
   bool libcurl_verbosity;
+  bool no_status;
   char* url;
   char* root_dir;
   char* filename;

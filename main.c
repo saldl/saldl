@@ -90,6 +90,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"memory-buffers", no_argument, 0, 'm'},
     /* long only */
     {"skip-TLS-verification", no_argument, 0, CHAR_MAX+1},
+    {"no-status", no_argument, 0, CHAR_MAX+2},
     {0, 0, 0, 0}
   };
 
@@ -236,6 +237,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
       /* long only */
       case CHAR_MAX+1:
         params_ptr->tls_no_verify = true;
+        break;
+
+      case CHAR_MAX+2:
+        params_ptr->no_status = true;
         break;
 
       default:

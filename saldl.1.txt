@@ -104,6 +104,9 @@ UI Options
   Pass it twice (*-CC*) to disable all other formattings
   (auto-set if not tty).
 
+*--no-status*::
+   Disable progress status output. (For debugging purposes only)
+
 Resume Options
 ~~~~~~~~~~~~~~~
 

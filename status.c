@@ -84,6 +84,11 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
   p->curr_dur = p->curr - p->prev;
   global_progress_update(info_ptr, false);
 
+  /* Skip if --no-status */
+  if (info_ptr->params->no_status) {
+    return;
+  }
+
   off_t session_complete_size = saldl_max_o(p->complete_size - p->initial_complete_size, 0); // Don't go -ve on reconnects
   off_t session_size = info_ptr->file_size - p->initial_complete_size;
   off_t rem_size =  info_ptr->file_size - p->complete_size;
@@ -177,7 +182,9 @@ void* status_display(void *void_info_ptr) {
   events_deinit(&info_ptr->ev_status);
 
   /* finalize and cleanup */
-  fputs_count(lines, "\n", stderr);
+  if (!info_ptr->params->no_status) {
+    fputs_count(lines, "\n", stderr);
+  }
 
   if (chunks_status) free(chunks_status);
   return info_ptr;
