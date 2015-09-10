@@ -1,10 +1,10 @@
 # curl dirs
-CURL_LIB_PATH = ./curl-7.39.0-devel-mingw64/lib64
-CURL_INCLUDE_PATH = ./curl-7.39.0-devel-mingw64/include
+CURL_LIB_PATH = /mingw64/lib
+CURL_INCLUDE_PATH = /mingw64/include
 
 # libevent dirs
-LIBEVENT_LIB_PATH = ./libevent-2.1.4-alpha-devel-mingw64/lib64
-LIBEVENT_INCLUDE_PATH = ./libevent-2.1.4-alpha-devel-mingw64/include
+LIBEVENT_LIB_PATH = ./libevent-2.1.5-beta-130-g0ec3b6d-win64/lib
+LIBEVENT_INCLUDE_PATH = ./libevent-2.1.5-beta-130-g0ec3b6d-win64/include
 
 # For libwinpthread.a
 MINGW_LIB_PATH = /usr/x86_64-w64-mingw32/lib
