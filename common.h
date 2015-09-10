@@ -29,6 +29,7 @@
 #include <libgen.h> /* basename() */
 #include <inttypes.h> /* strtoimax(), strtoumax() */
 #include <signal.h>
+#include <sys/stat.h> /* mkdir(), stat() */
 
 #include "log.h"
 #include "progress.h"
@@ -41,6 +42,14 @@
 #define MiB(x) ((x))/1024.0/1024.0
 #define GiB(x) ((x))/1024.0/1024.0/1024.0
 #define PCT(x1, x2) ((x1))*100.0/((x2))
+
+void* saldl_calloc(size_t nmemb, size_t size);
+void* saldl_malloc(size_t size);
+void* saldl_realloc(void *ptr, size_t size);
+long fsize(FILE *f);
+off_t fsizeo(FILE *f);
+off_t fsize2(char *fname);
+int saldl_mkdir(const char *path, mode_t mode);
 
 void saldl_block_sig_pth();
 void saldl_unblock_sig_pth();

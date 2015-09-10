@@ -23,10 +23,79 @@
 #define NAME_MAX MAX_PATH
 #endif
 
+
+#ifdef HAVE__MKDIR
+#include <direct.h> // _mkdir()
+#endif
+
 #include "common.h"
 
 /* .part.sal , .ctrl.sal len is 9 */
 #define EXT_LEN 9
+
+/* 0 nmemb is banned, 0 size is banned */
+void* saldl_calloc(size_t nmemb, size_t size) {
+  void *p = NULL;
+  assert(size);
+  assert(nmemb);
+  p = calloc(nmemb, size);
+  assert(p);
+  return p;
+}
+
+/* 0 size is banned */
+void* saldl_malloc(size_t size) {
+  void *p = NULL;
+  assert(size);
+  p = malloc(size);
+  assert(p);
+  return p;
+}
+
+/* NULL ptr is banned, 0 size is banned */
+void* saldl_realloc(void *ptr, size_t size) {
+  void *p = NULL;
+  assert(size);
+  assert(ptr);
+  p = realloc(ptr, size);
+  assert(p);
+  return p;
+}
+
+long fsize(FILE *f) {
+  long curr = ftell(f);
+  long size;
+  fseek(f, 0l, SEEK_END);
+  size = ftell(f);
+  fseek(f, curr, SEEK_SET);
+  return size;
+}
+
+off_t fsizeo(FILE *f) {
+  off_t curr = ftello(f);
+  off_t size;
+  fseeko(f, 0, SEEK_END);
+  size = ftello(f);
+  fseeko(f, curr, SEEK_SET);
+  return size;
+}
+
+off_t fsize2(char *fname) {
+  struct stat st = {0};
+  int ret = stat(fname, &st);
+  return ret ? ret : st.st_size;
+}
+
+int saldl_mkdir(const char *path, mode_t mode) {
+#ifdef HAVE__MKDIR
+  (void) mode;
+  return _mkdir(path);
+#elif defined(HAVE_MKDIR)
+  return mkdir(path, mode);
+#else
+#error neither mkdir() nor _mkdir() available.
+#endif
+}
 
 void saldl_block_sig_pth() {
 #ifdef HAVE_SIGADDSET

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if defined(HAVE_CLOCK_MONOTONIC_RAW)
+#ifdef HAVE_CLOCK_MONOTONIC_RAW
 
 #include <time.h>
 double saldl_utime() {

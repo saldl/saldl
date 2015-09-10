@@ -25,7 +25,6 @@
 
 #include <string.h>
 #include <errno.h>
-#include <sys/stat.h> /* mkdir(), stat() */
 
 /*#include "vt100.h"*/
 #include "common.h"
