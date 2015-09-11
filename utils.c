@@ -656,6 +656,11 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       curl_off_t offset = dltotal && info_ptr->file_size > dltotal ? (curl_off_t)info_ptr->file_size - dltotal : 0;
       info_ptr->chunks[0].size_complete = (size_t)(offset + dlnow);
 
+      /* Return early if no_status, but after setting size_complete */
+      if (info_ptr->params->no_status) {
+        return 0;
+      }
+
       if (p->enable++ == 1) {
         fputs_count(lines+1, "\n", stderr); // +1 in case offset becomes non-zero
       }
