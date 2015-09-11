@@ -8,14 +8,16 @@ HEADERS = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ct
 
 STRIP_FLAGS := --strip-all
 
-MINGW_CFLAGS := -Og -ggdb -fvar-tracking-assignments -fno-omit-frame-pointer
+#MINGW_CFLAGS := -Og -ggdb -fvar-tracking-assignments -fno-omit-frame-pointer
+MINGW_CFLAGS :=  -Ofast -flto
+MINGW_LDFLAGS := -flto
 
 all: prep saldl
 mingw: prep-mingw saldl
 
 prep:
 	$(eval CFLAGS = ${COMMON_CFLAGS} ${MINGW_CFLAGS} ${CFLAGS})
-	$(eval LDFLAGS = ${COMMON_LDFLAGS} ${LDFLAGS})
+	$(eval LDFLAGS = ${COMMON_LDFLAGS} ${MINGW_LDFLAGS} ${LDFLAGS})
 	$(eval LIBS = ${COMMON_LIBS} ${LIBS})
 
 prep-mingw: prep
