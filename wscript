@@ -12,8 +12,8 @@ import waflib.Context as ctx
 #------------------------------------------------------------------------------
 
 TaskGen.declare_chain(
-        name   = 'asciidoc-man-1',
-        rule   = '${ASCIIDOC} -b docbook -a a2x-format=manpage -d manpage -o ${tsk.outputs[0].name} ${SRC}',
+        name   = 'a2x-man-1',
+        rule   = '${A2X} -f manpage -D. ${SRC}',
         ext_in = '.1.txt',
         ext_out = '.1',
         install_path = '${MANDIR}',
@@ -31,12 +31,12 @@ def options(opt):
     bld_gr = opt.get_option_group('Build and installation options')
     conf_gr = opt.get_option_group('Configuration options')
 
-    def_asciidoc = 'asciidoc'
+    def_a2x = 'a2x'
     conf_gr.add_option(
-            '--asciidoc',
-            dest = 'ASCIIDOC',
-            default = def_asciidoc,
-            help = 'asciidoc executable. (default: %s)' % def_asciidoc
+            '--a2x',
+            dest = 'A2X',
+            default = def_a2x,
+            help = 'a2x executable. (default: %s)' % def_a2x
             )
 
 
@@ -169,7 +169,7 @@ def prep_man(conf):
     conf.env['DISABLE_MAN'] = conf.options.DISABLE_MAN
 
     if not conf.env['DISABLE_MAN']:
-        conf.find_program(conf.options.ASCIIDOC, var='ASCIIDOC')
+        conf.find_program(conf.options.A2X, var='A2X')
 
         conf.start_msg('Setting MANDIR')
 
