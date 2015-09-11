@@ -2,7 +2,7 @@
     This file is a part of saldl.
 
     Copyright (C) 2014-2015 Mohammad AlSaleh <CE.Mohammad.AlSaleh at gmail.com>
-    https://github.com/saldl/saldl
+    https://saldl.github.io
 
     saldl is free software: you can redistribute it and/or modify
     it under the terms of the Affero GNU General Public License as
@@ -30,7 +30,7 @@
 #endif
 
 #ifndef SALDL_WWW
-#define SALDL_WWW "https://github.com/saldl/saldl"
+#define SALDL_WWW "https://saldl.github.io"
 #endif
 
 static int saldl_version() {
