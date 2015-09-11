@@ -37,7 +37,8 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
       sep[0] = '\0';
     }
 #ifdef HAVE_ASPRINTF
-    asprintf(&cookie, "Set-Cookie: %s; ", curr);
+    int ret_asprintf = asprintf(&cookie, "Set-Cookie: %s; ", curr);
+    assert(ret_asprintf != -1);
 #else
     {
       size_t cookie_len = strlen("Set-Cookie: ") + strlen(curr) + strlen("; ") + 1;
