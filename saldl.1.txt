@@ -95,14 +95,17 @@ General
 UI Options
 ~~~~~~~~~~~
 
-*-V , --verbosity*::
-  Increase verbosity level. +
-  (See <<v-levels,*Verbosity Levels*>> for details.)
-
 *-C, --no-color*::
   Disable colors in output. +
   Pass it twice (*-CC*) to disable all other formattings
   (auto-set if not tty).
+
+*-V , --verbosity*::
+  Increase verbosity level. +
+  (See <<v-levels,*Verbosity Levels*>> for details.)
+
+*--verbose-libcurl*::
+   Enable libcurl's verbose output. Regardless of verbosity level.
 
 *--no-status*::
    Disable progress status output. (For debugging purposes only)

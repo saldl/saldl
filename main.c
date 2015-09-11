@@ -91,6 +91,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     /* long only */
     {"skip-TLS-verification", no_argument, 0, CHAR_MAX+1},
     {"no-status", no_argument, 0, CHAR_MAX+2},
+    {"verbose-libcurl", no_argument, 0, CHAR_MAX+3},
     {0, 0, 0, 0}
   };
 
@@ -241,6 +242,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case CHAR_MAX+2:
         params_ptr->no_status = true;
+        break;
+
+      case CHAR_MAX+3:
+        params_ptr->libcurl_verbosity = true;
         break;
 
       default:
