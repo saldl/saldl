@@ -744,13 +744,13 @@ void set_progress_params(thread_s *thread, info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   if (params_ptr->single_mode) {
-    curl_easy_setopt(thread->ehandle,CURLOPT_NOPROGRESS,0l);
     curl_easy_setopt(thread->ehandle,CURLOPT_XFERINFOFUNCTION,&status_single_display);
-    curl_easy_setopt(thread->ehandle,CURLOPT_PROGRESSDATA,info_ptr);
-  } else if (thread->chunk && thread->chunk->size) {
+    curl_easy_setopt(thread->ehandle,CURLOPT_XFERINFODATA,info_ptr);
     curl_easy_setopt(thread->ehandle,CURLOPT_NOPROGRESS,0l);
+  } else if (thread->chunk && thread->chunk->size) {
     curl_easy_setopt(thread->ehandle,CURLOPT_XFERINFOFUNCTION,&chunk_progress);
-    curl_easy_setopt(thread->ehandle,CURLOPT_PROGRESSDATA, thread->chunk);
+    curl_easy_setopt(thread->ehandle,CURLOPT_XFERINFODATA, thread->chunk);
+    curl_easy_setopt(thread->ehandle,CURLOPT_NOPROGRESS,0l);
   }
 }
 
