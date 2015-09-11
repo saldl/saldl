@@ -221,6 +221,12 @@ Custom Request Options
 *-P 'raw-post-data', --raw-post='raw-post-data'*::
   Send 'raw-post-data' as-is including headers (supports multipart).
 
+[WARNING]
+================
+*--post* and *--raw-post* will double-post by default. Unless
+*-I*/*--no-remote-info* is also passed.
+================
+
 *-U, --no-user-agent*::
   Don't set user agent (disables default agent).
 

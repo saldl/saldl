@@ -265,7 +265,7 @@ static void check_range_support(CURL *handle, saldl_params *params_ptr) {
           break;
         case 225: /* FTP */
         case 150: /* FTP */
-          /* TODO: Limited testing shows that although partial downloads are supported, server returns
+          /* XXX: Limited testing shows that although partial downloads are supported, server returns
            * 421 response(too many connections) which causes immediate timeout errors in libcurl.
            * Use a single connection for now **without disabling resume** until we gather more information
            * about how to detect multi-connection support.
@@ -762,9 +762,6 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
    * Most libcurl binaries would not include support for HTTP/2 in the short term */
   curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
 
-  /* TODO: no_remote_info is not assumed. So, the code will double-POST by default.
-   * Remember to document the default behavior. */
-
   /* Send post fields if provided */
 
   /* If both raw_post & post are set, post is ignored */
@@ -833,7 +830,6 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     }
   }
 
-  /* TODO: Add option to not send Accept-Encoding */
   curl_easy_setopt(thread->ehandle, CURLOPT_ACCEPT_ENCODING, ""); /* "" sends all supported encodings */
 
   if (params_ptr->proxy) {
@@ -875,7 +871,7 @@ void set_single_mode(info_s *info_p) {
     params_ptr->single_mode = true;
   }
 
-  /* TODO-LFS: Try to support large files with single mode in 32b systems */
+  /* XXX: Should we try to support large files with single mode in 32b systems? */
   if ((uintmax_t)info_p->file_size > (uintmax_t)SIZE_MAX) {
     fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu \n", (intmax_t)info_p->file_size, SIZE_MAX);
   }

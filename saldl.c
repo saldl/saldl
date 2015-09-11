@@ -79,7 +79,11 @@ int sal_dl(saldl_params *params_ptr) {
     }
   }
   set_modes(&info); /* Keep it between opening file and ctrl_file */
-  info.ctrl_file = fopen(info.ctrl_filename,"wb+"); /* TODO: Check for errors */
+
+  info.ctrl_file = fopen(info.ctrl_filename,"wb+");
+  if (!info.ctrl_file) {
+    fatal(FN, "Failed to open '%s' for read/write : %s\n", info.ctrl_filename, strerror(errno) );
+  }
 
   /* threads */
   info.threads = saldl_calloc(info.num_connections,sizeof(thread_s));
