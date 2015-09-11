@@ -46,10 +46,16 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
 
     ctrl->chunks_progress_str = saldl_calloc( fsize(f_ctrl), sizeof(char) ); /* fsize() guarantees allocating enough bytes */
 
-    fgets(ctrl_file_size_str, s_num_digits(OFF_T_MAX), f_ctrl);
-    fgets(ctrl_chunk_size_str, u_num_digits(SIZE_MAX), f_ctrl);
-    fgets(ctrl_rem_size_str, u_num_digits(SIZE_MAX), f_ctrl);
-    fgets(ctrl->chunks_progress_str, fsize(f_ctrl), f_ctrl);
+    char *s1 = fgets(ctrl_file_size_str, s_num_digits(OFF_T_MAX), f_ctrl);
+    char *s2 = fgets(ctrl_chunk_size_str, u_num_digits(SIZE_MAX), f_ctrl);
+    char *s3 = fgets(ctrl_rem_size_str, u_num_digits(SIZE_MAX), f_ctrl);
+    char *s4 = fgets(ctrl->chunks_progress_str, fsize(f_ctrl), f_ctrl);
+
+    if (!s1 || !s2 || !s3 || !s4) {
+      fatal(FN, "Reading the ctrl file failed. Are you sure it's not corrupt!\n");
+    }
+
+
 
     if ( fgetc(f_ctrl) != (char)EOF ) {
       fatal(FN, "ctrl file should have ended here.\n");
