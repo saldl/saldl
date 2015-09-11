@@ -27,13 +27,7 @@
 #include <event2/thread.h>
 #include <event2/event.h>
 
-#ifdef HAVE_CURL_INCLUDE_HEADER
-#include "build/curl_include.h"
-#elif  HAVE_CURL_INCLUDE_DIR
-#include <curl.h>
-#else
 #include <curl/curl.h>
-#endif
 
 #include "saldl_params.h"
 
