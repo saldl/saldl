@@ -46,6 +46,8 @@ static int usage(char *caller) {
   fprintf(stderr, "\n");
   fprintf(stderr, "Usage: %s [OPTIONS] URL\n", caller);
   fprintf(stderr, "Detailed documentation is available in the manual.\n");
+  fprintf(stderr, "An online version of the manual is available at:\n");
+  fprintf(stderr, "https://saldl.github.io/saldl.1.html\n");
   return EXIT_FAILURE;
 }
 
