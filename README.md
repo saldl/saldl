@@ -52,6 +52,12 @@ A typical example would be:
 ./waf install --destdir=${pkgdir}
 ```
 
+#### Arch Linux
+
+saldl is available in the AUR:
+
+https://aur.archlinux.org/packages/saldl-git
+
 ### MinGW
 
 I might provide unsupported untested MinGW builds at some point.
