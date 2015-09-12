@@ -671,7 +671,11 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       p->curr_dur = p->curr - p->prev;
 
 
-      if (p->curr_dur >= 0.3 || dlnow == dltotal) {
+      /* Update every 0.3s, and when the download finishes.
+       * Always update when file_size is unknown(dltotal==0), as
+       * the download might finish anytime.
+       * */
+      if (p->curr_dur >= 0.3 || !dltotal  || dlnow == dltotal) {
         if (p->curr_dur >= 0.3) {
           off_t curr_done = saldl_max_o(dlnow + offset - p->dlprev, 0); // Don't go -ve on reconnects
           p->curr_rate =  curr_done / p->curr_dur;
