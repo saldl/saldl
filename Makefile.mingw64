@@ -1,6 +1,6 @@
 # curl dirs
-CURL_LIB_PATH = /mingw64/lib
-CURL_INCLUDE_PATH = /mingw64/include
+CURL_LIB_PATH = /usr/x86_64-w64-mingw32/lib
+CURL_INCLUDE_PATH = /usr/x86_64-w64-mingw32/include
 
 # libevent dirs
 LIBEVENT_LIB_PATH = ./libevent-2.1.5-beta-130-g0ec3b6d-win64/lib

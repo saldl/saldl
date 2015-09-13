@@ -27,14 +27,7 @@ prep-mingw: prep
 	${CC} -c ${@:.o=.c} -o ${@} ${CFLAGS}
 
 saldl: main.o $(OBJS)
-	# SSL build
-	#${CC} -o saldl.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a ${CURL_LIB_PATH}/libcurl.a ${CURL_LIB_PATH}/libidn.a ${CURL_LIB_PATH}/librtmp.a ${CURL_LIB_PATH}/libssh2.a ${CURL_LIB_PATH}/libssl.a ${CURL_LIB_PATH}/libcrypto.a ${CURL_LIB_PATH}/libz.a -lgdi32 -lwinmm -lwldap32 -lws2_32
-
-	# GNU TLS build , not static, no libgnutls.a
-	#${CC} -o saldl.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a ${CURL_LIB_PATH}/libcurl.a ${CURL_LIB_PATH}/libidn.a ${CURL_LIB_PATH}/libintl.a  ${CURL_LIB_PATH}/libiconv.a ${CURL_LIB_PATH}/librtmp.a ${CURL_LIB_PATH}/libssh2.a ${CURL_LIB_PATH}/libssl.a ${CURL_LIB_PATH}/libcrypto.a ${CURL_LIB_PATH}/libgnutls.dll.a ${CURL_LIB_PATH}/libnettle.a ${CURL_LIB_PATH}/libhogweed.a ${CURL_LIB_PATH}/libgmp.a ${CURL_LIB_PATH}/libz.a -lgdi32 -lwinmm -lwldap32 -lws2_32
-
-	# Explicitly dynamic
-	${CC} -o saldl.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lws2_32
+	${CC} -o saldl.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
 
 clean:
 	-rm -f $(OBJS) main.o saldl.exe
