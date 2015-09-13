@@ -102,6 +102,7 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
 }
 
 static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *userdata) {
+  saldl_params *params_ptr = userdata;
   char *header = strdup(ptr);
   char *tmp;
 
@@ -110,8 +111,14 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     memset(tmp, '\0', 2);
   }
 
-  /* Look for Content-Disposition header */
-  if ( (tmp = strcasestr(header, "Content-Disposition:")) == header ) {
+  if (strcasestr(header, "Content-Type:") == header) {
+    debug_msg(FN, "%s\n", header);
+    if (strcasestr(header, "gzip")) {
+      debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
+      params_ptr->no_compress = true;
+    }
+
+  } else if ( (tmp = strcasestr(header, "Content-Disposition:")) == header ) {
     debug_msg(FN, "%s\n", header);
 
     /* Assumptions:
@@ -146,16 +153,13 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
         tmp += strlen(to_strip);
       }
 
-      /* Pass the result to userdata */
-      {
-        char **filename_ptr = userdata;
-        debug_msg(FN, "Before basename: %s\n", tmp);
-        *filename_ptr = strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
-        debug_msg(FN, "After basename: %s\n", *filename_ptr);
-      }
-
+      /* Pass the result to attachment_filename */
+      debug_msg(FN, "Before basename: %s\n", tmp);
+      params_ptr->attachment_filename = strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
+      debug_msg(FN, "After basename: %s\n", params_ptr->attachment_filename);
     }
   }
+
   if (header) free(header);
   return size * nmemb;
 }
@@ -322,7 +326,7 @@ void remote_info(info_s *info_p) {
 
   if (!params_ptr->no_attachment_detection) {
     curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERFUNCTION, header_function);
-    curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, &params_ptr->attachment_filename);
+    curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, params_ptr);
   }
 
   if (params_ptr->head && !params_ptr->post && !params_ptr->raw_post) {
@@ -835,6 +839,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     }
   }
 
+  /* NOTE: no_compress could be set by the user, or by header_function() */
   if (!params_ptr->no_compress) {
     curl_easy_setopt(thread->ehandle, CURLOPT_ACCEPT_ENCODING, ""); /* "" sends all supported encodings */
 
