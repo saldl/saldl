@@ -8,9 +8,7 @@ HEADERS = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ct
 
 STRIP_FLAGS := --strip-all
 
-#MINGW_CFLAGS := -Og -ggdb -fvar-tracking-assignments -fno-omit-frame-pointer
-MINGW_CFLAGS :=  -Ofast -flto
-MINGW_LDFLAGS := -flto
+MINGW_CFLAGS := -O2
 
 all: prep saldl
 mingw: prep-mingw saldl
@@ -27,7 +25,8 @@ prep-mingw: prep
 	${CC} -c ${@:.o=.c} -o ${@} ${CFLAGS}
 
 saldl: main.o $(OBJS)
-	${CC} -o saldl.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
+	${CC} -o saldl${exe_suffix}.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
+	${STRIP} saldl${exe_suffix}.exe
 
 clean:
-	-rm -f $(OBJS) main.o saldl.exe
+	-rm -f $(OBJS) main.o saldl.exe saldl${exe_suffix}.exe

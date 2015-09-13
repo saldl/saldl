@@ -1,3 +1,10 @@
+# Name suffix
+exe_suffix = -win32
+
+# mingw-w64 binaries
+CC = i686-w64-mingw32-gcc
+STRIP = i686-w64-mingw32-strip
+
 # curl dirs
 CURL_LIB_PATH = /usr/i686-w64-mingw32/lib
 CURL_INCLUDE_PATH = /usr/i686-w64-mingw32/include
