@@ -835,7 +835,14 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     }
   }
 
-  curl_easy_setopt(thread->ehandle, CURLOPT_ACCEPT_ENCODING, ""); /* "" sends all supported encodings */
+  if (!params_ptr->no_compress) {
+    curl_easy_setopt(thread->ehandle, CURLOPT_ACCEPT_ENCODING, ""); /* "" sends all supported encodings */
+
+    /* We do this here as setting no_decompress with no_compress is meaningless */
+    if (params_ptr->no_decompress) {
+      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_CONTENT_DECODING, 0);
+    }
+  }
 
   if (params_ptr->proxy) {
     curl_easy_setopt(thread->ehandle,CURLOPT_PROXY,params_ptr->proxy);

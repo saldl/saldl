@@ -209,6 +209,19 @@ Custom Request Options
 *-e 'referer', --referer='referer'*::
   set referer. 
 
+*-Z, --no-compress*::
+  Don't request a compressed response. And skip decompression if
+  compression was forced by the server.
+
+*-z, --no-decompress*::
+  Explicitly disable decompression. Even if we requested (default)
+  and received compressed data.
+
+[NOTE]
+===============
+*-Z*/*--no-compress* implies *-z*/*--no-decompress*.
+===============
+
 *-K 'cookie-file', --cookie-file='cookie-file'*::
   File to read cookies from .
 

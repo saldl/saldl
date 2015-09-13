@@ -63,6 +63,8 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"connection-max-rate", required_argument, 0, 'R'},
     {"user-agent", required_argument, 0, 'u'},
     {"no-user-agent", no_argument, 0, 'U'},
+    {"no-compress", no_argument, 0, 'Z'},
+    {"no-decompress", no_argument, 0, 'z'},
     {"post", required_argument, 0, 'p'},
     {"raw-post", required_argument, 0, 'P'},
     {"inline-cookies", required_argument, 0, 'k'},
@@ -97,7 +99,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:U";
+  const char *opts = "s:l:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:UZz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -154,6 +156,12 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
       case 'U':
         params_ptr->no_user_agent = true;
+        break;
+      case 'Z':
+        params_ptr->no_compress= true;
+        break;
+      case 'z':
+        params_ptr->no_decompress= true;
         break;
       case 'p':
         params_ptr->post = strdup(optarg);
