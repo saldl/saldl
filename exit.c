@@ -39,8 +39,8 @@ void saldl_handle_signals() {
     int ret2 = sigaction(SIGTERM, &sa, NULL);
     assert(!ret1 && !ret2);
 #else
-    signal(SIGINT, saldl_handle_signals);
-    signal(SIGTERM, saldl_handle_signals);
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
 #endif
 }
 
