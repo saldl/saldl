@@ -25,7 +25,8 @@ prep-mingw: prep
 	${CC} -c ${@:.o=.c} -o ${@} ${CFLAGS}
 
 saldl: main.o $(OBJS)
-	${CC} -o saldl${exe_suffix}.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
+	#${CC} -o saldl${exe_suffix}.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
+	${CC} -o saldl${exe_suffix}.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
 	${STRIP} saldl${exe_suffix}.exe
 
 clean:
