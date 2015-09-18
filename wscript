@@ -104,7 +104,7 @@ def options(opt):
 
     def_enable_link_optimizations = False
     conf_gr.add_option(
-            '--enable-link_optimizations',
+            '--enable-link-optimizations',
             dest = 'ENABLE_LINK_OPTIMIZATIONS',
             default = def_enable_link_optimizations,
             action= "store_true",
