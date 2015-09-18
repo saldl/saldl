@@ -339,9 +339,9 @@ no_range:
 
 }
 
-static void set_names(info_s* info_p) {
+static void set_names(info_s* info_ptr) {
 
-  saldl_params *params_ptr = info_p->params;
+  saldl_params *params_ptr = info_ptr->params;
 
   if (!params_ptr->filename) {
     char *prev_unescaped, *unescaped;
@@ -446,9 +446,9 @@ static void set_names(info_s* info_p) {
   /* Set part/ctrl filenames, tmp dir */
   {
     char cwd[PATH_MAX];
-    snprintf(info_p->part_filename,PATH_MAX-(params_ptr->filename[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),"%s.part.sal",params_ptr->filename);
-    snprintf(info_p->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
-    snprintf(info_p->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
+    snprintf(info_ptr->part_filename,PATH_MAX-(params_ptr->filename[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),"%s.part.sal",params_ptr->filename);
+    snprintf(info_ptr->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
+    snprintf(info_ptr->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
   }
 }
 
@@ -523,32 +523,32 @@ no_remote:
 
 }
 
-void check_remote_file_size(info_s *info_p) {
+void check_remote_file_size(info_s *info_ptr) {
 
-  saldl_params *params_ptr = info_p->params;
+  saldl_params *params_ptr = info_ptr->params;
 
-  if (info_p->chunk_count <= 1 || params_ptr->single_mode) {
-    set_single_mode(info_p);
+  if (info_ptr->chunk_count <= 1 || params_ptr->single_mode) {
+    set_single_mode(info_ptr);
   }
 
-  if (info_p->chunk_count > 1 && info_p->chunk_count < info_p->num_connections) {
-    info_msg(NULL, "File relatively small, use %zu connection(s)\n", info_p->chunk_count);
-    info_p->num_connections = info_p->chunk_count;
+  if (info_ptr->chunk_count > 1 && info_ptr->chunk_count < info_ptr->num_connections) {
+    info_msg(NULL, "File relatively small, use %zu connection(s)\n", info_ptr->chunk_count);
+    info_ptr->num_connections = info_ptr->chunk_count;
   }
 }
 
-static void whole_file(info_s *info_p) {
-  if (0 < info_p->file_size) {
-    info_p->chunk_size = saldl_max_z_umax((uintmax_t)info_p->chunk_size , (uintmax_t)info_p->file_size  / info_p->num_connections);
-    info_p->chunk_size = info_p->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
+static void whole_file(info_s *info_ptr) {
+  if (0 < info_ptr->file_size) {
+    info_ptr->chunk_size = saldl_max_z_umax((uintmax_t)info_ptr->chunk_size , (uintmax_t)info_ptr->file_size  / info_ptr->num_connections);
+    info_ptr->chunk_size = info_ptr->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
     info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.\n",
-        human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
-        human_size(info_p->file_size), human_size_suffix(info_p->file_size),
-        info_p->num_connections);
+        human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
+        human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
+        info_ptr->num_connections);
   }
 }
 
-static void auto_size_func(info_s *info_p, int auto_size) {
+static void auto_size_func(info_s *info_ptr, int auto_size) {
   int cols = tty_width();
   if (cols <= 0) {
     info_msg(NULL, "Couldn't retrieve tty width. Chunk size will not be modified.\n");
@@ -560,19 +560,19 @@ static void auto_size_func(info_s *info_p, int auto_size) {
     return;
   }
 
-  if (0 < info_p->file_size) {
-    size_t orig_chunk_size = info_p->chunk_size;
+  if (0 < info_ptr->file_size) {
+    size_t orig_chunk_size = info_ptr->chunk_size;
 
-    if ( info_p->num_connections > (size_t)cols ) {
-      info_p->num_connections = (size_t)cols; /* Limit active connections to 1 line */
-      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_p->num_connections, cols);
+    if ( info_ptr->num_connections > (size_t)cols ) {
+      info_ptr->num_connections = (size_t)cols; /* Limit active connections to 1 line */
+      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_ptr->num_connections, cols);
     }
 
-    if ( ( info_p->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_p->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
-      info_p->chunk_size = (info_p->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
+    if ( ( info_ptr->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_ptr->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
+      info_ptr->chunk_size = (info_ptr->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
       info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.\n",
-          human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
-          info_p->num_connections, cols, auto_size);
+          human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
+          info_ptr->num_connections, cols, auto_size);
     }
 
   }
@@ -587,44 +587,44 @@ void check_url(char *url) {
   fprintf(stderr,"%s%sURL:%s %s\n", bold, info_color, end, url);
 }
 
-void set_info(info_s *info_p) {
+void set_info(info_s *info_ptr) {
 
-  saldl_params *params_ptr = info_p->params;
+  saldl_params *params_ptr = info_ptr->params;
 
-  info_p->num_connections = params_ptr->user_num_connections ? params_ptr->user_num_connections : SALDL_DEF_NUM_CONNECTIONS;
-  info_p->chunk_size = params_ptr->user_chunk_size ? params_ptr->user_chunk_size : SALDL_DEF_CHUNK_SIZE;
+  info_ptr->num_connections = params_ptr->user_num_connections ? params_ptr->user_num_connections : SALDL_DEF_NUM_CONNECTIONS;
+  info_ptr->chunk_size = params_ptr->user_chunk_size ? params_ptr->user_chunk_size : SALDL_DEF_CHUNK_SIZE;
 
   if (! params_ptr->single_mode) {
     if ( params_ptr->auto_size  ) {
-      auto_size_func(info_p, params_ptr->auto_size);
+      auto_size_func(info_ptr, params_ptr->auto_size);
     }
 
     if ( params_ptr->whole_file  ) {
-      whole_file(info_p);
+      whole_file(info_ptr);
     }
   }
 
   /* Chunk size should be at least 4k */
-  if (info_p->chunk_size < 4096) {
-    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).\n", info_p->chunk_size);
-    info_p->chunk_size = 4096;
+  if (info_ptr->chunk_size < 4096) {
+    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).\n", info_ptr->chunk_size);
+    info_ptr->chunk_size = 4096;
   }
 
-  info_p->rem_size = (size_t)(info_p->file_size % (off_t)info_p->chunk_size);
-  info_p->chunk_count = (size_t)(info_p->file_size / (off_t)info_p->chunk_size) + !!info_p->rem_size;
+  info_ptr->rem_size = (size_t)(info_ptr->file_size % (off_t)info_ptr->chunk_size);
+  info_ptr->chunk_count = (size_t)(info_ptr->file_size / (off_t)info_ptr->chunk_size) + !!info_ptr->rem_size;
 
 }
 
-void print_chunk_info(info_s *info_p) {
-  if (info_p->file_size) { /* Avoid printing useless info if remote file size is reported 0 */
+void print_chunk_info(info_s *info_ptr) {
+  if (info_ptr->file_size) { /* Avoid printing useless info if remote file size is reported 0 */
 
-    if (info_p->rem_size && !info_p->params->single_mode) {
-      fprintf(stderr, "%s%sChunks:%s %zu*%.2f%s + 1*%.2f%s\n", bold, info_color, end,info_p->chunk_count-1,
-          human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
-          human_size(info_p->rem_size), human_size_suffix(info_p->rem_size));
+    if (info_ptr->rem_size && !info_ptr->params->single_mode) {
+      fprintf(stderr, "%s%sChunks:%s %zu*%.2f%s + 1*%.2f%s\n", bold, info_color, end,info_ptr->chunk_count-1,
+          human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
+          human_size(info_ptr->rem_size), human_size_suffix(info_ptr->rem_size));
     } else {
-      fprintf(stderr, "%s%sChunks:%s %zu*%.2f%s\n", bold, info_color, end, info_p->chunk_count,
-          human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size));
+      fprintf(stderr, "%s%sChunks:%s %zu*%.2f%s\n", bold, info_color, end, info_ptr->chunk_count,
+          human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size));
     }
   }
 
@@ -929,9 +929,9 @@ void set_write_opts(CURL* handle, void* storage, int file_storage) {
   }
 }
 
-void set_single_mode(info_s *info_p) {
+void set_single_mode(info_s *info_ptr) {
 
-  saldl_params *params_ptr = info_p->params;
+  saldl_params *params_ptr = info_ptr->params;
 
   if (!params_ptr->single_mode) {
     info_msg(FN, "File small, enabling single mode.\n");
@@ -939,54 +939,54 @@ void set_single_mode(info_s *info_p) {
   }
 
   /* XXX: Should we try to support large files with single mode in 32b systems? */
-  if ((uintmax_t)info_p->file_size > (uintmax_t)SIZE_MAX) {
-    fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu \n", (intmax_t)info_p->file_size, SIZE_MAX);
+  if ((uintmax_t)info_ptr->file_size > (uintmax_t)SIZE_MAX) {
+    fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu \n", (intmax_t)info_ptr->file_size, SIZE_MAX);
   }
 
-  info_p->chunk_size = (size_t)info_p->file_size;
-  info_p->chunk_count = info_p->num_connections = 1;
-  info_p->rem_size = 0;
+  info_ptr->chunk_size = (size_t)info_ptr->file_size;
+  info_ptr->chunk_count = info_ptr->num_connections = 1;
+  info_ptr->rem_size = 0;
 }
 
-void set_modes(info_s *info_p) {
+void set_modes(info_s *info_ptr) {
 
-  saldl_params *params_ptr = info_p->params;
-  file_s *storage_info_p = &info_p->storage_info;
+  saldl_params *params_ptr = info_ptr->params;
+  file_s *storage_info_ptr = &info_ptr->storage_info;
 
-  if (! access(info_p->tmp_dirname, F_OK) ) {
+  if (! access(info_ptr->tmp_dirname, F_OK) ) {
     if (params_ptr->mem_bufs || params_ptr->single_mode) {
-      warn_msg(FN, "%s seems to be left over. You have to delete the dir manually.\n", info_p->tmp_dirname);
-    } else if (!info_p->extra_resume_set) {
-      fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete the dir manually.\n", info_p->tmp_dirname);
+      warn_msg(FN, "%s seems to be left over. You have to delete the dir manually.\n", info_ptr->tmp_dirname);
+    } else if (!info_ptr->extra_resume_set) {
+      fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete the dir manually.\n", info_ptr->tmp_dirname);
     }
   }
 
   if ( params_ptr->single_mode ) { /* Write to .part file directly, no mem or file buffers */
-    info_msg(NULL, "single mode, writing to %s directly.\n", info_p->part_filename);
-    storage_info_p->name = info_p->part_filename;
-    storage_info_p->file = info_p->file;
-    info_p->prepare_storage = &prepare_storage_single;
-    info_p->merge_finished = &merge_finished_single;
+    info_msg(NULL, "single mode, writing to %s directly.\n", info_ptr->part_filename);
+    storage_info_ptr->name = info_ptr->part_filename;
+    storage_info_ptr->file = info_ptr->file;
+    info_ptr->prepare_storage = &prepare_storage_single;
+    info_ptr->merge_finished = &merge_finished_single;
     return;
   }
 
   if (params_ptr->mem_bufs) {
-    info_p->prepare_storage = &prepare_storage_mem;
-    info_p->merge_finished = &merge_finished_mem;
+    info_ptr->prepare_storage = &prepare_storage_mem;
+    info_ptr->merge_finished = &merge_finished_mem;
     return;
   }
 
-  if ( saldl_mkdir(info_p->tmp_dirname, S_IRWXU) ) { /* mkdir with 700 perms */
+  if ( saldl_mkdir(info_ptr->tmp_dirname, S_IRWXU) ) { /* mkdir with 700 perms */
     if (errno != EEXIST) {
-      fatal(FN, "Failed to create %s: %s\n", info_p->tmp_dirname, strerror(errno) );
+      fatal(FN, "Failed to create %s: %s\n", info_ptr->tmp_dirname, strerror(errno) );
     }
-  } else if ( info_p->extra_resume_set ) {
-    warn_msg(FN, "%s did not exist. Maybe previous run used memory buffers or the dir was deleted manually.\n", info_p->tmp_dirname);
+  } else if ( info_ptr->extra_resume_set ) {
+    warn_msg(FN, "%s did not exist. Maybe previous run used memory buffers or the dir was deleted manually.\n", info_ptr->tmp_dirname);
   }
 
-  storage_info_p->name = info_p->tmp_dirname;
-  info_p->prepare_storage = &prepare_storage_tmpf;
-  info_p->merge_finished = &merge_finished_tmpf;
+  storage_info_ptr->name = info_ptr->tmp_dirname;
+  info_ptr->prepare_storage = &prepare_storage_tmpf;
+  info_ptr->merge_finished = &merge_finished_tmpf;
 }
 
 void set_reset_storage(info_s *info_ptr) {
