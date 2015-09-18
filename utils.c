@@ -373,16 +373,20 @@ static void set_names(info_s* info_p) {
 
     /* Finally, remove GET atrrs if present */
     if (!params_ptr->keep_GET_attrs) {
-      debug_msg(FN, "Filename before stripping GET attrs: %s\n", params_ptr->filename);
-
+      char *pre_filename = strdup(params_ptr->filename);
       char *q = strrchr(params_ptr->filename, '?');
+
       if (q) {
         if (strchr(q, '=')) {
           q[0] = '\0';
         }
       }
 
-      debug_msg(FN, "Filename after stripping GET attrs: %s\n", params_ptr->filename);
+      if ( strcmp(pre_filename, params_ptr->filename) ) {
+        info_msg(FN, "Before stripping GET attrs: %s\n", pre_filename);
+        info_msg(FN, "After  stripping GET attrs: %s\n", params_ptr->filename);
+      }
+      if (pre_filename) free(pre_filename);
     }
 
   }
