@@ -225,7 +225,7 @@ static void check_redirects(CURL *handle, info_s *info_ptr) {
   }
 }
 
-static void check_server_response(thread_s *tmp) {
+static void request_remote_info_simple(thread_s *tmp) {
   long response;
   short semi_fatal = 0;
   CURLcode ret;
@@ -276,7 +276,7 @@ static off_t get_remote_file_size(CURL *handle, off_t *fsize_ptr) {
   return size;
 }
 
-static int check_range_support(thread_s *tmp, saldl_params *params_ptr) {
+static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_ptr) {
   CURLcode ret;
 
   short semi_fatal_retries = 0;
@@ -506,8 +506,8 @@ void remote_info(info_s *info_ptr) {
    * file_size should be set if range support is present.
    * I'm just being thorough.
    */
-  if (check_range_support(&tmp, params_ptr) || !info_ptr->file_size) {
-    check_server_response(&tmp);
+  if (request_remote_info_with_ranges(&tmp, params_ptr) || !info_ptr->file_size) {
+    request_remote_info_simple(&tmp);
     /* We didn't get file size from Content-Range, so get it from Content-Length */
     info_ptr->file_size = get_remote_file_size(tmp.ehandle, &info_ptr->file_size);
   }
