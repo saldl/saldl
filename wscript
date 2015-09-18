@@ -384,6 +384,7 @@ def check_link_flags(conf):
                 ['-Wl,--sort-common'],
                 ['-Wl,--as-needed'],
                 ['-Wl,-z,relro'],
+                ['-Wl,-z,now'],
                 ['-Wl,--hash-style=gnu']
         ]
 
