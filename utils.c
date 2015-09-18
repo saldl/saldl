@@ -503,8 +503,8 @@ void remote_info(info_s *info_ptr) {
    * Check remote info with range support in one request.
    * If that check fails in a way we're not expecting, do
    * a secondary check without ranges.
-   * file_size should be set if range support is present.
-   * I'm just being thorough.
+   * We also make a 2nd check if filesize was not set. This
+   * could happen with non-HTTP protocols like FTP.
    */
   if (request_remote_info_with_ranges(&tmp, params_ptr) || !info_ptr->file_size) {
     request_remote_info_simple(&tmp);
