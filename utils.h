@@ -43,7 +43,6 @@ void remote_info(info_s*);
 void set_info(info_s*);
 void print_chunk_info(info_s*);
 void check_url(char*);
-void set_names(CURL*, info_s*);
 void global_progress_init(info_s*);
 void global_progress_update(info_s *info_ptr, bool init);
 void set_params(thread_s*, saldl_params*);

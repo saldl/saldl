@@ -20,7 +20,7 @@
 #include "events.h"
 #include "utime.h"
 
-#define SEMI_FATAL_RETRIES 5
+#define MAX_SEMI_FATAL_RETRIES 5
 
 #ifndef HAVE_STRCASESTR
 #include "gnulib_strcasestr.h" // gnulib implementation
@@ -102,7 +102,7 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
 }
 
 static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *userdata) {
-  saldl_params *params_ptr = userdata;
+  info_s *info_ptr = userdata;
   char *header = strdup(ptr);
   char *tmp;
 
@@ -111,14 +111,27 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     memset(tmp, '\0', 2);
   }
 
-  if (strcasestr(header, "Content-Type:") == header) {
+  if (strcasestr(header, "Content-Range:") == header) {
     debug_msg(FN, "%s\n", header);
+    char *tmp;
+
+    if ( (tmp =strcasestr(header, "/")) ) {
+      info_ptr->file_size = parse_num_o(tmp+1, 0);
+    }
+  }
+
+  if (strcasestr(header, "Content-Type:") == header) {
+    info_ptr->content_type = strdup(header + strlen("Content-Type: "));
+
     if (strcasestr(header, "gzip")) {
       debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
-      params_ptr->no_compress = true;
+      info_ptr->params->no_compress = true;
     }
+  }
 
-  } else if ( (tmp = strcasestr(header, "Content-Disposition:")) == header ) {
+  if (!info_ptr->params->no_attachment_detection &&
+      (tmp = strcasestr(header, "Content-Disposition:")) == header ) {
+
     debug_msg(FN, "%s\n", header);
 
     /* Assumptions:
@@ -155,8 +168,8 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
 
       /* Pass the result to attachment_filename */
       debug_msg(FN, "Before basename: %s\n", tmp);
-      params_ptr->attachment_filename = strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
-      debug_msg(FN, "After basename: %s\n", params_ptr->attachment_filename);
+      info_ptr->params->attachment_filename = strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
+      debug_msg(FN, "After basename: %s\n", info_ptr->params->attachment_filename);
     }
   }
 
@@ -200,14 +213,15 @@ static size_t  mem_write_function(  void  *ptr,  size_t  size, size_t nmemb, voi
   return realsize;
 }
 
-static void check_redirects(CURL *handle, saldl_params *params_ptr) {
+static void check_redirects(CURL *handle, info_s *info_ptr) {
   long redirects;
   char *url;
   curl_easy_getinfo(handle, CURLINFO_REDIRECT_COUNT, &redirects);
-  if ( redirects ) {
+
+  if (redirects) {
     curl_easy_getinfo(handle, CURLINFO_EFFECTIVE_URL, &url);
-    params_ptr->url = strdup(url); /* Note: strdup() because the pointer will be killed after curl_easy_cleanup() */
-    fprintf(stderr, "%s%sRedirected:%s %s\n", bold, info_color, end, params_ptr->url);
+    info_ptr->params->url = strdup(url); /* Note: strdup() because the pointer will be killed after curl_easy_cleanup() */
+    info_ptr->redirected = true;
   }
 }
 
@@ -215,6 +229,10 @@ static void check_server_response(thread_s *tmp) {
   long response;
   short semi_fatal = 0;
   CURLcode ret;
+
+  /* Disable ranges */
+  curl_easy_setopt(tmp->ehandle, CURLOPT_RANGE, NULL);
+
 semi_fatal_check_response_retry:
   ret = curl_easy_perform(tmp->ehandle);
   debug_msg(FN, "ret=%u\n", ret);
@@ -226,11 +244,11 @@ semi_fatal_check_response_retry:
     case CURLE_SSL_CONNECT_ERROR:
     case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
       semi_fatal++;
-      if (semi_fatal <= SEMI_FATAL_RETRIES) {
+      if (semi_fatal <= MAX_SEMI_FATAL_RETRIES) {
         info_msg(FN, "libcurl returned semi-fatal (%d: %s) while trying to get remote info, retrying...\n", ret, tmp->err_buf);
         goto semi_fatal_check_response_retry;
       } else {
-        fatal(FN, "libcurl returned semi-fatal (%d: %s) while trying to get remote info, max semi-fatal retries %u exceeded.\n", ret, tmp->err_buf, SEMI_FATAL_RETRIES);
+        fatal(FN, "libcurl returned semi-fatal (%d: %s) while trying to get remote info, max semi-fatal retries %u exceeded.\n", ret, tmp->err_buf, MAX_SEMI_FATAL_RETRIES);
       }
       break;
     default:
@@ -241,198 +259,93 @@ semi_fatal_check_response_retry:
   debug_msg(FN, "response=%ld\n", response );
 }
 
-static off_t get_remote_file_size(CURL *handle) {
-  double size;
-  curl_easy_getinfo(handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&size);
-  debug_msg(FN, "filesize=%f\n", size);
-  if (size > 0) {
-    fprintf(stderr, "%s%sFile Size:%s %.2f%s\n", bold, info_color, end, human_size(size), human_size_suffix(size));
+static off_t get_remote_file_size(CURL *handle, off_t *fsize_ptr) {
+  double d_size;
+  off_t size = 0;
+
+  curl_easy_getinfo(handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&d_size);
+
+  size = (off_t)size;
+  debug_msg(FN, "filesize=%jd\n", size);
+
+  if ( size == -1 ) {
+    debug_msg(FN, "Zeroing filesize, was -1.\n");
+    *fsize_ptr = 0;
   }
-  return (off_t)size;
+
+  return size;
 }
 
-static void check_range_support(CURL *handle, saldl_params *params_ptr) {
+static int check_range_support(thread_s *tmp, saldl_params *params_ptr) {
   CURLcode ret;
-  long response;
-  curl_easy_setopt(handle, CURLOPT_RANGE, "4096-8191");
 
-  debug_msg(FN, "ret=%u\n", ret = curl_easy_perform(handle) );
-  curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &response);
-  debug_msg(FN, "response=%ld\n", response);
+  short semi_fatal_retries = 0;
+  bool semi_fatal_error = false;
 
-  switch (ret) {
-    case CURLE_OK:
-    case CURLE_WRITE_ERROR: /* Caused by *_write_function() returning 0 */
-      switch (response) {
-        case 0: /* file:// */
-        case 206: /* HTTP(s) */
-          return;
-          break;
-        case 225: /* FTP */
-        case 150: /* FTP */
-          /* XXX: Limited testing shows that although partial downloads are supported, server returns
-           * 421 response(too many connections) which causes immediate timeout errors in libcurl.
-           * Use a single connection for now **without disabling resume** until we gather more information
-           * about how to detect multi-connection support.
-           */
-          warn_msg(FN, "single_mode is forced for FTP downloads at the moment.\n");
-          params_ptr->single_mode = true;
-          return;
-          break;
-        default:
-          warn_msg(FN, "Server returned %ld while trying to get check range support.\n", response);
-          warn_msg(FN, "Expected return code is 206 for HTTP(s),  225/150 for FTP and 0 for file.\n");
-          warn_msg(FN, "Partial downloading for other protocols is not supported at the moment.\n");
-      }
-      break;
-    default:
-      switch (response) {
-        case 416: /* HTTP Transfer < 8KiB */
-          warn_msg(FN, "File size < 8KiB%s.\n", params_ptr->single_mode ? "" : ", single mode forced");
-          params_ptr->single_mode = true;
-          return;
-          break;
-        default:
-          warn_msg(NULL, "libcurl returned (%d: %s) while trying to check for ranges.\n", ret, curl_easy_strerror(ret));
-      }
+  const double expected_length = 4096;
+  double content_length = 0;
+
+  if (params_ptr->skip_partial_check || (params_ptr->single_mode && !params_ptr->resume) ) {
+    debug_msg(FN, "Skipping range check..\n");
+    goto no_range;
   }
-  warn_msg(NULL, "Assuming no support for ranges.\n");
-  warn_msg(NULL, "%s %s\n", params_ptr->single_mode ? ""  : "Enabling single mode.", params_ptr->resume ? "Disabling resume."  : "");
+
+  debug_msg(FN, "Checking server response with range support..\n");
+  curl_easy_setopt(tmp->ehandle, CURLOPT_RANGE, "4096-8191");
+
+  while (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
+    ret = curl_easy_perform(tmp->ehandle);
+    semi_fatal_error = (ret == CURLE_SSL_CONNECT_ERROR || ret == CURLE_SEND_ERROR);
+
+    if (!semi_fatal_error) {
+      break;
+    }
+    else {
+      semi_fatal_retries++;
+      warn_msg(FN, "libcurl returned semi-fatal error (%d: %s), retry %d/%d.\n", ret, tmp->err_buf, semi_fatal_retries, MAX_SEMI_FATAL_RETRIES);
+    }
+
+  }
+
+  curl_easy_getinfo(tmp->ehandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length);
+
+  if (content_length == expected_length) {
+
+    /* Special handling for FTP */
+    if (strstr(params_ptr->url, "ftp") == params_ptr->url) {
+      /*
+       * Despite the fact that range support is working. Making
+       * concurrent connections to FTP servers seems problematic.
+       * So, we force single mode, but allow resume if requested.
+       */
+      warn_msg(FN, "Range support works. But we force single mode for ftp URLs.\n");
+      params_ptr->single_mode = true;
+    }
+
+    /* Return success */
+    return 0;
+  }
+  /* Range check failed */
+  else {
+    warn_msg(FN, "Server lacks range support or file too small.\n");
+    debug_msg(FN, "Expected length %.0lf, got %.0lf\n", expected_length, content_length);
+  }
+
+no_range:
+  warn_msg(FN, "Single mode force-enabled, resume force-disabled.\n");
   params_ptr->single_mode = true;
   params_ptr->resume = false;
+  return -1;
 
 }
 
-void remote_info(info_s *info_p) {
-
-  saldl_params *params_ptr = info_p->params;
-
-  thread_s tmp = {0};
-  tmp.ehandle = curl_easy_init();
-
-  if (params_ptr->no_remote_info) {
-    warn_msg(FN, "no_remote_info enforces both enabling single mode and disabling resume.\n");
-    params_ptr->single_mode = true;
-    params_ptr->resume = false;
-    set_names(tmp.ehandle, info_p);
-    return;
-  }
-
-  set_params(&tmp, params_ptr);
-
-  if (!params_ptr->no_timeouts) {
-    curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l); /* Resolving the host for the 1st time takes a long time sometimes */
-  }
-
-  if (!params_ptr->no_attachment_detection) {
-    curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERFUNCTION, header_function);
-    curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, params_ptr);
-  }
-
-  if (params_ptr->head && !params_ptr->post && !params_ptr->raw_post) {
-    info_msg(FN, "Using HEAD for remote info.\n");
-    curl_easy_setopt(tmp.ehandle,CURLOPT_NOBODY,1l);
-  }
-
-  set_write_opts(tmp.ehandle, NULL, 0);
-
-  check_server_response(&tmp);
-  check_redirects(tmp.ehandle, params_ptr);
-
-  set_names(tmp.ehandle, info_p);
-
-  info_p->file_size = get_remote_file_size(tmp.ehandle);
-  if ( info_p->file_size == -1 ) {
-    debug_msg(FN, "Zeroing filesize, was -1.\n");
-    info_p->file_size = 0;
-  }
-
-  if (info_p->file_size && !params_ptr->skip_partial_check && (!params_ptr->single_mode || params_ptr->resume) ) {
-    check_range_support(tmp.ehandle, params_ptr);
-  } else {
-    debug_msg(FN, "range check skipped.\n");
-  }
-
-  curl_easy_cleanup(tmp.ehandle);
-}
-
-void check_remote_file_size(info_s *info_p) {
-
-  saldl_params *params_ptr = info_p->params;
-
-  if ( 0 == info_p->file_size) {
-    info_msg(FN, "Server either reported 0 filesize or no filesize at all.\n");
-    info_msg(FN, "This enforces both using single mode and disabling resume.\n");
-    params_ptr->resume = false;
-    params_ptr->single_mode = true;
-  }
-
-  if (info_p->chunk_count <= 1 || params_ptr->single_mode) {
-    set_single_mode(info_p);
-  }
-
-  if (info_p->chunk_count > 1 && info_p->chunk_count < info_p->num_connections) {
-    info_msg(NULL, "File relatively small, use %zu connection(s)\n", info_p->chunk_count);
-    info_p->num_connections = info_p->chunk_count;
-  }
-}
-
-static void whole_file(info_s *info_p) {
-  if (0 < info_p->file_size) {
-    info_p->chunk_size = saldl_max_z_umax((uintmax_t)info_p->chunk_size , (uintmax_t)info_p->file_size  / info_p->num_connections);
-    info_p->chunk_size = info_p->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
-    info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.\n",
-        human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
-        human_size(info_p->file_size), human_size_suffix(info_p->file_size),
-        info_p->num_connections);
-  }
-}
-
-static void auto_size_func(info_s *info_p, int auto_size) {
-  int cols = tty_width();
-  if (cols <= 0) {
-    info_msg(NULL, "Couldn't retrieve tty width. Chunk size will not be modified.\n");
-    return;
-  }
-
-  if (cols <= 2) {
-    info_msg(NULL, "Retrieved tty width (%d) is too small.\n", cols);
-    return;
-  }
-
-  if (0 < info_p->file_size) {
-    size_t orig_chunk_size = info_p->chunk_size;
-
-    if ( info_p->num_connections > (size_t)cols ) {
-      info_p->num_connections = (size_t)cols; /* Limit active connections to 1 line */
-      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_p->num_connections, cols);
-    }
-
-    if ( ( info_p->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_p->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
-      info_p->chunk_size = (info_p->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
-      info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.\n",
-          human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
-          info_p->num_connections, cols, auto_size);
-    }
-
-  }
-
-}
-
-void check_url(char *url) {
-  /* TODO: Add more checks */
-  if (! strcmp(url, "") ) {
-    fatal(NULL, "Invalid empty url \"%s\".\n", url);
-  }
-  fprintf(stderr,"%s%sURL:%s %s\n", bold, info_color, end, url);
-}
-
-void set_names(CURL *handle, info_s* info_p) {
+static void set_names(info_s* info_p) {
 
   saldl_params *params_ptr = info_p->params;
 
   if (!params_ptr->filename) {
     char *prev_unescaped, *unescaped;
+    CURL *handle = curl_easy_init();
 
     /* Get initial filename (=url if no attachment name) */
     if (params_ptr->attachment_filename) {
@@ -521,8 +434,6 @@ void set_names(CURL *handle, info_s* info_p) {
     }
   }
 
-  fprintf(stderr, "%s%sSaving To:%s %s\n", bold, info_color, end, params_ptr->filename);
-
   /* Check if filename exists  */
   if (!access(params_ptr->filename,F_OK)) {
     fatal(NULL, "%s exists, quiting...\n", params_ptr->filename);
@@ -535,6 +446,141 @@ void set_names(CURL *handle, info_s* info_p) {
     snprintf(info_p->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
     snprintf(info_p->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
   }
+}
+
+static void print_remote_info(info_s *info_ptr) {
+  if (info_ptr->redirected) {
+    fprintf(stderr, "%s%sRedirected:%s %s\n", bold, info_color, end, info_ptr->params->url);
+  }
+
+  if (info_ptr->content_type) {
+    fprintf(stderr, "%s%sContent-Type:%s %s\n", bold, info_color, end, info_ptr->content_type);
+  }
+
+  fprintf(stderr, "%s%sSaving To:%s %s\n", bold, info_color, end, info_ptr->params->filename);
+
+  if (info_ptr->file_size > 0) {
+    fprintf(stderr, "%s%sFile Size:%s %.2f%s\n", bold, info_color, end,
+        human_size(info_ptr->file_size),
+        human_size_suffix(info_ptr->file_size));
+  }
+}
+
+void remote_info(info_s *info_ptr) {
+  saldl_params *params_ptr = info_ptr->params;
+  thread_s tmp = {0};
+
+  if (params_ptr->no_remote_info) {
+    warn_msg(FN, "no_remote_info enforces both enabling single mode and disabling resume.\n");
+    params_ptr->single_mode = true;
+    params_ptr->resume = false;
+    goto no_remote;
+  }
+
+  /* remote part starts here */
+  tmp.ehandle = curl_easy_init();
+  set_params(&tmp, params_ptr);
+
+  if (!params_ptr->no_timeouts) {
+    curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l); /* Resolving the host for the 1st time takes a long time sometimes */
+  }
+
+  curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERFUNCTION, header_function);
+  curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, info_ptr);
+
+  if (params_ptr->head && !params_ptr->post && !params_ptr->raw_post) {
+    info_msg(FN, "Using HEAD for remote info.\n");
+    curl_easy_setopt(tmp.ehandle,CURLOPT_NOBODY,1l);
+  }
+
+  set_write_opts(tmp.ehandle, NULL, 0);
+
+  /*
+   * Check remote info with range support in one request.
+   * If that check fails in a way we're not expecting, do
+   * a secondary check without ranges.
+   * file_size should be set if range support is present.
+   * I'm just being thorough.
+   */
+  if (check_range_support(&tmp, params_ptr) || !info_ptr->file_size) {
+    check_server_response(&tmp);
+    /* We didn't get file size from Content-Range, so get it from Content-Length */
+    info_ptr->file_size = get_remote_file_size(tmp.ehandle, &info_ptr->file_size);
+  }
+
+  check_redirects(tmp.ehandle, info_ptr);
+
+  curl_easy_cleanup(tmp.ehandle);
+  /* remote part ends here */
+
+no_remote:
+  set_names(info_ptr);
+  print_remote_info(info_ptr);
+
+}
+
+void check_remote_file_size(info_s *info_p) {
+
+  saldl_params *params_ptr = info_p->params;
+
+  if (info_p->chunk_count <= 1 || params_ptr->single_mode) {
+    set_single_mode(info_p);
+  }
+
+  if (info_p->chunk_count > 1 && info_p->chunk_count < info_p->num_connections) {
+    info_msg(NULL, "File relatively small, use %zu connection(s)\n", info_p->chunk_count);
+    info_p->num_connections = info_p->chunk_count;
+  }
+}
+
+static void whole_file(info_s *info_p) {
+  if (0 < info_p->file_size) {
+    info_p->chunk_size = saldl_max_z_umax((uintmax_t)info_p->chunk_size , (uintmax_t)info_p->file_size  / info_p->num_connections);
+    info_p->chunk_size = info_p->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
+    info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.\n",
+        human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
+        human_size(info_p->file_size), human_size_suffix(info_p->file_size),
+        info_p->num_connections);
+  }
+}
+
+static void auto_size_func(info_s *info_p, int auto_size) {
+  int cols = tty_width();
+  if (cols <= 0) {
+    info_msg(NULL, "Couldn't retrieve tty width. Chunk size will not be modified.\n");
+    return;
+  }
+
+  if (cols <= 2) {
+    info_msg(NULL, "Retrieved tty width (%d) is too small.\n", cols);
+    return;
+  }
+
+  if (0 < info_p->file_size) {
+    size_t orig_chunk_size = info_p->chunk_size;
+
+    if ( info_p->num_connections > (size_t)cols ) {
+      info_p->num_connections = (size_t)cols; /* Limit active connections to 1 line */
+      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_p->num_connections, cols);
+    }
+
+    if ( ( info_p->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_p->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
+      info_p->chunk_size = (info_p->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
+      info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.\n",
+          human_size(info_p->chunk_size), human_size_suffix(info_p->chunk_size),
+          info_p->num_connections, cols, auto_size);
+    }
+
+  }
+
+}
+
+void check_url(char *url) {
+  /* TODO: Add more checks */
+  if (! strcmp(url, "") ) {
+    fatal(NULL, "Invalid empty url \"%s\".\n", url);
+  }
+  fprintf(stderr,"%s%sURL:%s %s\n", bold, info_color, end, url);
 }
 
 void set_info(info_s *info_p) {
@@ -1063,11 +1109,11 @@ void saldl_perform(thread_s *thread) {
       case CURLE_SSL_CONNECT_ERROR:
       case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
         semi_fatal++;
-        if (semi_fatal <= SEMI_FATAL_RETRIES) {
-          info_msg(FN, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).\n", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
+        if (semi_fatal <= MAX_SEMI_FATAL_RETRIES) {
+          warn_msg(FN, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).\n", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
           goto semi_fatal_perform_retry;
         } else {
-          fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, max semi-fatal retries %u exceeded.\n", ret, thread->err_buf, thread->chunk->idx, SEMI_FATAL_RETRIES);
+          fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, max semi-fatal retries %u exceeded.\n", ret, thread->err_buf, thread->chunk->idx, MAX_SEMI_FATAL_RETRIES);
         }
       case CURLE_OPERATION_TIMEDOUT:
       case CURLE_PARTIAL_FILE: /* single mode */

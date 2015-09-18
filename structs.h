@@ -167,6 +167,8 @@ typedef struct {
   size_t chunk_count;
   size_t initial_merged_count;
   bool extra_resume_set;
+  char *content_type;
+  bool redirected;
   FILE* file;
   FILE* ctrl_file;
   char tmp_dirname[PATH_MAX];
