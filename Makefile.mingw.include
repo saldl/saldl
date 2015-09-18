@@ -3,15 +3,16 @@ SALDL_VERSION = `git describe --dirty`
 COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute -D_FILE_OFFSET_BITS=64 -D__USE_MINGW_ANSI_STDIO=1 -DHAVE__MKDIR -DHAVE_GETTIMEOFDAY -DCURL_STATICLIB -DSALDL_VERSION=\"$(SALDL_VERSION)\" -I${CURL_INCLUDE_PATH} -I${LIBEVENT_INCLUDE_PATH}
 COMMON_LDFLAGS = -Wl,-O1,--sort-common -L${CURL_LIB_PATH} -L${LIBEVENT_LIB_PATH}
 
-OBJS = common.o log.o utime.o exit.o events.o progress.o resume.o status.o ctrl.o merge.o queue.o utils.o saldl.o
+CRCS = common.c log.c utime.c exit.c events.c progress.c resume.c status.c ctrl.c merge.c queue.c utils.c saldl.c main.c
+OBJS = $(patsubst %.c,${BLD_DIR}/%.o,${CRCS})
+
 HEADERS = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ctrl.h merge.h queue.h saldl.h saldl_params.h structs.h utils.h vt100.h
 
 STRIP_FLAGS := --strip-all
 
 MINGW_CFLAGS := -O2
 
-all: prep saldl
-mingw: prep-mingw saldl
+all: prep-mingw saldl
 
 prep:
 	$(eval CFLAGS = ${COMMON_CFLAGS} ${MINGW_CFLAGS} ${CFLAGS})
@@ -20,14 +21,14 @@ prep:
 
 prep-mingw: prep
 	$(eval CFLAGS += ${MINGW_FLAGS})
+	mkdir -p ${BLD_DIR}
 
-*.o: ${@:.o=.c} $(HEADERS)
-	${CC} -c ${@:.o=.c} -o ${@} ${CFLAGS}
+${OBJS}: ${SRCS} $(HEADERS)
+	${CC} -c $(notdir ${@:.o=.c}) -o ${@} ${CFLAGS}
 
-saldl: main.o $(OBJS)
-	#${CC} -o saldl${exe_suffix}.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a ${MINGW_LIB_PATH}/libwinpthread.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
-	${CC} -o saldl${exe_suffix}.exe main.o ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
-	${STRIP} saldl${exe_suffix}.exe
+saldl: $(OBJS)
+	${CC} -o ${BLD_DIR}/saldl-${exe_suffix}.exe ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
+	${STRIP} ${BLD_DIR}/saldl-${exe_suffix}.exe
 
 clean:
-	-rm -f $(OBJS) main.o saldl.exe saldl${exe_suffix}.exe
+	-rm -rf ${BLD_DIR}/

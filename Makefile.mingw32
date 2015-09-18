@@ -1,5 +1,6 @@
 # Name suffix
-exe_suffix = -win32
+exe_suffix = win32
+BLD_DIR = mingw-${exe_suffix}
 
 # mingw-w64 binaries
 CC = i686-w64-mingw32-gcc
