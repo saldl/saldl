@@ -29,6 +29,7 @@ Detailed documentation is available in a form of a [manual page](https://saldl.g
 
 ## Build Dependencies
 
+* GCC or Clang
 * python (for waf)
 
 ### Optional build dependencies
