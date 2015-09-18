@@ -355,7 +355,8 @@ def check_debug_cflags(conf):
                 ['-ggdb'],
                 ['-fvar-tracking-assignments'],
                 ['-fno-omit-frame-pointer'],
-                ['-fstack-protector-strong']
+                ['-fstack-protector-strong'],
+                ['-fstack-check']
         ]
 
     for d in debug_flags:
