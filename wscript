@@ -16,7 +16,7 @@ TaskGen.declare_chain(
         rule   = '${A2X} -f manpage -D. ${SRC}',
         ext_in = '.1.txt',
         ext_out = '.1',
-        install_path = '${MANDIR}',
+        install_path = '${MANDIR}/man1',
         shell = False,
         reentrant = False
         )
