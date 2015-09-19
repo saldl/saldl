@@ -230,9 +230,12 @@ def check_flags(conf):
 
 @conf
 def check_required_flags(conf):
-    conf.check_cc(cflags = '-std=c99', uselib_store='SAL_C99', mandatory=False)
-    conf.check_cc(cflags = '-fPIE', uselib_store='SAL_PIE', mandatory=False)
-    conf.check_cc(linkflags = '-pie', uselib_store='SAL_PIE', mandatory=False)
+    conf.check_cc(cflags = '-std=c99', uselib_store='SAL_REQUIRED', mandatory=False)
+    conf.check_cc(cflags = '-fPIE', uselib_store='SAL_REQUIRED', mandatory=False)
+    conf.check_cc(linkflags = '-pie', uselib_store='SAL_REQUIRED', mandatory=False)
+
+    if conf.env['CFLAGS_SAL_REQUIRED']:
+        conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_REQUIRED'])
 
 
 @conf
