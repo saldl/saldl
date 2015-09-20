@@ -59,10 +59,8 @@ saldl is available in the AUR:
 
 https://aur.archlinux.org/packages/saldl-git
 
-### MinGW
+### MinGW/Windows
 
-I might provide unsupported untested MinGW builds at some point.
+Experimental/unsupported binaries will be provided soon.
 
-Slow performance will be expected (especially TTY emulation). And some
-functionality ,like signal handling, will not be available as
-the required APIs do not exist on windows.
+
