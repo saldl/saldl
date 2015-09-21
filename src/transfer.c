@@ -227,13 +227,13 @@ static void check_redirects(CURL *handle, info_s *info_ptr) {
 
 static void request_remote_info_simple(thread_s *tmp) {
   long response;
-  short semi_fatal = 0;
+  short semi_fatal_retries = 0;
   CURLcode ret;
 
   /* Disable ranges */
   curl_easy_setopt(tmp->ehandle, CURLOPT_RANGE, NULL);
 
-semi_fatal_check_response_retry:
+semi_fatal_request_retry:
   ret = curl_easy_perform(tmp->ehandle);
   debug_msg(FN, "ret=%u\n", ret);
 
@@ -243,12 +243,17 @@ semi_fatal_check_response_retry:
       break;
     case CURLE_SSL_CONNECT_ERROR:
     case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
-      semi_fatal++;
-      if (semi_fatal <= MAX_SEMI_FATAL_RETRIES) {
-        info_msg(FN, "libcurl returned semi-fatal (%d: %s) while trying to get remote info, retrying...\n", ret, tmp->err_buf);
-        goto semi_fatal_check_response_retry;
-      } else {
-        fatal(FN, "libcurl returned semi-fatal (%d: %s) while trying to get remote info, max semi-fatal retries %u exceeded.\n", ret, tmp->err_buf, MAX_SEMI_FATAL_RETRIES);
+      semi_fatal_retries++;
+      if (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
+        info_msg(FN, "libcurl returned semi-fatal (%d: %s), retry %d/%d\n",
+            ret, tmp->err_buf,
+            semi_fatal_retries, MAX_SEMI_FATAL_RETRIES);
+        goto semi_fatal_request_retry;
+      }
+      else {
+        fatal(FN, "libcurl returned semi-fatal (%d: %s). max retries(%d) exceeded.\n",
+            ret, tmp->err_buf,
+            MAX_SEMI_FATAL_RETRIES);
       }
       break;
     default:
@@ -327,7 +332,8 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
   }
   /* Range check failed */
   else {
-    warn_msg(FN, "Server lacks range support or file too small.\n");
+    warn_msg(FN, "Wrong link, server lacks range support or file too small.\n");
+    warn_msg(FN, "We well 2nd check without ranges.\n");
     debug_msg(FN, "Expected length %.0lf, got %.0lf\n", expected_length, content_length);
   }
 
@@ -1070,7 +1076,7 @@ void saldl_perform(thread_s *thread) {
   long response;
   size_t retries = 0;
   size_t delay = 1;
-  short semi_fatal = 0;
+  short semi_fatal_retries = 0;
 
 
   while (1) {
@@ -1112,9 +1118,13 @@ void saldl_perform(thread_s *thread) {
         break;
       case CURLE_SSL_CONNECT_ERROR:
       case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
-        semi_fatal++;
-        if (semi_fatal <= MAX_SEMI_FATAL_RETRIES) {
-          warn_msg(FN, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).\n", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
+        semi_fatal_retries++;
+        retries++;
+        if (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
+          warn_msg(FN, "libcurl returned semi-fatal (%d: %s) \
+              while downloading chunk %zu, retry %d/%d, delay=%zu.\n",
+              ret, thread->err_buf, thread->chunk->idx,
+              semi_fatal_retries, MAX_SEMI_FATAL_RETRIES, delay);
           goto semi_fatal_perform_retry;
         } else {
           fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, max semi-fatal retries %u exceeded.\n", ret, thread->err_buf, thread->chunk->idx, MAX_SEMI_FATAL_RETRIES);
