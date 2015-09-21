@@ -141,6 +141,13 @@ Chunk sizes and connections
   the number of last chunks that should be downloaded first. 
   (*default*: '0')
 
+*-L 'size', --last-size-first='size'*::
+  The minimum size that should be downloaded first at the end of
+  the file. <<unit-suf,*A unit suffix*>> can be used. +
+  This should be useful when chunk-size is not known beforehand.
+  e.g. when *-a/--auto-size* is used.
+  (*default*: '0')
+
 *-a 'num', --auto-size='num'*::
   modify chunk size so that chunk progress can fit in 'num' lines. 
 

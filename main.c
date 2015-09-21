@@ -59,6 +59,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"no-color" , no_argument, 0, 'C'},
     {"chunk-size" , required_argument, 0, 's'},
     {"last-chunks-first" , required_argument, 0, 'l'},
+    {"last-size-first" , required_argument, 0, 'L'},
     {"connections", required_argument, 0, 'c'},
     {"connection-max-rate", required_argument, 0, 'R'},
     {"user-agent", required_argument, 0, 'u'},
@@ -99,7 +100,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:UZz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:UZz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -141,6 +142,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
       case 's':
         params_ptr->user_chunk_size = parse_num_z(optarg, 1);
+        break;
+      case 'L':
+        params_ptr->last_size_first = parse_num_o(optarg, 1);
         break;
       case 'l':
         params_ptr->last_chunks_first = parse_num_z(optarg, 0);

@@ -19,18 +19,66 @@
 
 #include "events.h"
 
-static chunk_s* pick_next(info_s *info_ptr) {
+static size_t last_chunk_from_last_size(info_s *info_ptr) {
+  size_t rem_last_sz;
+  off_t last_sz_1st =  info_ptr->params->last_size_first;
 
-  /* -1 because we assume the last chunk is too small. */
-  size_t last_first = saldl_min(info_ptr->params->last_chunks_first, info_ptr->chunk_count - 1);
-  size_t start = last_first ? info_ptr->chunk_count - last_first - 1 : 0;
+  if (last_sz_1st >= info_ptr->file_size) {
+    warn_msg(FN, "last_size_first > file_size, disabled.\n");
+    last_sz_1st = 0;
+  }
 
-  size_t end = info_ptr->chunk_count - 1;
+  /* Avoid overflowing size_t */
+  if (OFF_T_MAX > SIZE_MAX && last_sz_1st >= (off_t)SIZE_MAX) {
+    warn_msg(FN, "lowering last_size_first to %.2lf%s",
+        human_size(SIZE_MAX),
+        human_size_suffix(SIZE_MAX)
+        );
+    last_sz_1st = (off_t)SIZE_MAX;
+  }
+
+  assert(last_sz_1st >= 0);
+
+  rem_last_sz = (size_t)last_sz_1st;
+
+  if (rem_last_sz <= info_ptr->rem_size) {
+    return rem_last_sz ? 1 : 0;
+  }
+  else {
+    size_t chunk_sz = info_ptr->chunk_size;
+    rem_last_sz -= info_ptr->rem_size;
+    return (rem_last_sz / chunk_sz) + !!(rem_last_sz % chunk_sz) + !!(info_ptr->rem_size);
+  }
+}
+
+static chunk_s* pick_next_last_first(info_s *info_ptr) {
+  size_t last_first, start_idx;
+  size_t end_idx = info_ptr->chunk_count - 1;
+
+  if (info_ptr->params->last_size_first) {
+    last_first = last_chunk_from_last_size(info_ptr);
+  }
+  else if (info_ptr->rem_size) {
+  /* last chunk is smaller, so we don't take it into account */
+    last_first = saldl_min(info_ptr->params->last_chunks_first+1, end_idx);
+  }
+  else {
+    last_first = saldl_min(info_ptr->params->last_chunks_first, end_idx);
+  }
+
+  /* -1 for indices */
+  start_idx = last_first ? info_ptr->chunk_count - last_first : 0;
+  debug_msg(FN, "start_idx=%zu, end_idx=%zu\n", start_idx, end_idx);
 
   /* Pick not-started chunk */
-  chunk_s *chunk = first_prg_with_range(info_ptr, PRG_NOT_STARTED, true, start, end);
+  return first_prg_with_range(info_ptr, PRG_NOT_STARTED, true, start_idx, end_idx);
 
-  if (!chunk) {
+}
+
+static chunk_s* pick_next(info_s *info_ptr) {
+  chunk_s *chunk = NULL;
+
+  if (! (chunk = pick_next_last_first(info_ptr)) ) {
     chunk = first_prg(info_ptr, PRG_NOT_STARTED, true);
   }
 
