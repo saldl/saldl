@@ -155,7 +155,8 @@ def get_saldl_version(conf):
     conf.start_msg('Get saldl version from GIT')
 
     try:
-        saldl_version = conf.cmd_and_log(['git', 'describe', '--dirty']).rstrip()
+        git_ver_cmd = ['git', 'describe', '--tags', '--long', '--dirty']
+        saldl_version = conf.cmd_and_log(git_ver_cmd).rstrip().replace('-', '.')
         conf.end_msg(saldl_version)
         conf.env.append_value('DEFINES', 'SALDL_VERSION="%s"' % saldl_version)
     except:
