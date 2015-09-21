@@ -34,14 +34,19 @@
 #endif
 
 static int saldl_version() {
+  curl_version_info_data *curl_info = curl_version_info(CURLVERSION_NOW);
   fprintf(stderr, "%s %s (%s)\n", SALDL_NAME, SALDL_VERSION, SALDL_WWW);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Copyright (C) 2014-2015 Mohammad AlSaleh.\n");
+  fprintf(stderr, "Free use of this software is granted under the terms of\n");
+  fprintf(stderr, "the GNU Affero General Public License (AGPL).\n");
+  fprintf(stderr, "\n");
   fprintf(stderr, "Built against: libcurl %s\n", LIBCURL_VERSION);
-  fprintf(stderr, "Loaded: %s\n", curl_version() );
+  fprintf(stderr, "Loaded: libcurl %s (%s)\n", curl_info->version, curl_info->ssl_version);
   return 0;
 }
 
 static int usage(char *caller) {
-  fprintf(stderr, "\n");
   saldl_version();
   fprintf(stderr, "\n");
   fprintf(stderr, "Usage: %s [OPTIONS] URL\n", caller);
