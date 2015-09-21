@@ -84,7 +84,7 @@ General
 ~~~~~~~~
 
 *-d, --dry-run*::
-  do not download, only display information. 
+  do not download, only display information.
 
 *-m, --memory-buffers*::
   Use memory buffers instead of temp files for downloading chunks. +
@@ -126,7 +126,7 @@ Chunk sizes and connections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *-S, --single*::
-  a single chunk single connection mode (wget-like). 
+  a single chunk single connection mode (wget-like).
 
 *-s 'size', --chunk-size='size'*::
   Set size for chunks in bytes. <<unit-suf,*A unit suffix*>> can
@@ -138,7 +138,7 @@ Chunk sizes and connections
   (*default*: '6')
 
 *-l 'num', --last-chunks-first='num'*::
-  the number of last chunks that should be downloaded first. 
+  the number of last chunks that should be downloaded first.
   (*default*: '0')
 
 *-L 'size', --last-size-first='size'*::
@@ -149,7 +149,7 @@ Chunk sizes and connections
   (*default*: '0')
 
 *-a 'num', --auto-size='num'*::
-  modify chunk size so that chunk progress can fit in 'num' lines. 
+  modify chunk size so that chunk progress can fit in 'num' lines.
 
 *-w, --whole-file*::
   work like typical download accelerators
@@ -163,7 +163,7 @@ Filename Options
   Use this filename instead of the detected name.
 
 *-n, --no-path*::
-  assume path is relative, replace '/' and ':' with '_'. 
+  assume path is relative, replace '/' and ':' with '_'.
 
 *-D 'dirname', --root-dir='dirname'*::
   Prepend filename with this path.
@@ -173,14 +173,14 @@ Filename Options
   (This option has no effect if *-o*/*--output-filename* is used)
 
 *-A, --no-attachment-detection*::
-  Do not use Content-Disposition attachment filename if present. 
+  Do not use Content-Disposition attachment filename if present.
 
 *-t, --auto-trunc*::
-  truncate filename if name or path is too long. 
+  truncate filename if name or path is too long.
 
 *-T, --smart-trunc*::
   same as *-t/--auto-trunc* but tries to keep the file extension.
-  (overrides *-t*/*--auto-trunc*) 
+  (overrides *-t*/*--auto-trunc*)
 
 
 Network Options
@@ -192,16 +192,16 @@ Network Options
   (*default*: '0' [unlimited])
 
 *-O, --no-timeouts*::
-  disable all timeouts. 
+  disable all timeouts.
 
 *-x 'proxy', --proxy='proxy'*::
-  set proxy. 
+  set proxy.
 
 *-X 'proxy', --tunnel-proxy='proxy'*::
-  similar to --proxy but tunneling all traffic through it. 
+  similar to --proxy but tunneling all traffic through it.
 
 *-N, --no-proxy*::
-  disable all proxies even if set in the environment. 
+  disable all proxies even if set in the environment.
 
 *--skip-TLS-verification*::
   Skip TLS/SSL verification. Use at your own risk.
@@ -211,10 +211,10 @@ Custom Request Options
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 *-E, --auto-referer*::
-  auto set referer in case of a redirect. 
+  auto set referer in case of a redirect.
 
 *-e 'referer', --referer='referer'*::
-  set referer. 
+  set referer.
 
 *-Z, --no-compress*::
   Don't request a compressed response. And skip decompression if
@@ -320,7 +320,7 @@ lower levels.
 The following levels are noisy. They should only be used for
 debugging/tracing purposes.
 ==============
- 
+
 *-VVVV*::
   Show debug messages.
 
@@ -369,7 +369,7 @@ EXIT STATUS
     Success
 
 *1*::
-   A 'fatal' error happened. A helpful message should explain the message. 
+   A 'fatal' error happened. A helpful message should explain the message.
 
 WWW
 ----
