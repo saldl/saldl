@@ -23,7 +23,7 @@
 #error redefining _SALDL_EVENTS_H
 #endif
 
-#include "utils.h"
+#include "transfer.h"
 
 void join_event_pth(event_s *ev_this, pthread_t *event_thread_id);
 const char* str_EVENT_FD (enum EVENT_FD fd);

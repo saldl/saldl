@@ -527,25 +527,26 @@ def build(bld):
 
     bld.objects(
             source = [
-                'progress.c',
-                'events.c',
-                'queue.c',
-                'merge.c',
-                'status.c',
-                'resume.c',
-                'ctrl.c',
-                'common.c',
-                'exit.c',
-                'log.c',
-                'utime.c',
-                'utils.c',
+                'src/progress.c',
+                'src/events.c',
+                'src/queue.c',
+                'src/merge.c',
+                'src/status.c',
+                'src/resume.c',
+                'src/ctrl.c',
+                'src/common.c',
+                'src/exit.c',
+                'src/log.c',
+                'src/utime.c',
+                'src/transfer.c',
+                'src/saldl.c',
                 ],
             target = ['saldl-objs']
             )
 
     bld.program(
             use = ['saldl-objs'],
-            source = ['main.c', 'saldl.c'],
+            source = ['src/main.c'],
             target = 'saldl'
             )
 

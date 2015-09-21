@@ -3,10 +3,11 @@ SALDL_VERSION = `git describe --dirty`
 COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute -D_FILE_OFFSET_BITS=64 -D__USE_MINGW_ANSI_STDIO=1 -DHAVE__MKDIR -DHAVE_GETTIMEOFDAY -DCURL_STATICLIB -DSALDL_VERSION=\"$(SALDL_VERSION)\" -I${CURL_INCLUDE_PATH} -I${LIBEVENT_INCLUDE_PATH}
 COMMON_LDFLAGS = -Wl,-O1,--sort-common -L${CURL_LIB_PATH} -L${LIBEVENT_LIB_PATH}
 
-CRCS = common.c log.c utime.c exit.c events.c progress.c resume.c status.c ctrl.c merge.c queue.c utils.c saldl.c main.c
+CRCS = common.c log.c utime.c exit.c events.c progress.c resume.c status.c ctrl.c merge.c queue.c transfer.c saldl.c main.c
 OBJS = $(patsubst %.c,${BLD_DIR}/%.o,${CRCS})
 
-HEADERS = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ctrl.h merge.h queue.h saldl.h saldl_params.h structs.h utils.h vt100.h
+HEADER_NAMES = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ctrl.h merge.h queue.h saldl.h saldl_params.h structs.h transfer.h vt100.h
+HEADERS = $(patsubst %,src/%,${HEADER_NAMES})
 
 STRIP_FLAGS := --strip-all
 
@@ -24,7 +25,7 @@ prep-mingw: prep
 	mkdir -p ${BLD_DIR}
 
 ${OBJS}: ${SRCS} $(HEADERS)
-	${CC} -c $(notdir ${@:.o=.c}) -o ${@} ${CFLAGS}
+	${CC} -c src/$(notdir ${@:.o=.c}) -o ${@} ${CFLAGS}
 
 saldl: $(OBJS)
 	${CC} -o ${BLD_DIR}/saldl-${exe_suffix}.exe ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static

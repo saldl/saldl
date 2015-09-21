@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "utils.h"
+#include "transfer.h"
 #include "ctrl.h"
 
 static void extra_resume(info_s *info_ptr, char* chunks_progress_str) {
