@@ -145,7 +145,8 @@ Chunk sizes and connections
   The minimum size that should be downloaded first at the end of
   the file. <<unit-suf,*A unit suffix*>> can be used. +
   This should be useful when chunk-size is not known beforehand.
-  e.g. when *-a/--auto-size* is used.
+  e.g. when *-a/--auto-size* is used. +
+  This option overrides *-l/--last-chunks-first*.
   (*default*: '0')
 
 *-a 'num', --auto-size='num'*::
@@ -326,6 +327,12 @@ debugging/tracing purposes.
 
 *-VVVVV*::
   Enable verbose output in libcurl.
+
+[NOTE]
+==============
+This can be enabled independently with
+the <<ui-opts,*--verbose-libcurl*>> option.
+==============
 
 *-VVVVVV*::
   Show debug messages from event loops.
