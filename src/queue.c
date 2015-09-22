@@ -55,7 +55,7 @@ static chunk_s* pick_next_last_first(info_s *info_ptr) {
   size_t last_first, start_idx;
   size_t end_idx = info_ptr->chunk_count - 1;
 
-  if (!info_ptr->params->last_size_first || !info_ptr->params->last_chunks_first) {
+  if (!info_ptr->params->last_size_first && !info_ptr->params->last_chunks_first) {
     return NULL;
   }
 
