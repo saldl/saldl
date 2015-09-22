@@ -74,7 +74,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
 
   FILE *f = info_ptr->file;
   size_t size = chunk->size;
-  off_t offset = (off_t)chunk->idx * info_ptr->chunk_size;
+  off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
   file_s *tmp_f = chunk->storage;
   char *tmp_buf = NULL;
@@ -120,7 +120,7 @@ int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
 
   FILE *f = info_ptr->file;
   size_t size = chunk->size;
-  off_t offset = (off_t)chunk->idx * info_ptr->chunk_size;
+  off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
   mem_s *buf = chunk->storage;
 

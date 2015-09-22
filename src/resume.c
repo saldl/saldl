@@ -88,7 +88,7 @@ static off_t resume_was_single(info_s *info_ptr) {
 
   if ( ( f_part = fopen(info_ptr->part_filename, "rb") ) ) {
     done_size  = saldl_max_o(4096, fsizeo(f_part)) - 4096; /* -4096 in case last bits are corrupted */
-    info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->chunk_size);
+    info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->params->chunk_size);
     info_msg(FN, " done_size:  %jd (based on the size of %s)\n", (intmax_t)done_size, info_ptr->part_filename);
     fclose(f_part);
   }
@@ -109,7 +109,7 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
     info_ptr->initial_merged_count = info_ptr->chunk_count;
   } else {
     done_size = ctrl->chunk_size * (off_t)merged_cont;
-    info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->chunk_size);
+    info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->params->chunk_size);
   }
 
   assert(done_size <= info_ptr->file_size);
@@ -156,20 +156,20 @@ int check_resume(info_s *info_ptr) {
     info_msg(FN, "Resuming using single mode from offset: %.2f%s\n", human_size(done_size), human_size_suffix(done_size));
   } else {
     info_msg(FN, "Resuming from offset: %zu*%.2f%s (%.2f%s)\n",
-        info_ptr->initial_merged_count, human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
-        human_size((off_t)info_ptr->chunk_size*info_ptr->initial_merged_count), human_size_suffix((off_t)info_ptr->chunk_size*info_ptr->initial_merged_count));
+        info_ptr->initial_merged_count, human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
+        human_size((off_t)info_ptr->params->chunk_size*info_ptr->initial_merged_count), human_size_suffix((off_t)info_ptr->params->chunk_size*info_ptr->initial_merged_count));
   }
 
   /* More can be done if chunk_size is not altered between runs if not single mode */
-  if ( (ctrl.chunk_size == info_ptr->chunk_size) && (ctrl.rem_size == info_ptr->rem_size) && ((uintmax_t)ctrl.chunk_size != (uintmax_t)ctrl.file_size) ) {
+  if ( (ctrl.chunk_size == info_ptr->params->chunk_size) && (ctrl.rem_size == info_ptr->rem_size) && ((uintmax_t)ctrl.chunk_size != (uintmax_t)ctrl.file_size) ) {
     extra_resume(info_ptr, ctrl.chunks_progress_str);
   }
 
   /* Correct num_connections if remaining chunks are not as many */
-  size_t orig_num_connections = info_ptr->num_connections;
+  size_t orig_num_connections = info_ptr->params->num_connections;
   size_t rem_chunks = info_ptr->chunk_count - info_ptr->initial_merged_count;
-  if ( (info_ptr->num_connections = saldl_min(orig_num_connections, rem_chunks)) != orig_num_connections ) {
-    info_msg(FN, "Remaining data after resume relatively small, use %zu connection(s)...\n", info_ptr->num_connections);
+  if ( (info_ptr->params->num_connections = saldl_min(orig_num_connections, rem_chunks)) != orig_num_connections ) {
+    info_msg(FN, "Remaining data after resume relatively small, use %zu connection(s)...\n", info_ptr->params->num_connections);
   }
 
   ctrl_cleanup_info(&ctrl);

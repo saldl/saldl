@@ -161,8 +161,6 @@ typedef struct {
   pthread_t merger_pth;
   pthread_t sync_ctrl_pth;
   pthread_t status_display_pth;
-  size_t num_connections;
-  size_t chunk_size;
   size_t rem_size;
   size_t chunk_count;
   size_t initial_merged_count;

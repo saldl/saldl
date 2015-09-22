@@ -86,11 +86,11 @@ int sal_dl(saldl_params *params_ptr) {
   }
 
   /* threads */
-  info.threads = saldl_calloc(info.num_connections,sizeof(thread_s));
+  info.threads = saldl_calloc(params_ptr->num_connections, sizeof(thread_s));
   set_reset_storage(&info);
 
   /* 1st iteration */
-  for (size_t counter = 0; counter < info.num_connections; counter++) {
+  for (size_t counter = 0; counter < params_ptr->num_connections; counter++) {
     queue_next_chunk(&info, counter, 1);
   }
 

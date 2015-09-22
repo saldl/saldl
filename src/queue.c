@@ -45,7 +45,7 @@ static size_t last_chunk_from_last_size(info_s *info_ptr) {
     return rem_last_sz ? 1 : 0;
   }
   else {
-    size_t chunk_sz = info_ptr->chunk_size;
+    size_t chunk_sz = info_ptr->params->chunk_size;
     rem_last_sz -= info_ptr->rem_size;
     return (rem_last_sz / chunk_sz) + !!(rem_last_sz % chunk_sz) + !!(info_ptr->rem_size);
   }
@@ -135,7 +135,7 @@ static void queue_next_cb(evutil_socket_t fd, short what, void *arg) {
     events_deactivate(ev_queue);
   }
 
-  for (size_t counter = 0; counter < info_ptr->num_connections && exist_prg(info_ptr, PRG_NOT_STARTED, true); counter++) {
+  for (size_t counter = 0; counter < info_ptr->params->num_connections && exist_prg(info_ptr, PRG_NOT_STARTED, true); counter++) {
     if (info_ptr->threads[counter].chunk->progress >= PRG_FINISHED) {
       queue_next_chunk(info_ptr, counter, 0);
     }

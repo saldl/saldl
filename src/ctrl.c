@@ -140,7 +140,7 @@ void* sync_ctrl(void *void_info_ptr) {
   char char_chunk_size[u_num_digits(SIZE_MAX)];
   char char_rem_size[u_num_digits(SIZE_MAX)];
   snprintf(char_file_size, s_num_digits(OFF_T_MAX), "%jd", (intmax_t)info_ptr->file_size);
-  snprintf(char_chunk_size, u_num_digits(SIZE_MAX), "%zu", info_ptr->chunk_size);
+  snprintf(char_chunk_size, u_num_digits(SIZE_MAX), "%zu", info_ptr->params->chunk_size);
   snprintf(char_rem_size, u_num_digits(SIZE_MAX), "%zu", info_ptr->rem_size);
 
   /* Rewind ctrl_file */

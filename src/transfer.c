@@ -69,7 +69,7 @@ void chunks_init(info_s *info_ptr) {
     info_ptr->chunks[idx].idx = idx;
 
     /* size & ranges */
-    info_ptr->chunks[idx].size = info_ptr->chunk_size;
+    info_ptr->chunks[idx].size = info_ptr->params->chunk_size;
     info_ptr->chunks[idx].range_start = (off_t)idx * info_ptr->chunks[idx].size;
     info_ptr->chunks[idx].range_end = (off_t)(idx+1) * info_ptr->chunks[idx].size - 1;
   }
@@ -537,20 +537,20 @@ void check_remote_file_size(info_s *info_ptr) {
     set_single_mode(info_ptr);
   }
 
-  if (info_ptr->chunk_count > 1 && info_ptr->chunk_count < info_ptr->num_connections) {
+  if (info_ptr->chunk_count > 1 && info_ptr->chunk_count < info_ptr->params->num_connections) {
     info_msg(NULL, "File relatively small, use %zu connection(s)\n", info_ptr->chunk_count);
-    info_ptr->num_connections = info_ptr->chunk_count;
+    info_ptr->params->num_connections = info_ptr->chunk_count;
   }
 }
 
 static void whole_file(info_s *info_ptr) {
   if (0 < info_ptr->file_size) {
-    info_ptr->chunk_size = saldl_max_z_umax((uintmax_t)info_ptr->chunk_size , (uintmax_t)info_ptr->file_size  / info_ptr->num_connections);
-    info_ptr->chunk_size = info_ptr->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
+    info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)info_ptr->params->chunk_size , (uintmax_t)info_ptr->file_size  / info_ptr->params->num_connections);
+    info_ptr->params->chunk_size = info_ptr->params->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
     info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.\n",
-        human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
+        human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
         human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
-        info_ptr->num_connections);
+        info_ptr->params->num_connections);
   }
 }
 
@@ -567,18 +567,18 @@ static void auto_size_func(info_s *info_ptr, int auto_size) {
   }
 
   if (0 < info_ptr->file_size) {
-    size_t orig_chunk_size = info_ptr->chunk_size;
+    size_t orig_chunk_size = info_ptr->params->chunk_size;
 
-    if ( info_ptr->num_connections > (size_t)cols ) {
-      info_ptr->num_connections = (size_t)cols; /* Limit active connections to 1 line */
-      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_ptr->num_connections, cols);
+    if ( info_ptr->params->num_connections > (size_t)cols ) {
+      info_ptr->params->num_connections = (size_t)cols; /* Limit active connections to 1 line */
+      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_ptr->params->num_connections, cols);
     }
 
-    if ( ( info_ptr->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_ptr->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
-      info_ptr->chunk_size = (info_ptr->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
+    if ( ( info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_ptr->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
+      info_ptr->params->chunk_size = (info_ptr->params->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
       info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.\n",
-          human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
-          info_ptr->num_connections, cols, auto_size);
+          human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
+          info_ptr->params->num_connections, cols, auto_size);
     }
 
   }
@@ -597,8 +597,9 @@ void set_info(info_s *info_ptr) {
 
   saldl_params *params_ptr = info_ptr->params;
 
-  info_ptr->num_connections = params_ptr->user_num_connections ? params_ptr->user_num_connections : SALDL_DEF_NUM_CONNECTIONS;
-  info_ptr->chunk_size = params_ptr->user_chunk_size ? params_ptr->user_chunk_size : SALDL_DEF_CHUNK_SIZE;
+  /* I know this is a crazy way to set defaults */
+  params_ptr->num_connections += !params_ptr->num_connections * SALDL_DEF_NUM_CONNECTIONS;
+  params_ptr->chunk_size += !params_ptr->chunk_size * SALDL_DEF_CHUNK_SIZE;
 
   if (! params_ptr->single_mode) {
     if ( params_ptr->auto_size  ) {
@@ -611,13 +612,13 @@ void set_info(info_s *info_ptr) {
   }
 
   /* Chunk size should be at least 4k */
-  if (info_ptr->chunk_size < 4096) {
-    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).\n", info_ptr->chunk_size);
-    info_ptr->chunk_size = 4096;
+  if (info_ptr->params->chunk_size < 4096) {
+    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).\n", info_ptr->params->chunk_size);
+    info_ptr->params->chunk_size = 4096;
   }
 
-  info_ptr->rem_size = (size_t)(info_ptr->file_size % (off_t)info_ptr->chunk_size);
-  info_ptr->chunk_count = (size_t)(info_ptr->file_size / (off_t)info_ptr->chunk_size) + !!info_ptr->rem_size;
+  info_ptr->rem_size = (size_t)(info_ptr->file_size % (off_t)info_ptr->params->chunk_size);
+  info_ptr->chunk_count = (size_t)(info_ptr->file_size / (off_t)info_ptr->params->chunk_size) + !!info_ptr->rem_size;
 
 }
 
@@ -626,11 +627,11 @@ void print_chunk_info(info_s *info_ptr) {
 
     if (info_ptr->rem_size && !info_ptr->params->single_mode) {
       fprintf(stderr, "%s%sChunks:%s %zu*%.2f%s + 1*%.2f%s\n", bold, info_color, end,info_ptr->chunk_count-1,
-          human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size),
+          human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
           human_size(info_ptr->rem_size), human_size_suffix(info_ptr->rem_size));
     } else {
       fprintf(stderr, "%s%sChunks:%s %zu*%.2f%s\n", bold, info_color, end, info_ptr->chunk_count,
-          human_size(info_ptr->chunk_size), human_size_suffix(info_ptr->chunk_size));
+          human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size));
     }
   }
 
@@ -949,8 +950,8 @@ void set_single_mode(info_s *info_ptr) {
     fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu \n", (intmax_t)info_ptr->file_size, SIZE_MAX);
   }
 
-  info_ptr->chunk_size = (size_t)info_ptr->file_size;
-  info_ptr->chunk_count = info_ptr->num_connections = 1;
+  info_ptr->params->chunk_size = (size_t)info_ptr->file_size;
+  info_ptr->chunk_count = info_ptr->params->num_connections = 1;
   info_ptr->rem_size = 0;
 }
 
@@ -999,7 +1000,7 @@ void set_reset_storage(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   thread_s *threads = info_ptr->threads;
 
-  size_t num = info_ptr->num_connections;
+  size_t num = info_ptr->params->num_connections;
   void(*reset_storage)();
 
   if (params_ptr->single_mode) {
@@ -1174,7 +1175,7 @@ void* thread_func(void* threadS) {
 
 void curl_cleanup(info_s *info_ptr) {
 
-  for (size_t counter = 0; counter < info_ptr->num_connections; counter++) {
+  for (size_t counter = 0; counter < info_ptr->params->num_connections; counter++) {
     curl_easy_cleanup(info_ptr->threads[counter].ehandle);
   }
 

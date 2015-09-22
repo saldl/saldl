@@ -146,7 +146,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->print_version = true;
         break;
       case 's':
-        params_ptr->user_chunk_size = parse_num_z(optarg, 1);
+        params_ptr->chunk_size = parse_num_z(optarg, 1);
         break;
       case 'L':
         params_ptr->last_size_first = parse_num_o(optarg, 1);
@@ -155,7 +155,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->last_chunks_first = parse_num_z(optarg, 0);
         break;
       case 'c':
-        params_ptr->user_num_connections = parse_num_z(optarg, 0);
+        params_ptr->num_connections = parse_num_z(optarg, 0);
         break;
       case 'R':
         params_ptr->connection_max_rate = parse_num_z(optarg, 1);
