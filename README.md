@@ -46,7 +46,7 @@ Run `./waf --help` first and check out the available options.
 A typical example would be:
 
 ```
-./waf configure--prefix=/usr
+./waf configure --prefix=/usr
 
 ./waf
 
