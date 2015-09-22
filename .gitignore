@@ -2,6 +2,7 @@
 *.a
 *.so
 build/*
+mingw*/*
 .waf*
 .lock*
 *.pyc
