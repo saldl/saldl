@@ -97,8 +97,9 @@ UI Options
 
 *-C, --no-color*::
   Disable colors in output. +
-  Pass it twice (*-CC*) to disable all other formattings
-  (auto-set if not tty).
+  +
+  Pass it twice (*-CC*) to disable all other formattings and escape
+  codes (auto-set if not tty).
 
 *-V , --verbosity*::
   Increase verbosity level. +
@@ -150,7 +151,7 @@ Chunk sizes and connections
   (*default*: '0')
 
 *-a 'num', --auto-size='num'*::
-  modify chunk size so that chunk progress can fit in 'num' lines.
+  increase chunk size so that chunk progress can fit in 'num' lines.
 
 *-w, --whole-file*::
   work like typical download accelerators
