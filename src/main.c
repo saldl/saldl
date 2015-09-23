@@ -84,7 +84,6 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"no-remote-info", no_argument, 0, 'I'},
     {"no-attachment-detection", no_argument, 0, 'A'},
     {"use-HEAD", no_argument, 0, 'H'},
-    {"assume-partial-support", no_argument, 0, 'F'},
     {"single", no_argument, 0, 'S'},
     {"no-path", no_argument, 0, 'n'},
     {"keep-GET-attrs", no_argument, 0, 'G'},
@@ -102,10 +101,11 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"skip-TLS-verification", no_argument, 0, CHAR_MAX+1},
     {"no-status", no_argument, 0, CHAR_MAX+2},
     {"verbose-libcurl", no_argument, 0, CHAR_MAX+3},
+    {"assume-range-support", no_argument, 0, CHAR_MAX+4},
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHFIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:UZz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:UZz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -205,9 +205,6 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
       case 'H':
         params_ptr->head = true;
         break;
-      case 'F':
-        params_ptr->skip_partial_check = true;
-        break;
       case 'I':
         params_ptr->no_remote_info = true;
         break;
@@ -265,6 +262,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case CHAR_MAX+3:
         params_ptr->libcurl_verbosity = true;
+        break;
+
+      case CHAR_MAX+4:
+        params_ptr->assume_range_support = true;
         break;
 
       default:

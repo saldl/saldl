@@ -63,7 +63,7 @@ typedef struct {
   bool head;
   bool no_remote_info;
   bool no_attachment_detection;
-  bool skip_partial_check;
+  bool assume_range_support;
   bool single_mode;
   bool no_path;
   bool keep_GET_attrs;

@@ -290,8 +290,13 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
   const double expected_length = 4096;
   double content_length = 0;
 
-  if (params_ptr->skip_partial_check || (params_ptr->single_mode && !params_ptr->resume) ) {
-    debug_msg(FN, "Skipping range check..\n");
+  if (params_ptr->assume_range_support) {
+    debug_msg(FN, "Range support assumed, skipping check.\n");
+    return 0;
+  }
+
+  if (params_ptr->single_mode && !params_ptr->resume) {
+    debug_msg(FN, "Skipping unnecessary range check.\n");
     goto no_range;
   }
 
