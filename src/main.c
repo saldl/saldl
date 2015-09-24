@@ -36,6 +36,9 @@
 static int saldl_version() {
   curl_version_info_data *curl_info = curl_version_info(CURLVERSION_NOW);
   fprintf(stderr, "%s %s (%s)\n", SALDL_NAME, SALDL_VERSION, SALDL_WWW);
+#ifdef _WIN32
+  fprintf(stderr, "WARNING: Windows builds of %s are experimental.\n", SALDL_NAME);
+#endif
   fprintf(stderr, "\n");
   fprintf(stderr, "Copyright (C) 2014-2015 Mohammad AlSaleh.\n");
   fprintf(stderr, "Free use of this software is granted under the terms of\n");
