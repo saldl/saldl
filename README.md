@@ -1,7 +1,7 @@
 # saldl
 
-A command-line downloader optimized for speed and early preview, based
-on libcurl.
+A multi-platform command-line downloader optimized for speed and early
+preview, based on libcurl.
 
 By default, saldl splits a download into fixed-sized chunks and download
 them in-order with multiple concurrent connections.
