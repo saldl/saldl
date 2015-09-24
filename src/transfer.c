@@ -338,7 +338,7 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
   /* Range check failed */
   else {
     warn_msg(FN, "Wrong link, server lacks range support or file too small.\n");
-    warn_msg(FN, "We well 2nd check without ranges.\n");
+    warn_msg(FN, "We well make a second check without ranges.\n");
     debug_msg(FN, "Expected length %.0lf, got %.0lf\n", expected_length, content_length);
   }
 
