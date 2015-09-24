@@ -121,9 +121,11 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
   }
 
   if (strcasestr(header, "Content-Type:") == header) {
-    info_ptr->content_type = strdup(header + strlen("Content-Type: "));
+    char *h_info = header + strlen("Content-Type:");
+    h_info += str_lstrip_count(h_info);
+    info_ptr->content_type = strdup(h_info);
 
-    if (strcasestr(header, "gzip")) {
+    if (strcasestr(h_info, "gzip")) {
       debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
       info_ptr->params->no_compress = true;
     }

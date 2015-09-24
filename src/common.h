@@ -47,6 +47,7 @@
 char* windows_exe_path();
 #endif
 
+size_t str_lstrip_count(char *str);
 void* saldl_calloc(size_t nmemb, size_t size);
 void* saldl_malloc(size_t size);
 void* saldl_realloc(void *ptr, size_t size);
