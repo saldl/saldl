@@ -194,6 +194,7 @@ def check_api(conf):
     print('Checking API support:')
     check_function_mkdir(conf)
     check_timer_support(conf)
+    check_function_tty_width(conf)
     conf.check_cc(function_name='GetModuleFileName', header_name="windows.h", mandatory=False)
     conf.check_cc(function_name='asprintf', header_name="stdio.h", mandatory=False)
     conf.check_cc(function_name='strcasestr', header_name="string.h", mandatory=False)
@@ -258,6 +259,13 @@ def check_timer_support(conf):
 
     if not ('HAVE_CLOCK_MONOTONIC_RAW=1' in conf.env['DEFINES'] or 'HAVE_GETTIMEOFDAY=1' in conf.env['DEFINES']):
         conf.fatal('Neither clock_gettime() with CLOCK_MONOTONIC_RAW nor gettimeofday() is available!')
+@conf
+def check_function_tty_width(conf):
+    conf.check_cc(function_name='GetConsoleScreenBufferInfo', header_name="windows.h", mandatory=False)
+    conf.check_cc(function_name='ioctl', header_name="sys/ioctl.h", mandatory=False)
+
+    if not ('HAVE_IOCTL=1' in conf.env['DEFINES'] or 'HAVE_GETCONSOLESCREENBUFFERINFO=1' in conf.env['DEFINES']):
+        conf.fatal('Neither ioctl() nor GetConsoleScreenBufferInfo() is available!')
 
 @conf
 def check_function_mkdir(conf):

@@ -21,10 +21,12 @@
 #include "log.h"
 #include "exit.h"
 
-#ifndef __MINGW32__
-#include <sys/ioctl.h> /* ioctl() */
+#ifdef HAVE_IOCTL
+#include <sys/ioctl.h>
+#elif HAVE_GETCONSOLESCREENBUFFERINFO
+#include <windows.h>
 #else
-#include <windows.h> /* GetConsoleScreenBufferInfo() */
+#error Neither ioctl() nor GetConsoleScreenBufferInfo() is available!
 #endif
 
 int tty_width() {
@@ -32,7 +34,7 @@ int tty_width() {
     return -3;
   }
 
-#ifdef __MINGW32__
+#ifdef HAVE_GETCONSOLESCREENBUFFERINFO
   HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO INFO;
 
@@ -45,7 +47,7 @@ int tty_width() {
   }
 
   return (int)INFO.dwSize.X - 1;  // -1 give us correct behavior in ansicon
-#else
+#elif HAVE_IOCTL
   struct winsize w_size;
 
   if ( ioctl(fileno(stderr), TIOCGWINSZ, &w_size) ) {
@@ -53,6 +55,8 @@ int tty_width() {
   }
 
   return w_size.ws_col;
+#else
+#error Neither ioctl() nor GetConsoleScreenBufferInfo() is available!
 #endif
 }
 
