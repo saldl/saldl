@@ -264,7 +264,7 @@ semi_fatal_request_retry:
   debug_msg(FN, "response=%ld\n", response );
 }
 
-static off_t remote_info_simple_file_size(CURL *handle, off_t *fsize_ptr) {
+static off_t remote_info_simple_file_size(CURL *handle) {
   double d_size;
   off_t size = 0;
 
@@ -275,7 +275,7 @@ static off_t remote_info_simple_file_size(CURL *handle, off_t *fsize_ptr) {
 
   if ( size == -1 ) {
     debug_msg(FN, "Zeroing filesize, was -1.\n");
-    *fsize_ptr = 0;
+    size = 0;
   }
 
   return size;
@@ -520,7 +520,7 @@ void remote_info(info_s *info_ptr) {
   if (request_remote_info_with_ranges(&tmp, params_ptr) || !info_ptr->file_size) {
     request_remote_info_simple(&tmp);
     /* We didn't get file size from Content-Range, so get it from Content-Length */
-    info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle, &info_ptr->file_size);
+    info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle);
   }
 
   check_redirects(tmp.ehandle, info_ptr);
