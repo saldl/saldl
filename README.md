@@ -61,6 +61,8 @@ https://aur.archlinux.org/packages/saldl-git
 
 ### MinGW/Windows
 
-Experimental/unsupported binaries will be provided soon.
+Experimental binaries are now available in
+the [releases](https://github.com/saldl/saldl/releases) page.
 
-
+**saldl** requires a terminal emulater with support for ANSI/VT100
+escape sequences.
