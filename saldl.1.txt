@@ -266,8 +266,8 @@ cases:
   Just 'GET'. Don't do anything else.
   (*-S*/*--signle* is forced, *-r*/*--resume* is disabled)
 
-*-F, --assume-partial-support*::
-  Don't use this. The wrong data will probably be download.
+*--assume-range-support*::
+  Don't use this. The wrong data will probably be downloaded.
 
 ENVIRONMENT
 ------------
