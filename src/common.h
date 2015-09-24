@@ -43,6 +43,10 @@
 #define GiB(x) ((x))/1024.0/1024.0/1024.0
 #define PCT(x1, x2) ((x1))*100.0/((x2))
 
+#ifdef HAVE_GETMODULEFILENAME
+char* windows_exe_path();
+#endif
+
 void* saldl_calloc(size_t nmemb, size_t size);
 void* saldl_malloc(size_t size);
 void* saldl_realloc(void *ptr, size_t size);

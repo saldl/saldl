@@ -194,6 +194,7 @@ def check_api(conf):
     print('Checking API support:')
     check_function_mkdir(conf)
     check_timer_support(conf)
+    conf.check_cc(function_name='GetModuleFileName', header_name="windows.h", mandatory=False)
     conf.check_cc(function_name='asprintf', header_name="stdio.h", mandatory=False)
     conf.check_cc(function_name='strcasestr', header_name="string.h", mandatory=False)
     conf.check_cc(function_name='strsignal', header_name="string.h", mandatory=False)

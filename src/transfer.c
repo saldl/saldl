@@ -828,6 +828,23 @@ void set_progress_params(thread_s *thread, info_s *info_ptr) {
 void set_params(thread_s *thread, saldl_params *params_ptr) {
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
+#ifdef HAVE_GETMODULEFILENAME
+  /* Set CA bundle if the file exists */
+  char ca_bundle_path[PATH_MAX];
+  char *exe_dir = windows_exe_path();
+  if (exe_dir) {
+    snprintf(ca_bundle_path, PATH_MAX, "%s/ca-bundle.trust.crt", exe_dir);
+
+    if ( access(ca_bundle_path, F_OK) ) {
+      warn_msg(FN, "CA bundle file %s does not exist.\n", ca_bundle_path);
+    }
+    else {
+      curl_easy_setopt(thread->ehandle, CURLOPT_CAINFO, ca_bundle_path);
+    }
+
+    free(exe_dir);
+  }
+#endif
 
   /* Try HTTP/2, but don't care about the return value.
    * Most libcurl binaries would not include support for HTTP/2 in the short term */

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef __MINGW32__
+#if defined(HAVE_GETMODULEFILENAME) || defined(HAVE__MKDIR)
 #include <winsock2.h>
 #include <windows.h>
 #define NAME_MAX MAX_PATH
@@ -32,6 +32,26 @@
 
 /* .part.sal , .ctrl.sal len is 9 */
 #define EXT_LEN 9
+
+
+#ifdef HAVE_GETMODULEFILENAME
+char* windows_exe_path() {
+  char path[PATH_MAX];
+  char *sep_pos;
+
+  intmax_t ret = GetModuleFileName(NULL, path, PATH_MAX);
+
+  if (!ret) {
+    return NULL;
+  }
+
+  if ( (sep_pos = strrchr(path, '\\')) ) {
+    *sep_pos = '\0';
+  }
+
+  return strdup(path);
+}
+#endif
 
 /* 0 nmemb is banned, 0 size is banned */
 void* saldl_calloc(size_t nmemb, size_t size) {
