@@ -847,9 +847,11 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
   }
 #endif
 
-  /* Try HTTP/2, but don't care about the return value.
-   * Most libcurl binaries would not include support for HTTP/2 in the short term */
-  curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+  if (!params_ptr->no_http2) {
+    /* Try HTTP/2, but don't care about the return value.
+     * Most libcurl binaries would not include support for HTTP/2 in the short term */
+    curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+  }
 
   /* Send post fields if provided */
 

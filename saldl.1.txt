@@ -266,6 +266,9 @@ cases:
   Just 'GET'. Don't do anything else.
   (*-S*/*--signle* is forced, *-r*/*--resume* is disabled)
 
+*--no-http2*::
+  Don't try HTTP/2 requests.
+
 *--assume-range-support*::
   Don't use this. The wrong data will probably be downloaded.
 

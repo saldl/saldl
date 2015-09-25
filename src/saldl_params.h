@@ -51,6 +51,7 @@ typedef struct {
   char *inline_cookies;
   char *post;
   char *raw_post;
+  bool no_http2;
   bool no_compress;
   bool no_decompress;
   bool no_user_agent;

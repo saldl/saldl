@@ -105,6 +105,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"no-status", no_argument, 0, CHAR_MAX+2},
     {"verbose-libcurl", no_argument, 0, CHAR_MAX+3},
     {"assume-range-support", no_argument, 0, CHAR_MAX+4},
+    {"no-http2", no_argument, 0, CHAR_MAX+5},
     {0, 0, 0, 0}
   };
 
@@ -269,6 +270,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case CHAR_MAX+4:
         params_ptr->assume_range_support = true;
+        break;
+
+      case CHAR_MAX+5:
+        params_ptr->no_http2 = true;
         break;
 
       default:
