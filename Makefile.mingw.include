@@ -1,7 +1,7 @@
 SALDL_VERSION = `git describe --tags --long --dirty`
 
-COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute -D_FILE_OFFSET_BITS=64 -D__USE_MINGW_ANSI_STDIO=1 -DHAVE__MKDIR -DHAVE_GETMODULEFILENAME -DHAVE_GETCONSOLESCREENBUFFERINFO -DHAVE_GETTIMEOFDAY -DCURL_STATICLIB -DSALDL_VERSION=\"$(SALDL_VERSION)\" -I${CURL_INCLUDE_PATH} -I${LIBEVENT_INCLUDE_PATH}
-COMMON_LDFLAGS = -Wl,-O1,--sort-common -L${CURL_LIB_PATH} -L${LIBEVENT_LIB_PATH}
+COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute -D_FILE_OFFSET_BITS=64 -D__USE_MINGW_ANSI_STDIO=1 -DHAVE__MKDIR -DHAVE_GETMODULEFILENAME -DHAVE_GETCONSOLESCREENBUFFERINFO -DHAVE_GETTIMEOFDAY -DCURL_STATICLIB -DNGHTTP2_STATICLIB -DSALDL_VERSION=\"$(SALDL_VERSION)\" -I${MINGW_INCLUDE_PATH} -I${LIBEVENT_INCLUDE_PATH}
+COMMON_LDFLAGS = -Wl,-O1,--sort-common -L${MINGW_LIB_PATH} -L${LIBEVENT_LIB_PATH}
 
 CRCS = common.c log.c utime.c exit.c events.c progress.c resume.c status.c ctrl.c merge.c queue.c transfer.c saldl.c main.c
 OBJS = $(patsubst %.c,${BLD_DIR}/%.o,${CRCS})
@@ -28,8 +28,12 @@ ${OBJS}: ${SRCS} $(HEADERS)
 	${CC} -c src/$(notdir ${@:.o=.c}) -o ${@} ${CFLAGS}
 
 saldl: $(OBJS)
-	${CC} -o ${BLD_DIR}/saldl-${exe_suffix}.exe ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a -lcurl -lssh2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32 -static
+	${CC} -o ${BLD_DIR}/saldl-${exe_suffix}.exe ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS} ${LIBEVENT_LIB_PATH}/libevent_pthreads.a ${LIBEVENT_LIB_PATH}/libevent.a -static -lcurl -lnghttp2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32
 	${STRIP} ${BLD_DIR}/saldl-${exe_suffix}.exe
+
+dist: all
+	cp -f /etc/ca-certificates/extracted/ca-bundle.trust.crt ${BLD_DIR}/
+	zip saldl-${exe_suffix}-${SALDL_VERSION}.zip ${BLD_DIR}/{ca-bundle.trust.crt,saldl-${exe_suffix}.exe}
 
 clean:
 	-rm -rf ${BLD_DIR}/

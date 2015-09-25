@@ -1,14 +1,14 @@
 # Name suffix
 exe_suffix = win64
-BLD_DIR = mingw-${exe_suffix}
+BLD_DIR = saldl-${exe_suffix}
 
 # mingw-w64 binaries
 CC = x86_64-w64-mingw32-gcc
 STRIP = x86_64-w64-mingw32-strip
 
 # curl dirs
-CURL_LIB_PATH = /usr/x86_64-w64-mingw32/lib
-CURL_INCLUDE_PATH = /usr/x86_64-w64-mingw32/include
+MINGW_LIB_PATH = /usr/x86_64-w64-mingw32/lib
+MINGW_INCLUDE_PATH = /usr/x86_64-w64-mingw32/include
 
 # libevent dirs
 LIBEVENT_LIB_PATH = ./libevent-2.1.5-beta-130-g0ec3b6d-win64/lib
