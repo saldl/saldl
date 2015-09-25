@@ -53,16 +53,14 @@ char* windows_exe_path() {
 }
 #endif
 
-size_t str_lstrip_count(char *str) {
+char* saldl_lstrip(char *str) {
   char *tmp = str;
-  size_t counter = 0;
 
   while (*tmp == ' ' || *tmp == '\t') {
-    counter++;
     tmp++;
   }
 
-  return counter;
+  return tmp;
 }
 
 /* 0 nmemb is banned, 0 size is banned */

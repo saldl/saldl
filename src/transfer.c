@@ -121,8 +121,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
   }
 
   if (strcasestr(header, "Content-Type:") == header) {
-    char *h_info = header + strlen("Content-Type:");
-    h_info += str_lstrip_count(h_info);
+    char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
     info_ptr->content_type = strdup(h_info);
 
     if (strcasestr(h_info, "gzip")) {
