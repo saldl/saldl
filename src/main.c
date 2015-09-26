@@ -21,18 +21,6 @@
 
 #include "saldl.h"
 
-#ifndef SALDL_NAME
-#define SALDL_NAME "saldl"
-#endif
-
-#ifndef SALDL_VERSION
-#define SALDL_VERSION "(unknown version)"
-#endif
-
-#ifndef SALDL_WWW
-#define SALDL_WWW "https://saldl.github.io"
-#endif
-
 static int saldl_version() {
   curl_version_info_data *curl_info = curl_version_info(CURLVERSION_NOW);
   fprintf(stderr, "%s %s (%s)\n", SALDL_NAME, SALDL_VERSION, SALDL_WWW);

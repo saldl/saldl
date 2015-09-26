@@ -23,7 +23,14 @@
 #error redefining _SALDL_SALDL_DEFAULTS_H
 #endif
 
-/* Defaults */
+#define SALDL_NAME "saldl"
+#define SALDL_WWW "https://saldl.github.io"
+
+#ifndef SALDL_VERSION
+#define SALDL_VERSION "(unknown version)"
+#endif
+
+/* Default Params */
 #define SALDL_DEF_CHUNK_SIZE (size_t)1*1024*1024 /* 1.00 MiB */
 #define SALDL_DEF_NUM_CONNECTIONS (size_t)6
 

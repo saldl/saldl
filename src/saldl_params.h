@@ -26,10 +26,6 @@
 #include <stdbool.h>
 #include "defaults.h"
 
-/* Defaults */
-#define SALDL_DEF_CHUNK_SIZE (size_t)1*1024*1024 /* 1.00 MiB */
-#define SALDL_DEF_NUM_CONNECTIONS (size_t)6
-
 typedef struct {
   bool print_version;
   bool dry_run;
