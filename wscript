@@ -490,8 +490,8 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
     opt_cflags_var = pkg_name.upper() + '_CFLAGS'
     opt_libs_var = pkg_name.upper() + '_LIBS'
 
-    opt_cflags = conf_opts_dict[opt_cflags_var] != None
-    opt_libs = conf_opts_dict[opt_libs_var] != None
+    opt_cflags = (opt_cflags_var in conf_opts_dict) and  conf_opts_dict[opt_cflags_var] != None
+    opt_libs = (opt_libs_var in conf_opts_dict) and conf_opts_dict[opt_libs_var] != None
     opt_total = opt_cflags + opt_libs
 
     conf.start_msg('Checking %s:' % pkg_name)
