@@ -34,6 +34,7 @@ saldl: $(OBJS)
 dist: all
 	cp -f /etc/ca-certificates/extracted/ca-bundle.trust.crt ${BLD_DIR}/
 	zip saldl-${exe_suffix}-${SALDL_VERSION}.zip ${BLD_DIR}/{ca-bundle.trust.crt,saldl-${exe_suffix}.exe}
+	@echo "`tput setaf 1`Don't forget to update the online version of the manual."
 
 clean:
 	-rm -rf ${BLD_DIR}/
