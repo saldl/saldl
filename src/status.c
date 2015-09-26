@@ -57,10 +57,15 @@ static inline void colorset(char *ptr, char val, size_t size) {
 
 static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
+  saldl_params *params_ptr = info_ptr->params;
+
   progress_s *p = &(info_ptr->global_progress);
   chunks_progress_s *chsp = &(p->chunks_progress);
   status_s *status_ptr = &info_ptr->status;
   event_s *ev_status = &info_ptr->ev_status;
+
+  double params_refresh = params_ptr->status_refresh_interval;
+  double refresh_interval = params_refresh ? params_refresh : SALDL_DEF_STATUS_REFRESH_INTERVAL;
 
   size_t c_char_size = status_ptr->c_char_size;
   char *chunks_status = status_ptr->chunks_status;
@@ -94,60 +99,60 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
   off_t rem_size =  info_ptr->file_size - p->complete_size;
   
   /* Calculate rates, remaining times */
-  if (p->dur >= 0.3) {
+  if (p->dur >= refresh_interval) {
     p->rate = session_complete_size/p->dur;
     p->rem = p->rate ? rem_size/p->rate : INT64_MAX;
   }
 
-  if (p->curr_dur >= 0.3 && p->complete_size != info_ptr->file_size) {
+  if (p->curr_dur >= refresh_interval || p->complete_size == info_ptr->file_size) {
     off_t curr_complete_size = saldl_max_o(p->complete_size - p->dlprev, 0); // Don't go -ve on reconnects
     p->curr_rate = curr_complete_size/p->curr_dur;
     p->curr_rem = p->curr_rate ? rem_size/p->curr_rate : INT64_MAX;
 
     p->prev = p->curr;
     p->dlprev = p->complete_size;
-  }
 
-  /* Set progress_status */
-  for (size_t counter = 0; counter < info_ptr->chunk_count; counter++) {
-    colorset(chunks_status+(counter*c_char_size), '0' + info_ptr->chunks[counter].progress, 1);
-  }
+    /* Set progress_status */
+    for (size_t counter = 0; counter < info_ptr->chunk_count; counter++) {
+      colorset(chunks_status+(counter*c_char_size), '0' + info_ptr->chunks[counter].progress, 1);
+    }
 
-  fprintf(stderr,"%s%s%sChunk progress:%s\n", erase_after, info_color, bold, end);
-  fprintf(stderr,"%s  %sMerged:%s       \t %zu / %zu (+%zu finished)\n",
-      erase_after, bold, end,
-      chsp->merged, info_ptr->chunk_count, chsp->finished);
-  fprintf(stderr,"%s  %sStarted:%s      \t %zu / %zu (%zu empty)\n",
-      erase_after, bold, end,
-      chsp->started, info_ptr->chunk_count, chsp->empty_started);
-  fprintf(stderr,"%s  %sNot started:%s        \t %zu / %zu ((+%zu queued)\n",
-      erase_after, bold, end,
-      chsp->not_started, info_ptr->chunk_count, chsp->queued);
-  fprintf(stderr,"%s  %sSize complete:%s  \t %.2f%s / %.2f%s (%.2f%c)\n",
-      erase_after, bold, end,
-      human_size(p->complete_size), human_size_suffix(p->complete_size),
-      human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
-      PCT(p->complete_size, info_ptr->file_size), '%');
-  if (p->initial_complete_size) {
-    fprintf(stderr,"%s  %sSession complete:%s  \t %.2f%s / %.2f%s (%.2f%c)\n",
+    fprintf(stderr,"%s%s%sChunk progress:%s\n", erase_after, info_color, bold, end);
+    fprintf(stderr,"%s  %sMerged:%s       \t %zu / %zu (+%zu finished)\n",
         erase_after, bold, end,
-        human_size(session_complete_size), human_size_suffix(session_complete_size),
-        human_size(session_size), human_size_suffix(session_size),
-        PCT(session_complete_size, session_size), '%');
-  }
-  fprintf(stderr,"%s  %sRate:%s           \t %.2f%s/s : %.2f%s/s\n",
-      erase_after, bold, end,
-      human_size(p->rate), human_size_suffix(p->rate),
-      human_size(p->curr_rate), human_size_suffix(p->curr_rate));
-  fprintf(stderr,"%s  %sRemaining:%s      \t %.1fs : %.1fs\n",
-      erase_after, bold, end,
-      p->rem, p->curr_rem);
-  fprintf(stderr,"%s  %sDuration:%s       \t %.1fs\n",
-      erase_after, bold, end,
-      p->dur);
-  fprintf(stderr,"%s%s%s\n", erase_screen_after, chunks_status, ret_char);
+        chsp->merged, info_ptr->chunk_count, chsp->finished);
+    fprintf(stderr,"%s  %sStarted:%s      \t %zu / %zu (%zu empty)\n",
+        erase_after, bold, end,
+        chsp->started, info_ptr->chunk_count, chsp->empty_started);
+    fprintf(stderr,"%s  %sNot started:%s        \t %zu / %zu ((+%zu queued)\n",
+        erase_after, bold, end,
+        chsp->not_started, info_ptr->chunk_count, chsp->queued);
+    fprintf(stderr,"%s  %sSize complete:%s  \t %.2f%s / %.2f%s (%.2f%c)\n",
+        erase_after, bold, end,
+        human_size(p->complete_size), human_size_suffix(p->complete_size),
+        human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
+        PCT(p->complete_size, info_ptr->file_size), '%');
+    if (p->initial_complete_size) {
+      fprintf(stderr,"%s  %sSession complete:%s  \t %.2f%s / %.2f%s (%.2f%c)\n",
+          erase_after, bold, end,
+          human_size(session_complete_size), human_size_suffix(session_complete_size),
+          human_size(session_size), human_size_suffix(session_size),
+          PCT(session_complete_size, session_size), '%');
+    }
+    fprintf(stderr,"%s  %sRate:%s           \t %.2f%s/s : %.2f%s/s\n",
+        erase_after, bold, end,
+        human_size(p->rate), human_size_suffix(p->rate),
+        human_size(p->curr_rate), human_size_suffix(p->curr_rate));
+    fprintf(stderr,"%s  %sRemaining:%s      \t %.1fs : %.1fs\n",
+        erase_after, bold, end,
+        p->rem, p->curr_rem);
+    fprintf(stderr,"%s  %sDuration:%s       \t %.1fs\n",
+        erase_after, bold, end,
+        p->dur);
+    fprintf(stderr,"%s%s%s\n", erase_screen_after, chunks_status, ret_char);
 
-  fputs_count(*lines, up, stderr);
+    fputs_count(*lines, up, stderr);
+  }
 }
 
 void* status_display(void *void_info_ptr) {

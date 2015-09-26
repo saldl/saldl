@@ -709,6 +709,10 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
   uintmax_t lines = 5;
   info_s *info_ptr = (info_s *)void_info_ptr;
+  saldl_params *params_ptr = info_ptr->params;
+
+  double params_refresh = params_ptr->status_refresh_interval;
+  double refresh_interval = params_refresh ? params_refresh : SALDL_DEF_STATUS_REFRESH_INTERVAL;
 
   assert(!ulnow || info_ptr->params->post || info_ptr->params->raw_post);
   assert(!ultotal || info_ptr->params->post || info_ptr->params->raw_post);
@@ -739,12 +743,12 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       p->curr_dur = p->curr - p->prev;
 
 
-      /* Update every 0.3s, and when the download finishes.
+      /* Update every refresh_interval, and when the download finishes.
        * Always update when file_size is unknown(dltotal==0), as
        * the download might finish anytime.
        * */
-      if (p->curr_dur >= 0.3 || !dltotal  || dlnow == dltotal) {
-        if (p->curr_dur >= 0.3) {
+      if (p->curr_dur >= refresh_interval || !dltotal  || dlnow == dltotal) {
+        if (p->curr_dur >= refresh_interval) {
           off_t curr_done = saldl_max_o(dlnow + offset - p->dlprev, 0); // Don't go -ve on reconnects
           p->curr_rate =  curr_done / p->curr_dur;
           p->curr_rem = p->curr_rate && dltotal ? (dltotal - dlnow) / p->curr_rate : INT64_MAX;
@@ -753,7 +757,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
           p->dlprev = dlnow + offset;
         }
 
-        if (p->dur >= 0.3) {
+        if (p->dur >= refresh_interval) {
           p->rate = dlnow / p->dur;
           p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : INT64_MAX;
         }

@@ -95,6 +95,11 @@ General
 UI Options
 ~~~~~~~~~~~
 
+*-i 'interval', --status-refresh-interval='interval'*::
+  Minimum refresh interval between status updates in seconds.
+  Increasing the default should help if terminal emulation is slow.
+  (*default*: '0.3')
+
 *-C, --no-color*::
   Disable colors in output. +
   +

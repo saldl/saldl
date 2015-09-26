@@ -50,9 +50,10 @@ static int usage(char *caller) {
 static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
   int opt_idx = 0, c = 0;
   static struct option long_opts[] = {
-    {"verbosity" , no_argument, 0, 'V'},
     {"version" , no_argument, 0, 'v'},
+    {"verbosity" , no_argument, 0, 'V'},
     {"no-color" , no_argument, 0, 'C'},
+    {"status-refresh-interval", required_argument, 0, 'i'},
     {"chunk-size" , required_argument, 0, 's'},
     {"last-chunks-first" , required_argument, 0, 'l'},
     {"last-size-first" , required_argument, 0, 'L'},
@@ -89,11 +90,11 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"whole-file", no_argument, 0, 'w'},
     {"memory-buffers", no_argument, 0, 'm'},
     /* long only */
-#define SAL_OPT_NO_STATUS             CHAR_MAX+1
-#define SAL_OPT_NO_HTTP2              CHAR_MAX+2
-#define SAL_OPT_ASSUME_RANGE_SUPPORT  CHAR_MAX+3
-#define SAL_OPT_SKIP_TLS_VERIFICATION CHAR_MAX+4
-#define SAL_OPT_VERBOSE_LIBCURL       CHAR_MAX+5
+#define SAL_OPT_NO_STATUS               CHAR_MAX+1
+#define SAL_OPT_NO_HTTP2                CHAR_MAX+2
+#define SAL_OPT_ASSUME_RANGE_SUPPORT    CHAR_MAX+3
+#define SAL_OPT_SKIP_TLS_VERIFICATION   CHAR_MAX+4
+#define SAL_OPT_VERBOSE_LIBCURL         CHAR_MAX+5
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
     {"no-status", no_argument, 0, SAL_OPT_NO_STATUS},
     {"verbose-libcurl", no_argument, 0, SAL_OPT_VERBOSE_LIBCURL},
@@ -102,7 +103,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGdD:o:tTrfa:wmVvCK:k:p:P:e:Eu:UZz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGdD:o:tTrfa:wmVvCi:K:k:p:P:e:Eu:UZz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -259,6 +260,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_ASSUME_RANGE_SUPPORT:
         params_ptr->assume_range_support = true;
+        break;
+
+      case 'i':
+        params_ptr->status_refresh_interval = parse_num_d(optarg);
         break;
 
       case SAL_OPT_NO_STATUS:
