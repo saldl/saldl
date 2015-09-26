@@ -28,6 +28,7 @@
 #include <direct.h> // _mkdir()
 #endif
 
+#include <math.h> // for HUGE_VAL
 #include "common.h"
 
 /* .part.sal , .ctrl.sal len is 9 */
@@ -280,6 +281,29 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   free(base_name);
   free(ext_str_empty);
   return trunc_name;
+}
+
+size_t parse_num_d(const char *num_char) {
+  double num;
+  char *p[1]; /* **p must be initialized and not NULL */
+
+  assert(num_char);
+  num = strtod(num_char, p);
+
+  if (strlen(*p)) {
+    err_msg(FN, "Invalid value was found while parsing opts:\n");
+    fatal(FN, "  Value passed: %s.\n", num_char);
+  }
+
+  if (num <= 0) {
+    fatal(FN, "Expected a positive value, %s(%lf) was passed.\n", num_char, num);
+  }
+
+  if (num == HUGE_VAL) {
+    fatal(FN, "Value: %s parsed as %lf is considered huge.\n", num_char, num);
+  }
+
+  return num;
 }
 
 size_t parse_num_z(const char *num_char, size_t suff_len) {

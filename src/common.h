@@ -71,6 +71,7 @@ off_t saldl_max_o(off_t a, off_t b);
 size_t saldl_max_z_umax(uintmax_t a, uintmax_t b);
 char* valid_filename(const char *pre_valid);
 char* trunc_filename(const char *pre_trunc, int keep_ext);
+size_t parse_num_d(const char *num_char);
 off_t parse_num_o(const char *num_char, size_t suff_len);
 size_t parse_num_z(const char *num_char, size_t suff_len);
 
