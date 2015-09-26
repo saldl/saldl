@@ -646,7 +646,7 @@ void print_chunk_info(info_s *info_ptr) {
 void global_progress_init(info_s *info_ptr) {
   info_ptr->global_progress.start = saldl_utime();
   info_ptr->global_progress.curr = info_ptr->global_progress.prev = info_ptr->global_progress.start;
-  info_ptr->global_progress.enable = 1;
+  info_ptr->global_progress.initialized = 1;
 }
 
 void global_progress_update(info_s *info_ptr, bool init) {
@@ -715,7 +715,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
   if (info_ptr) {
     progress_s *p = &info_ptr->global_progress;
-    if (p->enable) {
+    if (p->initialized) {
 
       if (!info_ptr->file_size && dltotal) {
         info_ptr->file_size = dltotal;
@@ -729,7 +729,8 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
         return 0;
       }
 
-      if (p->enable++ == 1) {
+      if (p->initialized == 1) {
+        p->initialized++;
         fputs_count(lines+1, "\n", stderr); // +1 in case offset becomes non-zero
       }
 

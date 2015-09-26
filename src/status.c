@@ -171,7 +171,7 @@ void* status_display(void *void_info_ptr) {
   /* event loop */
   events_init(&info_ptr->ev_status, status_update_cb, info_ptr, EVENT_STATUS);
 
-  assert(info_ptr->global_progress.enable);
+  assert(info_ptr->global_progress.initialized);
 
   if (info_ptr->session_status != SESSION_INTERRUPTED && exist_prg(info_ptr, PRG_MERGED, false)) {
     debug_msg(FN, "Start ev_status loop.\n");

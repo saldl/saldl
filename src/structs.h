@@ -121,7 +121,7 @@ typedef struct {
 
 /* progress_s: progress of the whole session/download */
 typedef struct {
-  int enable;
+  int initialized;
   double start;
   double curr;
   double prev;
