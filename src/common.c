@@ -309,6 +309,8 @@ size_t parse_num_d(const char *num_char) {
 size_t parse_num_z(const char *num_char, size_t suff_len) {
   uintmax_t num;
   char *p[1]; /* **p must be initialized and not NULL */
+
+  assert(num_char);
   num = strtoumax(num_char, p, 10);
 
   if ((intmax_t)num < 0) {
@@ -361,10 +363,11 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
   return (size_t)num;
 }
 
-
 off_t parse_num_o(const char *num_char, size_t suff_len) {
   intmax_t num;
   char *p[1]; /* **p must be initialized and not NULL */
+
+  assert(num_char);
   num = strtoimax(num_char, p, 10);
 
   if (num < 0) {
