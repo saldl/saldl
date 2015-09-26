@@ -24,6 +24,7 @@
 #endif
 
 #include <stdbool.h>
+#include "defaults.h"
 
 /* Defaults */
 #define SALDL_DEF_CHUNK_SIZE (size_t)1*1024*1024 /* 1.00 MiB */
