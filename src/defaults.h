@@ -23,9 +23,11 @@
 #error redefining _SALDL_SALDL_DEFAULTS_H
 #endif
 
+/* Project Info */
 #define SALDL_NAME "saldl"
 #define SALDL_WWW "https://saldl.github.io"
 
+/* Version is defined by the build system, set to unknown if it wasn't. */
 #ifndef SALDL_VERSION
 #define SALDL_VERSION "(unknown version)"
 #endif
