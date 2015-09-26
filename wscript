@@ -93,6 +93,15 @@ def options(opt):
             help = "Set debug flags. (default: %s)" % def_enable_debug
             )
 
+    def_enable_profiler = False
+    conf_gr.add_option(
+            '--enable-profiler',
+            dest = 'ENABLE_PROFILER',
+            default = def_enable_profiler,
+            action= "store_true",
+            help = "Enable profiler from gperftools. (default: %s)" % def_enable_profiler
+            )
+
     def_enable_sanitizers= False
     conf_gr.add_option(
             '--enable-sanitizers',
@@ -401,6 +410,10 @@ def check_link_flags(conf):
                 ['-Wl,--hash-style=gnu']
         ]
 
+    if conf.options.ENABLE_PROFILER:
+        # libprofiler won't be linked if --as-needed is enabled
+        linkflags.remove(['-Wl,--as-needed'])
+
     for l in linkflags:
         conf.check_cc(linkflags = l, uselib_store='SAL', mandatory=False)
 
@@ -464,6 +477,9 @@ def check_pkg_deps(conf):
     check_libcurl(conf)
     check_libevent_pthreads(conf)
 
+    if conf.options.ENABLE_PROFILER:
+        check_libprofiler(conf)
+
     # Deps with no pkg-config support
     conf.env.append_value('LIB', 'pthread')
 
@@ -481,6 +497,12 @@ def check_libevent_pthreads(conf):
     min_ver = '2.0.20'
     check_pkg(conf, pkg_name, check_args, min_ver)
 
+@conf
+def check_libprofiler(conf):
+    pkg_name = 'libprofiler'
+    check_args = ['--cflags', '--libs']
+    min_ver = '2.4'
+    check_pkg(conf, pkg_name, check_args, min_ver)
 
 @conf
 def check_pkg(conf, pkg_name, check_args, min_ver):
