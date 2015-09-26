@@ -89,11 +89,16 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"whole-file", no_argument, 0, 'w'},
     {"memory-buffers", no_argument, 0, 'm'},
     /* long only */
-    {"skip-TLS-verification", no_argument, 0, CHAR_MAX+1},
-    {"no-status", no_argument, 0, CHAR_MAX+2},
-    {"verbose-libcurl", no_argument, 0, CHAR_MAX+3},
-    {"assume-range-support", no_argument, 0, CHAR_MAX+4},
-    {"no-http2", no_argument, 0, CHAR_MAX+5},
+#define SAL_OPT_NO_STATUS             CHAR_MAX+1
+#define SAL_OPT_NO_HTTP2              CHAR_MAX+2
+#define SAL_OPT_ASSUME_RANGE_SUPPORT  CHAR_MAX+3
+#define SAL_OPT_SKIP_TLS_VERIFICATION CHAR_MAX+4
+#define SAL_OPT_VERBOSE_LIBCURL       CHAR_MAX+5
+    {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
+    {"no-status", no_argument, 0, SAL_OPT_NO_STATUS},
+    {"verbose-libcurl", no_argument, 0, SAL_OPT_VERBOSE_LIBCURL},
+    {"skip-TLS-verification", no_argument, 0, SAL_OPT_SKIP_TLS_VERIFICATION},
+    {"assume-range-support", no_argument, 0, SAL_OPT_ASSUME_RANGE_SUPPORT},
     {0, 0, 0, 0}
   };
 
@@ -244,24 +249,24 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
 
       /* long only */
-      case CHAR_MAX+1:
+      case SAL_OPT_NO_HTTP2:
+        params_ptr->no_http2 = true;
+        break;
+
+      case SAL_OPT_SKIP_TLS_VERIFICATION:
         params_ptr->tls_no_verify = true;
         break;
 
-      case CHAR_MAX+2:
-        params_ptr->no_status = true;
-        break;
-
-      case CHAR_MAX+3:
-        params_ptr->libcurl_verbosity = true;
-        break;
-
-      case CHAR_MAX+4:
+      case SAL_OPT_ASSUME_RANGE_SUPPORT:
         params_ptr->assume_range_support = true;
         break;
 
-      case CHAR_MAX+5:
-        params_ptr->no_http2 = true;
+      case SAL_OPT_NO_STATUS:
+        params_ptr->no_status = true;
+        break;
+
+      case SAL_OPT_VERBOSE_LIBCURL:
+        params_ptr->libcurl_verbosity = true;
         break;
 
       default:
