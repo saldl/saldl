@@ -37,10 +37,6 @@
 #ifndef OFF_T_MAX
 #define OFF_T_MAX (off_t)( sizeof(off_t) < sizeof(int64_t) ? INT32_MAX : INT64_MAX )
 #endif
-
-#define KiB(x) ((x))/1024.0
-#define MiB(x) ((x))/1024.0/1024.0
-#define GiB(x) ((x))/1024.0/1024.0/1024.0
 #define PCT(x1, x2) ((x1))*100.0/((x2))
 
 #ifdef HAVE_GETMODULEFILENAME

@@ -171,12 +171,15 @@ void fputs_count(uintmax_t count, const char* str, FILE* stream) {
 
 double human_size(double size) {
   if (size > 1000*1000*1000) {
-    return GiB(size);
-  } else if (size > 1000*1000) {
-    return MiB(size);
-  } else if (size > 1000) {
-    return KiB(size);
-  } else {
+    return size/1024/1024/1024;
+  }
+  else if (size > 1000*1000) {
+    return size/1024/1024;
+  }
+  else if (size > 1000) {
+    return size/1024;
+  }
+  else {
     return size;
   }
 }
