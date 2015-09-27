@@ -35,7 +35,9 @@
 /* Default Params */
 #define SALDL_DEF_CHUNK_SIZE (size_t)1*1024*1024 /* 1.00 MiB */
 #define SALDL_DEF_NUM_CONNECTIONS (size_t)6
-
 #define SALDL_DEF_STATUS_REFRESH_INTERVAL 0.3
+
+/* Constants */
+#define SALDL_STATUS_INITIAL_INTERVAL 0.5
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

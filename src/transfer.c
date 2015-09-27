@@ -757,7 +757,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
           p->dlprev = dlnow + offset;
         }
 
-        if (p->dur >= refresh_interval) {
+        if (p->dur >= SALDL_STATUS_INITIAL_INTERVAL) {
           p->rate = dlnow / p->dur;
           p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : INT64_MAX;
         }
