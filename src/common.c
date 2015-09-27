@@ -291,8 +291,7 @@ size_t parse_num_d(const char *num_char) {
   num = strtod(num_char, p);
 
   if (strlen(*p)) {
-    err_msg(FN, "Invalid value was found while parsing opts:\n");
-    fatal(FN, "  Value passed: %s.\n", num_char);
+    fatal(FN, "Invalid value passed: '%s', expected a floating number.\n", num_char);
   }
 
   if (num <= 0) {
@@ -318,13 +317,8 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
   }
 
   if ( *p == num_char || strlen(*p) > suff_len ) {
-    err_msg(FN, "Invalid value was found while parsing opts/control:\n");
-    err_msg(FN, " Valid format is <num>");
-    if (suff_len) {
-      fprintf(stderr, " optionally followed by one of the chars from the group [bBkKmMgG]");
-    }
-    fprintf(stderr, "\n");
-    fatal(FN, "  Value passed: %s.\n", num_char);
+    const char *suffix_msg = suff_len ? " possibly followed by a size suffix" : "";
+    fatal(FN, "Invalid value passed: '%s', expected integer value%s.\n", num_char, suffix_msg);
   }
 
   switch (**p) {
@@ -346,13 +340,7 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
       num *= 1024*1024*1024;
       break;
     default:
-      err_msg(FN, "Invalid value was found while parsing opts/control:\n");
-      err_msg(FN, " Valid format is <num>");
-      if (suff_len) {
-        fprintf(stderr, " optionally followed by one of the chars from the group [bBkKmMgG]");
-      }
-      fprintf(stderr, "\n");
-      fatal(FN, " Value passed: %s.\n", num_char);
+      fatal(FN, "Invalid value passed '%s', are you sure you used a valid size suffix?\n", num_char);
       break;
   }
 
@@ -375,13 +363,8 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
   }
 
   if ( *p == num_char || strlen(*p) > suff_len ) {
-    err_msg(FN, "Invalid value was found while parsing opts/control:\n");
-    err_msg(FN, " Valid format is <num>");
-    if (suff_len) {
-      fprintf(stderr, " optionally followed by one of the chars from the group [bBkKmMgG]");
-    }
-    fprintf(stderr, "\n");
-    fatal(FN, "  Value passed: %s.\n", num_char);
+    const char *suffix_msg = suff_len ? " possibly followed by a size suffix" : "";
+    fatal(FN, "Invalid value passed: '%s', expected integer value%s.\n", num_char, suffix_msg);
   }
 
   switch (**p) {
@@ -403,13 +386,7 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
       num *= 1024*1024*1024;
       break;
     default:
-      err_msg(FN, "Invalid value was found while parsing opts/control:\n");
-      err_msg(FN, " Valid format is <num>");
-      if (suff_len) {
-        fprintf(stderr, " optionally followed by one of the chars from the group [bBkKmMgG]");
-      }
-      fprintf(stderr, "\n");
-      fatal(FN, " Value passed: %s.\n", num_char);
+      fatal(FN, "Invalid value passed '%s', are you sure you used a valid size suffix?\n", num_char);
       break;
   }
 
