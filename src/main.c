@@ -289,17 +289,20 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 }
 
 int main(int argc,char **argv) {
+  /* Initialize params */
+  saldl_params params = {0} ;
+
+  /* Set to defaults before parsing opts. Without this, any early call
+   * to a log function [e.g. fatal()] would sigfault.
+   */
+  set_color(&params.no_color);
+  set_verbosity(&params.verbosity, &params.libcurl_verbosity);
+
   int counter;
   int full_argc = argc;
   char **full_argv = saldl_calloc(argc, sizeof(char *));
 
   char *extra_argv_str = getenv("SALDL_EXTRA_ARGS");
-
-  saldl_params params = {0} ; /* initialize all members to zero */
-
-  /* Set to defaults before parsing opts */
-  set_color(&params.no_color);
-  set_verbosity(&params.verbosity, &params.libcurl_verbosity);
 
   /* As argv is not re-allocatable, copy argv elements' pointers into full_argv */
   for (counter = 0; counter < argc; counter++) {
