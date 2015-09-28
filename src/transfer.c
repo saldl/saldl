@@ -858,6 +858,13 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
   }
 
+  /* For our use-cases, Nagle's algorithm seems to have negative or
+   * no impact on performance. libcurl disables the algorithm for
+   * HTTP/2 by default now. And I decided to disable it for all
+   * protocols here.
+   */
+  curl_easy_setopt(thread->ehandle, CURLOPT_TCP_NODELAY, 1);
+
   /* Send post fields if provided */
 
   /* If both raw_post & post are set, post is ignored */
