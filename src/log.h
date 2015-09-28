@@ -99,3 +99,5 @@ void null_msg();
 int tty_width();
 void set_color(size_t *no_color);
 void set_verbosity(size_t *verbosity, bool *libcurl_verbosity);
+
+/* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */
