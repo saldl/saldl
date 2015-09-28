@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SALDL_SALDL_PARAMS_H
-#define SALDL_SALDL_PARAMS_H
+#ifndef SALDL_PARAMS_H
+#define SALDL_PARAMS_H
 #else
-#error redefining SALDL_SALDL_PARAMS_H
+#error redefining SALDL_PARAMS_H
 #endif
 
 #include <stdbool.h>
