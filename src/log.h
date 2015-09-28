@@ -32,6 +32,7 @@
 #include <stdarg.h> /* va stuff */
 
 #define FN __func__
+#define FL __FILE__
 #define LN __LINE__
 
 #define MAX_VERBOSITY 7
@@ -42,6 +43,14 @@
 #else
 #define SALDL_PRINTF_FORMAT printf
 #endif
+
+#define STR(s) #s
+#define SALDL_ASSERT(cond) \
+  do {\
+    if (!(cond)) {\
+      fatal(FL, "Assert[%s/%d]: " STR((cond)) ".\n", FN, LN);\
+    }\
+  } while(0)
 
 const char* ret_char;
 
