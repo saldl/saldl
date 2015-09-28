@@ -42,7 +42,7 @@ void* merger_thread(void *void_info_ptr) {
   info_s *info_ptr = (info_s*)void_info_ptr;
 
   /* Thread entered */
-  assert(info_ptr->ev_merge.event_status == EVENT_NULL);
+  SALDL_ASSERT(info_ptr->ev_merge.event_status == EVENT_NULL);
   info_ptr->ev_merge.event_status = EVENT_THREAD_STARTED;
 
   /* event loop */

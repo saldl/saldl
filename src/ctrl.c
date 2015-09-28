@@ -122,7 +122,7 @@ void* sync_ctrl(void *void_info_ptr) {
   control_s *ctrl = &info_ptr->ctrl;
 
   /* Thread entered */
-  assert(info_ptr->ev_ctrl.event_status == EVENT_NULL);
+  SALDL_ASSERT(info_ptr->ev_ctrl.event_status == EVENT_NULL);
   info_ptr->ev_ctrl.event_status = EVENT_THREAD_STARTED;
 
   /* Initialize ctrl */

@@ -38,7 +38,7 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
     }
 #ifdef HAVE_ASPRINTF
     int ret_asprintf = asprintf(&cookie, "Set-Cookie: %s; ", curr);
-    assert(ret_asprintf != -1);
+    SALDL_ASSERT(ret_asprintf != -1);
 #else
     {
       size_t cookie_len = strlen("Set-Cookie: ") + strlen(curr) + strlen("; ") + 1;
@@ -94,8 +94,8 @@ void chunks_init(info_s *info_ptr) {
 
 void curl_set_ranges(CURL *handle, chunk_s *chunk) {
   char range_str[2 * s_num_digits(OFF_T_MAX) + 1];
-  assert(chunk->range_end);
-  assert( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
+  SALDL_ASSERT(chunk->range_end);
+  SALDL_ASSERT( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
   chunk->curr_range_start = chunk->range_start + (off_t)chunk->size_complete;
   snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%jd-%jd", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
   curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
@@ -205,8 +205,8 @@ static size_t  mem_write_function(  void  *ptr,  size_t  size, size_t nmemb, voi
     return 0;
   }
 
-  assert(mem->memory); // Preallocation failed
-  assert(mem->size <= mem->allocated_size);
+  SALDL_ASSERT(mem->memory); // Preallocation failed
+  SALDL_ASSERT(mem->size <= mem->allocated_size);
 
   memmove(&(mem->memory[mem->size]), ptr, realsize);
   mem->size += realsize;
@@ -714,8 +714,8 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
   double params_refresh = params_ptr->status_refresh_interval;
   double refresh_interval = params_refresh ? params_refresh : SALDL_DEF_STATUS_REFRESH_INTERVAL;
 
-  assert(!ulnow || info_ptr->params->post || info_ptr->params->raw_post);
-  assert(!ultotal || info_ptr->params->post || info_ptr->params->raw_post);
+  SALDL_ASSERT(!ulnow || info_ptr->params->post || info_ptr->params->raw_post);
+  SALDL_ASSERT(!ultotal || info_ptr->params->post || info_ptr->params->raw_post);
 
   if (info_ptr) {
     progress_s *p = &info_ptr->global_progress;
@@ -789,8 +789,8 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
 static int chunk_progress(void *void_chunk_ptr, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
 
-  assert(!ulnow);
-  assert(!ultotal);
+  SALDL_ASSERT(!ulnow);
+  SALDL_ASSERT(!ultotal);
 
   chunk_s *chunk =  (chunk_s *)void_chunk_ptr;
   size_t rem;
@@ -1063,7 +1063,7 @@ void reset_storage_single(thread_s *thread) {
 }
 
 void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
-  assert(part_file->file);
+  SALDL_ASSERT(part_file->file);
   if (chunk->size_complete) {
     fseeko(part_file->file, chunk->size_complete, SEEK_SET);
   }

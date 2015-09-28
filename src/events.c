@@ -46,7 +46,7 @@ const char* str_EVENT_FD (enum EVENT_FD fd) {
 }
 
 void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVENT_FD vFD) {
-  assert(ev_this->event_status == EVENT_THREAD_STARTED);
+  SALDL_ASSERT(ev_this->event_status == EVENT_THREAD_STARTED);
 
   debug_event_msg(FN, "Init %s.\n", str_EVENT_FD(vFD));
 
@@ -57,7 +57,7 @@ void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVE
   int ret_attr_init = pthread_mutexattr_init(&ev_this->ev_mutex_attr);
   int ret_attr_settype = pthread_mutexattr_settype(&ev_this->ev_mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
   int ret_mutex_init = pthread_mutex_init(&ev_this->ev_mutex, &ev_this->ev_mutex_attr);
-  assert(!ret_attr_init && !ret_attr_settype && !ret_mutex_init);
+  SALDL_ASSERT(!ret_attr_init && !ret_attr_settype && !ret_mutex_init);
 
   /* Max time-out between events */
   if (!ev_this->tv.tv_sec && !ev_this->tv.tv_usec) { // keep tv as-is if it's already set
@@ -77,14 +77,14 @@ void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVE
 }
 
 void events_activate(event_s *ev_this) {
-  assert(ev_this->event_status == EVENT_INIT);
+  SALDL_ASSERT(ev_this->event_status == EVENT_INIT);
   debug_event_msg(FN, "Activating %s.\n", str_EVENT_FD(ev_this->vFD));
   ev_this->event_status = EVENT_ACTIVE;
   event_base_loop(ev_this->ev_b, 0);
 }
 
 void events_deactivate(event_s *ev_this) {
-  assert(ev_this->event_status >= EVENT_INIT);
+  SALDL_ASSERT(ev_this->event_status >= EVENT_INIT);
   while ( pthread_mutex_lock(&ev_this->ev_mutex) == EDEADLK );
 
   /* Check if not already deactivated. Remember that active events will
@@ -103,7 +103,7 @@ void events_deactivate(event_s *ev_this) {
 }
 
 void events_deinit(event_s *ev_this) {
-  assert(ev_this->event_status == EVENT_INIT);
+  SALDL_ASSERT(ev_this->event_status == EVENT_INIT);
   while ( pthread_mutex_lock(&ev_this->ev_mutex) == EDEADLK );
 
   debug_event_msg(FN, "De-init %s.\n", str_EVENT_FD(ev_this->vFD));
@@ -148,25 +148,25 @@ static void events_check_queues(info_s *info_ptr) {
   if (info_ptr->ev_queue.queued) {
     event_trigger(&info_ptr->ev_queue);
     info_ptr->ev_queue.queued -= 1;
-    assert(info_ptr->ev_queue.queued >= 0);
+    SALDL_ASSERT(info_ptr->ev_queue.queued >= 0);
   }
 
   if (info_ptr->ev_ctrl.queued) {
     event_trigger(&info_ptr->ev_ctrl);
     info_ptr->ev_ctrl.queued -= 1;
-    assert(info_ptr->ev_ctrl.queued >= 0);
+    SALDL_ASSERT(info_ptr->ev_ctrl.queued >= 0);
   }
 
   if (info_ptr->ev_merge.queued) {
     event_trigger(&info_ptr->ev_merge);
     info_ptr->ev_merge.queued -= 1;
-    assert(info_ptr->ev_merge.queued >= 0);
+    SALDL_ASSERT(info_ptr->ev_merge.queued >= 0);
   }
 
   if (info_ptr->ev_status.queued) {
     event_trigger(&info_ptr->ev_status);
     info_ptr->ev_status.queued -= 1;
-    assert(info_ptr->ev_status.queued >= 0);
+    SALDL_ASSERT(info_ptr->ev_status.queued >= 0);
   }
 }
 
@@ -187,7 +187,7 @@ void* events_trigger_thread(void *void_info_ptr) {
   info_s *info_ptr = (info_s*)void_info_ptr;
 
   /* Thread entered */
-  assert(info_ptr->ev_trigger.event_status == EVENT_NULL);
+  SALDL_ASSERT(info_ptr->ev_trigger.event_status == EVENT_NULL);
   info_ptr->ev_trigger.event_status = EVENT_THREAD_STARTED;
 
   /* event loop */

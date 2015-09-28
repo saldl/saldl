@@ -102,7 +102,7 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
   char STR_PRG_MERGED[] = {CH_PRG_MERGED , '\0'};
   size_t merged_cont = strspn(ctrl->chunks_progress_str, STR_PRG_MERGED);
 
-  assert(merged_cont <= ctrl->chunk_count);
+  SALDL_ASSERT(merged_cont <= ctrl->chunk_count);
 
   if (merged_cont == ctrl->chunk_count) {
     done_size = ctrl->file_size;
@@ -112,7 +112,7 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
     info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->params->chunk_size);
   }
 
-  assert(done_size <= info_ptr->file_size);
+  SALDL_ASSERT(done_size <= info_ptr->file_size);
   info_msg(FN, " done_size:  %jd\n", (intmax_t)done_size);
 
   for (size_t idx=0; idx<info_ptr->initial_merged_count; idx++) {

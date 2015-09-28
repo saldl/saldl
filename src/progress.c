@@ -42,9 +42,9 @@ bool exist_prg(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match) {
 chunk_s* first_prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end) {
   chunk_s *chunks = info_ptr->chunks;
 
-  assert(start < info_ptr->chunk_count);
-  assert(end < info_ptr->chunk_count);
-  assert(end >= start);
+  SALDL_ASSERT(start < info_ptr->chunk_count);
+  SALDL_ASSERT(end < info_ptr->chunk_count);
+  SALDL_ASSERT(end >= start);
 
   for (size_t counter = start; counter <= end; counter++) {
 

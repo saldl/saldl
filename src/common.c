@@ -67,37 +67,37 @@ char* saldl_lstrip(char *str) {
 /* 0 nmemb is banned, 0 size is banned */
 void* saldl_calloc(size_t nmemb, size_t size) {
   void *p = NULL;
-  assert(size);
-  assert(nmemb);
+  SALDL_ASSERT(size);
+  SALDL_ASSERT(nmemb);
   p = calloc(nmemb, size);
-  assert(p);
+  SALDL_ASSERT(p);
   return p;
 }
 
 /* 0 size is banned */
 void* saldl_malloc(size_t size) {
   void *p = NULL;
-  assert(size);
+  SALDL_ASSERT(size);
   p = malloc(size);
-  assert(p);
+  SALDL_ASSERT(p);
   return p;
 }
 
 /* NULL ptr is banned, 0 size is banned */
 void* saldl_realloc(void *ptr, size_t size) {
   void *p = NULL;
-  assert(size);
-  assert(ptr);
+  SALDL_ASSERT(size);
+  SALDL_ASSERT(ptr);
   p = realloc(ptr, size);
-  assert(p);
+  SALDL_ASSERT(p);
   return p;
 }
 
 char* saldl_strdup(const char *str) {
   char *dup = NULL;
-  assert(str);
+  SALDL_ASSERT(str);
   dup = strdup(str);
-  assert(dup);
+  SALDL_ASSERT(dup);
   return dup;
 }
 
@@ -153,7 +153,7 @@ void saldl_block_sig_pth() {
   sigaddset(&set, SIGINT);
   sigaddset(&set, SIGTERM);
   int ret_sigmask = pthread_sigmask(SIG_SETMASK, &set, NULL);
-  assert(!ret_sigmask);
+  SALDL_ASSERT(!ret_sigmask);
 #endif
 }
 
@@ -163,7 +163,7 @@ void saldl_unblock_sig_pth() {
   sigset_t set;
   sigemptyset(&set);
   int ret_sigmask = pthread_sigmask(SIG_SETMASK, &set, NULL);
-  assert(!ret_sigmask);
+  SALDL_ASSERT(!ret_sigmask);
 #endif
 }
 
@@ -304,7 +304,7 @@ size_t parse_num_d(const char *num_char) {
   double num;
   char *p[1]; /* **p must be initialized and not NULL */
 
-  assert(num_char);
+  SALDL_ASSERT(num_char);
   num = strtod(num_char, p);
 
   if (strlen(*p)) {
@@ -326,7 +326,7 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
   uintmax_t num;
   char *p[1]; /* **p must be initialized and not NULL */
 
-  assert(num_char);
+  SALDL_ASSERT(num_char);
   num = strtoumax(num_char, p, 10);
 
   if ((intmax_t)num < 0) {
@@ -372,7 +372,7 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
   intmax_t num;
   char *p[1]; /* **p must be initialized and not NULL */
 
-  assert(num_char);
+  SALDL_ASSERT(num_char);
   num = strtoimax(num_char, p, 10);
 
   if (num < 0) {

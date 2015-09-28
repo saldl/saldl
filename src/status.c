@@ -163,7 +163,7 @@ void* status_display(void *void_info_ptr) {
   status_s *status_ptr = &info_ptr->status;
 
   /* Thread entered */
-  assert(info_ptr->ev_status.event_status == EVENT_NULL);
+  SALDL_ASSERT(info_ptr->ev_status.event_status == EVENT_NULL);
   info_ptr->ev_status.event_status = EVENT_THREAD_STARTED;
 
   /* initialize status */
@@ -178,7 +178,7 @@ void* status_display(void *void_info_ptr) {
   /* event loop */
   events_init(&info_ptr->ev_status, status_update_cb, info_ptr, EVENT_STATUS);
 
-  assert(info_ptr->global_progress.initialized);
+  SALDL_ASSERT(info_ptr->global_progress.initialized);
 
   if (info_ptr->session_status != SESSION_INTERRUPTED && exist_prg(info_ptr, PRG_MERGED, false)) {
     debug_msg(FN, "Start ev_status loop.\n");

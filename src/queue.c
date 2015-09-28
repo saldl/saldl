@@ -37,7 +37,7 @@ static size_t last_chunk_from_last_size(info_s *info_ptr) {
     last_sz_1st = (off_t)SIZE_MAX;
   }
 
-  assert(last_sz_1st >= 0);
+  SALDL_ASSERT(last_sz_1st >= 0);
 
   rem_last_sz = (size_t)last_sz_1st;
 
@@ -86,7 +86,7 @@ static chunk_s* pick_next(info_s *info_ptr) {
     chunk = first_prg(info_ptr, PRG_NOT_STARTED, true);
   }
 
-  assert(chunk);
+  SALDL_ASSERT(chunk);
   return chunk;
 }
 
@@ -147,7 +147,7 @@ void* queue_next_thread(void *void_info_ptr) {
   info_s *info_ptr = (info_s*)void_info_ptr;
 
   /* Thread entered */
-  assert(info_ptr->ev_queue.event_status == EVENT_NULL);
+  SALDL_ASSERT(info_ptr->ev_queue.event_status == EVENT_NULL);
   info_ptr->ev_queue.event_status = EVENT_THREAD_STARTED;
 
   /* event loop */

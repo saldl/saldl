@@ -62,7 +62,7 @@ int tty_width() {
 
 void set_color(size_t *no_color) {
 
-  assert(no_color);
+  SALDL_ASSERT(no_color);
 
   ret_char = RET_CHAR;
   bold = BOLD;
@@ -103,8 +103,8 @@ void set_color(size_t *no_color) {
 
 void set_verbosity(size_t *verbosity, bool *libcurl_verbosity) {
 
-  assert(verbosity);
-  assert(libcurl_verbosity);
+  SALDL_ASSERT(verbosity);
+  SALDL_ASSERT(libcurl_verbosity);
 
   debug_event_msg = debug_msg = info_msg = warn_msg = err_msg = (log_func *)null_msg;
 
