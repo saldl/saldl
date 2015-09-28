@@ -117,12 +117,13 @@ void prep_next(info_s *info_ptr, thread_s *thread, chunk_s *chunk, int init) {
 
 void queue_next_chunk(info_s *info_ptr, size_t thr_idx, int init) {
 
+  thread_s *thr = &info_ptr->threads[thr_idx];
   chunk_s *chunk = pick_next(info_ptr);
-  prep_next(info_ptr, &info_ptr->threads[thr_idx], chunk, init);
+
+  prep_next(info_ptr, thr, chunk, init);
 
   /* Fetch */
-  pthread_create(&info_ptr->threads[thr_idx].chunk->thr_id,NULL,thread_func,&info_ptr->threads[thr_idx]);
-
+  saldl_pthread_create(&thr->chunk->thr_id, NULL, thread_func, thr);
 }
 
 static void queue_next_cb(evutil_socket_t fd, short what, void *arg) {

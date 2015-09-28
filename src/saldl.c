@@ -95,12 +95,12 @@ int sal_dl(saldl_params *params_ptr) {
   }
 
   /* Create event pthreads */
-  pthread_create(&info.trigger_events_pth,NULL,events_trigger_thread,&info);
-  pthread_create(&info.sync_ctrl_pth,NULL,sync_ctrl,&info);
+  saldl_pthread_create(&info.trigger_events_pth, NULL, events_trigger_thread, &info);
+  saldl_pthread_create(&info.sync_ctrl_pth, NULL, sync_ctrl, &info);
   if (info.chunk_count != 1) {
-    pthread_create(&info.status_display_pth,NULL,status_display,&info);
-    pthread_create(&info.queue_next_pth,NULL,queue_next_thread,&info);
-    pthread_create(&info.merger_pth,NULL,merger_thread,&info);
+    saldl_pthread_create(&info.status_display_pth, NULL, status_display, &info);
+    saldl_pthread_create(&info.queue_next_pth, NULL, queue_next_thread, &info);
+    saldl_pthread_create(&info.merger_pth, NULL, merger_thread, &info);
   }
 
   /* Now that everything is initialized */

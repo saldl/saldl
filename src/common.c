@@ -136,6 +136,17 @@ int saldl_mkdir(const char *path, mode_t mode) {
 #endif
 }
 
+int saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg) {
+  int ret = pthread_create(thread, attr, start_routine, arg);
+
+  if (ret) {
+    pre_fatal(FN, "Failed with error: %s.\n", strerror(ret));
+    fatal(FN, "Please check your privileges and system limits.\n");
+  }
+
+  return 0;
+}
+
 void saldl_block_sig_pth() {
 #ifdef HAVE_SIGADDSET
   /* Don't interrupt thread, Let the signal handler work properly */
