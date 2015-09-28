@@ -1,0 +1,33 @@
+SALDL_VERSION = `git describe --tags --long --dirty`
+
+BLD_DIR = build_internal
+
+DEFINES = -D_GNU_SOURCE -DHAVE_STRSIGNAL -DHAVE_STRCASESTR -DHAVE_MKDIR -DHAVE_CLOCK_MONOTONIC_RAW -DHAVE_SIGACTION -DHAVE_SIGADDSET -DHAVE_IOCTL -D_FILE_OFFSET_BITS=64 -DSALDL_VERSION=\"$(SALDL_VERSION)\"
+
+COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute
+COMMON_LIBS = -levent_pthreads -levent -lcurl -pthread
+
+CRCS = common.c log.c utime.c exit.c events.c progress.c resume.c status.c ctrl.c merge.c queue.c transfer.c saldl.c main.c
+OBJS = $(patsubst %.c,${BLD_DIR}/%.o,${CRCS})
+
+HEADER_NAMES = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ctrl.h merge.h queue.h saldl.h saldl_params.h structs.h transfer.h vt100.h defaults.h
+HEADERS = $(patsubst %,src/%,${HEADER_NAMES})
+
+all: prep-internal saldl
+
+prep:
+	$(eval CFLAGS = ${COMMON_CFLAGS} ${CFLAGS})
+	$(eval LDFLAGS = ${COMMON_LDFLAGS} ${LDFLAGS})
+	$(eval LIBS = ${COMMON_LIBS} ${LIBS})
+
+prep-internal: prep
+	mkdir -p ${BLD_DIR}
+
+${OBJS}: ${SRCS} $(HEADERS)
+	${CC} -c src/$(notdir ${@:.o=.c}) -o ${@} ${CFLAGS} ${DEFINES}
+
+saldl: $(OBJS)
+	${CC} -o ${BLD_DIR}/saldl ${OBJS} ${CFLAGS} ${LDFLAGS} ${LIBS}
+
+clean:
+	-rm -rf ${BLD_DIR}/
