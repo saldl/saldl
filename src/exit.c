@@ -85,7 +85,7 @@ void exit_routine() {
 
   }
 
-  info_msg(FN, "done\n.");
+  info_msg(FN, "done.\n");
 }
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */
