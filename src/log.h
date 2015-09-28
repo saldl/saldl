@@ -23,7 +23,7 @@
 #error redefining SALDL_LOG_H
 #endif
 
-#include <assert.h>
+#include "defaults.h"
 
 #include <stdbool.h>
 #include <stdio.h>

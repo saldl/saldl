@@ -23,6 +23,12 @@
 #error redefining SALDL_SALDL_DEFAULTS_H
 #endif
 
+/* We rely on assertions for many checks. So, we don't allow them to
+ * be disabled.
+ */
+#undef NDEBUG
+#include <assert.h>
+
 /* Project Info */
 #define SALDL_NAME "saldl"
 #define SALDL_WWW "https://saldl.github.io"

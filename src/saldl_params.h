@@ -24,7 +24,6 @@
 #endif
 
 #include <stdbool.h>
-#include "defaults.h"
 
 typedef struct {
   bool print_version;
