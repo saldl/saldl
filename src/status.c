@@ -193,7 +193,7 @@ void* status_display(void *void_info_ptr) {
     fputs_count(lines, "\n", stderr);
   }
 
-  if (chunks_status) free(chunks_status);
+  free(chunks_status);
   return info_ptr;
 }
 

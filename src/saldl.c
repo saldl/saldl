@@ -150,16 +150,16 @@ int sal_dl(saldl_params *params_ptr) {
   free(info.chunks);
   free(info.threads);
   free(params_ptr->filename);
-  if (params_ptr->attachment_filename) free(params_ptr->attachment_filename);
-  if (params_ptr->inline_cookies) free(params_ptr->inline_cookies);
-  if (params_ptr->root_dir) free(params_ptr->root_dir);
-  if (params_ptr->user_agent) free(params_ptr->user_agent);
-  if (params_ptr->post) free(params_ptr->post);
-  if (params_ptr->raw_post) free(params_ptr->raw_post);
-  if (params_ptr->cookie_file) free(params_ptr->cookie_file);
-  if (params_ptr->referer) free(params_ptr->referer);
-  if (params_ptr->proxy) free(params_ptr->proxy);
-  if (params_ptr->tunnel_proxy) free(params_ptr->tunnel_proxy);
+  free(params_ptr->attachment_filename);
+  free(params_ptr->inline_cookies);
+  free(params_ptr->root_dir);
+  free(params_ptr->user_agent);
+  free(params_ptr->post);
+  free(params_ptr->raw_post);
+  free(params_ptr->cookie_file);
+  free(params_ptr->referer);
+  free(params_ptr->proxy);
+  free(params_ptr->tunnel_proxy);
 
   fprintf(stderr, "%s\n", finish_msg);
   return 0;

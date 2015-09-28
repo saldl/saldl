@@ -21,9 +21,7 @@
 #include "ctrl.h"
 
 void ctrl_cleanup_info(ctrl_info_s *ctrl) {
-  if (ctrl->chunks_progress_str) {
-    free(ctrl->chunks_progress_str);
-  }
+  free(ctrl->chunks_progress_str);
   ctrl = NULL;
 }
 

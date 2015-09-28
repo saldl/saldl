@@ -174,7 +174,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     }
   }
 
-  if (header) free(header);
+  free(header);
   return size * nmemb;
 }
 
@@ -398,7 +398,7 @@ static void set_names(info_s* info_ptr) {
         info_msg(FN, "Before stripping GET attrs: %s\n", pre_filename);
         info_msg(FN, "After  stripping GET attrs: %s\n", params_ptr->filename);
       }
-      if (pre_filename) free(pre_filename);
+      free(pre_filename);
     }
 
   }
@@ -929,7 +929,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     else {
       char *default_agent = saldl_user_agent();
       curl_easy_setopt(thread->ehandle, CURLOPT_USERAGENT, default_agent);
-      if (default_agent) free(default_agent);
+      free(default_agent);
     }
   }
 
