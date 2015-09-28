@@ -47,6 +47,7 @@ char* saldl_lstrip(char *str);
 void* saldl_calloc(size_t nmemb, size_t size);
 void* saldl_malloc(size_t size);
 void* saldl_realloc(void *ptr, size_t size);
+char* saldl_strdup(const char *str);
 long fsize(FILE *f);
 off_t fsizeo(FILE *f);
 off_t fsize2(char *fname);

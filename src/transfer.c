@@ -27,7 +27,7 @@
 #endif
 
 static void set_inline_cookies(CURL *handle, char *cookie_str) {
-  char *copy_cookie_str = strdup(cookie_str);
+  char *copy_cookie_str = saldl_strdup(cookie_str);
   char *curr = copy_cookie_str, *next = NULL, *sep = NULL, *cookie = NULL;
   do {
     sep = strstr(curr, ";");
@@ -103,7 +103,7 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
 
 static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *userdata) {
   info_s *info_ptr = userdata;
-  char *header = strdup(ptr);
+  char *header = saldl_strdup(ptr);
   char *tmp;
 
   /* Strip \r\n */
@@ -122,7 +122,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
 
   if (strcasestr(header, "Content-Type:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
-    info_ptr->content_type = strdup(h_info);
+    info_ptr->content_type = saldl_strdup(h_info);
 
     if (strcasestr(h_info, "gzip")) {
       debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
@@ -169,7 +169,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
 
       /* Pass the result to attachment_filename */
       debug_msg(FN, "Before basename: %s\n", tmp);
-      info_ptr->params->attachment_filename = strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
+      info_ptr->params->attachment_filename = saldl_strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
       debug_msg(FN, "After basename: %s\n", info_ptr->params->attachment_filename);
     }
   }
@@ -221,7 +221,7 @@ static void check_redirects(CURL *handle, info_s *info_ptr) {
 
   if (redirects) {
     curl_easy_getinfo(handle, CURLINFO_EFFECTIVE_URL, &url);
-    info_ptr->params->url = strdup(url); /* Note: strdup() because the pointer will be killed after curl_easy_cleanup() */
+    info_ptr->params->url = saldl_strdup(url); /* Note: strdup() because the pointer will be killed after curl_easy_cleanup() */
     info_ptr->redirected = true;
   }
 }
@@ -361,9 +361,9 @@ static void set_names(info_s* info_ptr) {
 
     /* Get initial filename (=url if no attachment name) */
     if (params_ptr->attachment_filename) {
-      prev_unescaped = strdup(params_ptr->attachment_filename);
+      prev_unescaped = saldl_strdup(params_ptr->attachment_filename);
     } else {
-      prev_unescaped = strdup(params_ptr->url);
+      prev_unescaped = saldl_strdup(params_ptr->url);
     }
 
     /* unescape name/url */
@@ -377,15 +377,15 @@ static void set_names(info_s* info_ptr) {
 
     /* keep attachment name ,if present, as is. basename() unescaped url */
     if (params_ptr->attachment_filename) {
-      params_ptr->filename = strdup(unescaped);
+      params_ptr->filename = saldl_strdup(unescaped);
     } else {
-      params_ptr->filename = strdup(basename(unescaped));
+      params_ptr->filename = saldl_strdup(basename(unescaped));
     }
     curl_free(unescaped);
 
     /* Finally, remove GET atrrs if present */
     if (!params_ptr->keep_GET_attrs) {
-      char *pre_filename = strdup(params_ptr->filename);
+      char *pre_filename = saldl_strdup(params_ptr->filename);
       char *q = strrchr(params_ptr->filename, '?');
 
       if (q) {

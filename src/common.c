@@ -50,7 +50,7 @@ char* windows_exe_path() {
     *sep_pos = '\0';
   }
 
-  return strdup(path);
+  return saldl_strdup(path);
 }
 #endif
 
@@ -91,6 +91,14 @@ void* saldl_realloc(void *ptr, size_t size) {
   p = realloc(ptr, size);
   assert(p);
   return p;
+}
+
+char* saldl_strdup(const char *str) {
+  char *dup = NULL;
+  assert(str);
+  dup = strdup(str);
+  assert(dup);
+  return dup;
 }
 
 long fsize(FILE *f) {
@@ -226,7 +234,7 @@ size_t saldl_max_z_umax(uintmax_t a, uintmax_t b) {
 }
 
 char* valid_filename(const char *pre_valid) {
-  char *corrected_name = strdup(pre_valid);
+  char *corrected_name = saldl_strdup(pre_valid);
   while ( strchr(corrected_name,'/') ) {
     memset(strchr(corrected_name,'/') , '_', 1);
   }
@@ -249,26 +257,26 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
 
   if (!pre_trunc) return NULL;
 
-  trunc_name = strdup(pre_trunc); /* allocates enough bits */
+  trunc_name = saldl_strdup(pre_trunc); /* allocates enough bits */
 
-  pre_trunc_copy = strdup(pre_trunc);
+  pre_trunc_copy = saldl_strdup(pre_trunc);
   tmp_dirname = dirname(pre_trunc_copy);
   if ( tmp_dirname[0] != '.' ) {
     snprintf(dir_name,PATH_MAX,"%s/", tmp_dirname);
   }
   free(pre_trunc_copy);
 
-  ext_str = ext_str_empty = strdup("");
+  ext_str = ext_str_empty = saldl_strdup("");
   if (keep_ext) {
     ext_str = strrchr(pre_trunc, '.');
     if (!ext_str) ext_str = ext_str_empty;
     ext_len = strlen(ext_str);
   }
 
-  pre_trunc_copy = strdup(pre_trunc);
+  pre_trunc_copy = saldl_strdup(pre_trunc);
   tmp_basename = basename(pre_trunc_copy);
   tmp_basename[ strlen(tmp_basename) - ext_len ] = '\0';
-  base_name = strdup(tmp_basename);
+  base_name = saldl_strdup(tmp_basename);
   snprintf(base_name,NAME_MAX-EXT_LEN-ext_len,"%s", tmp_basename);
   free(pre_trunc_copy);
 

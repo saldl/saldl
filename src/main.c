@@ -159,7 +159,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->connection_max_rate = parse_num_z(optarg, 1);
         break;
       case 'u':
-        params_ptr->user_agent = strdup(optarg);
+        params_ptr->user_agent = saldl_strdup(optarg);
         break;
       case 'U':
         params_ptr->no_user_agent = true;
@@ -171,28 +171,28 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->no_decompress= true;
         break;
       case 'p':
-        params_ptr->post = strdup(optarg);
+        params_ptr->post = saldl_strdup(optarg);
         break;
       case 'P':
-        params_ptr->raw_post = strdup(optarg);
+        params_ptr->raw_post = saldl_strdup(optarg);
         break;
       case 'k':
-        params_ptr->inline_cookies = strdup(optarg);
+        params_ptr->inline_cookies = saldl_strdup(optarg);
         break;
       case 'K':
-        params_ptr->cookie_file = strdup(optarg);
+        params_ptr->cookie_file = saldl_strdup(optarg);
         break;
       case 'e':
-        params_ptr->referer = strdup(optarg);
+        params_ptr->referer = saldl_strdup(optarg);
         break;
       case 'E':
         params_ptr->auto_referer = true;
         break;
       case 'x':
-        params_ptr->proxy = strdup(optarg);
+        params_ptr->proxy = saldl_strdup(optarg);
         break;
       case 'X':
-        params_ptr->tunnel_proxy = strdup(optarg);
+        params_ptr->tunnel_proxy = saldl_strdup(optarg);
         break;
       case 'N':
         params_ptr->no_proxy = true;
@@ -222,10 +222,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->dry_run = true;
         break;
       case 'D':
-        params_ptr->root_dir = strdup(optarg);
+        params_ptr->root_dir = saldl_strdup(optarg);
         break;
       case 'o':
-        params_ptr->filename= strdup(optarg);
+        params_ptr->filename= saldl_strdup(optarg);
         break;
       case 't':
         params_ptr->auto_trunc= true;
