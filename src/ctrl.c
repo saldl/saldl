@@ -22,7 +22,6 @@
 
 void ctrl_cleanup_info(ctrl_info_s *ctrl) {
   free(ctrl->chunks_progress_str);
-  ctrl = NULL;
 }
 
 int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
