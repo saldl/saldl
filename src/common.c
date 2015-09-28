@@ -144,7 +144,7 @@ int saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*
     fatal(FN, "Please check your privileges and system limits.\n");
   }
 
-  return 0;
+  return ret;
 }
 
 void saldl_block_sig_pth() {
