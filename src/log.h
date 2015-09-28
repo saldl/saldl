@@ -83,6 +83,7 @@ log_func def_debug_msg;
 log_func def_info_msg;
 log_func def_warn_msg;
 log_func def_err_msg;
+log_func pre_fatal;
 log_func fatal;
 void null_msg();
 

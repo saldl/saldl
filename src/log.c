@@ -178,6 +178,18 @@ void def_err_msg(const char *name, const char *format, ...) {
   va_end(args);
 }
 
+void pre_fatal(const char *name, const char *format, ...) {
+  /* Use this if you want multi-line fatal messages.
+   * The last call should be fatal().
+   */
+  va_list args;
+  if (format) {
+    va_start(args,format);
+    log_stderr(fatal_msg_prefix, name, format, args);
+    va_end(args);
+  }
+}
+
 void fatal(const char *name, const char *format, ...) {
   va_list args;
   exit_routine();
