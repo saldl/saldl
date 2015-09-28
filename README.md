@@ -24,8 +24,8 @@ Detailed documentation is available in a form of a [manual page](https://saldl.g
 
 ## Dependencies
 
-* libcurl (https://github.com/bagder/curl)
-* libevent + libevent_pthreads (https://github.com/libevent/libevent)
+* [libcurl](https://github.com/bagder/curl) >= 7.42
+* [libevent + libevent_pthreads](https://github.com/libevent/libevent) >= 2.0.20
 
 ## Build Dependencies
 
