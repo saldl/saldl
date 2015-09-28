@@ -289,7 +289,6 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 }
 
 int main(int argc,char **argv) {
-
   int counter;
   int full_argc = argc;
   char **full_argv = saldl_calloc(argc, sizeof(char *));

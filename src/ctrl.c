@@ -52,8 +52,6 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
       fatal(FN, "Reading the ctrl file failed. Are you sure it's not corrupt!\n");
     }
 
-
-
     if ( fgetc(f_ctrl) != (char)EOF ) {
       fatal(FN, "ctrl file should have ended here.\n");
     }
