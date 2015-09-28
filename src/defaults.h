@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_SALDL_DEFAULTS_H
-#define _SALDL_SALDL_DEFAULTS_H
+#ifndef SALDL_SALDL_DEFAULTS_H
+#define SALDL_SALDL_DEFAULTS_H
 #else
-#error redefining _SALDL_SALDL_DEFAULTS_H
+#error redefining SALDL_SALDL_DEFAULTS_H
 #endif
 
 /* Project Info */

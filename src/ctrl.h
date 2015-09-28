@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_CTRL_H
-#define _SALDL_CTRL_H
+#ifndef SALDL_CTRL_H
+#define SALDL_CTRL_H
 #else
-#error redefining _SALDL_CTRL_H
+#error redefining SALDL_CTRL_H
 #endif
 
 typedef struct {

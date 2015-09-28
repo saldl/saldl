@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_VT100_H
-#define _SALDL_VT100_H
+#ifndef SALDL_VT100_H
+#define SALDL_VT100_H
 #else
-#error redefining _SALDL_VT100_H
+#error redefining SALDL_VT100_H
 #endif
 
 /* vt100 color and formatting defs  */

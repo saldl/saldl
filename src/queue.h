@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_QUEUE_H
-#define _SALDL_QUEUE_H
+#ifndef SALDL_QUEUE_H
+#define SALDL_QUEUE_H
 #else
-#error redefining _SALDL_QUEUE_H
+#error redefining SALDL_QUEUE_H
 #endif
 
 void* queue_next_thread(void *void_info_ptr);

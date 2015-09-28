@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_MERGE_H
-#define _SALDL_MERGE_H
+#ifndef SALDL_MERGE_H
+#define SALDL_MERGE_H
 #else
-#error redefining _SALDL_MERGE_H
+#error redefining SALDL_MERGE_H
 #endif
 
 void* merger_thread(void *void_info_ptr);

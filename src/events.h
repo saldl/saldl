@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_EVENTS_H
-#define _SALDL_EVENTS_H
+#ifndef SALDL_EVENTS_H
+#define SALDL_EVENTS_H
 #else
-#error redefining _SALDL_EVENTS_H
+#error redefining SALDL_EVENTS_H
 #endif
 
 #include "transfer.h"

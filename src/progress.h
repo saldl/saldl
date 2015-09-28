@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_PROGRESS_H
-#define _SALDL_PROGRESS_H
+#ifndef SALDL_PROGRESS_H
+#define SALDL_PROGRESS_H
 #else
-#error redefining _SALDL_PROGRESS_H
+#error redefining SALDL_PROGRESS_H
 #endif
 
 /* enum for chunk progress */

@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_STATUS_H
-#define _SALDL_STATUS_H
+#ifndef SALDL_STATUS_H
+#define SALDL_STATUS_H
 #else
-#error redefining _SALDL_STATUS_H
+#error redefining SALDL_STATUS_H
 #endif
 
 void* status_display(void *void_info_ptr);

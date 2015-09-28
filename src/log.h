@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_LOG_H
-#define _SALDL_LOG_H
+#ifndef SALDL_LOG_H
+#define SALDL_LOG_H
 #else
-#error redefining _SALDL_LOG_H
+#error redefining SALDL_LOG_H
 #endif
 
 #include <assert.h>

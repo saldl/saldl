@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_COMMON_H
-#define _SALDL_COMMON_H
+#ifndef SALDL_COMMON_H
+#define SALDL_COMMON_H
 #else
-#error redefining _SALDL_COMMON_H
+#error redefining SALDL_COMMON_H
 #endif
 
 #include <string.h>

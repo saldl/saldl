@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_RESUME_H
-#define _SALDL_RESUME_H
+#ifndef SALDL_RESUME_H
+#define SALDL_RESUME_H
 #else
-#error redefining _SALDL_RESUME_H
+#error redefining SALDL_RESUME_H
 #endif
 
 int check_resume(info_s *info_ptr);

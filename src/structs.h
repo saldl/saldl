@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_STRUCTS_H
-#define _SALDL_STRUCTS_H
+#ifndef SALDL_STRUCTS_H
+#define SALDL_STRUCTS_H
 #else
-#error redefining _SALDL_STRUCTS_H
+#error redefining SALDL_STRUCTS_H
 #endif
 
 #include <pthread.h>

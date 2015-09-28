@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SALDL_EXIT_H
-#define _SALDL_EXIT_H
+#ifndef SALDL_EXIT_H
+#define SALDL_EXIT_H
 #else
-#error redefining _SALDL_EXIT_H
+#error redefining SALDL_EXIT_H
 #endif
 
 void saldl_handle_signals();
