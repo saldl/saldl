@@ -152,8 +152,7 @@ void saldl_block_sig_pth() {
   sigemptyset(&set);
   sigaddset(&set, SIGINT);
   sigaddset(&set, SIGTERM);
-  int ret_sigmask = pthread_sigmask(SIG_SETMASK, &set, NULL);
-  SALDL_ASSERT(!ret_sigmask);
+  SALDL_ASSERT(!pthread_sigmask(SIG_SETMASK, &set, NULL));
 #endif
 }
 
@@ -162,8 +161,8 @@ void saldl_unblock_sig_pth() {
   /* Unblock any blocked signals, */
   sigset_t set;
   sigemptyset(&set);
-  int ret_sigmask = pthread_sigmask(SIG_SETMASK, &set, NULL);
-  SALDL_ASSERT(!ret_sigmask);
+  SALDL_ASSERT(!pthread_sigmask(SIG_SETMASK, &set, NULL));
+
 #endif
 }
 
