@@ -35,9 +35,8 @@ void saldl_handle_signals() {
     sa.sa_handler = sig_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    int ret1 = sigaction(SIGINT, &sa, NULL);
-    int ret2 = sigaction(SIGTERM, &sa, NULL);
-    SALDL_ASSERT(!ret1 && !ret2);
+    SALDL_ASSERT(!sigaction(SIGINT, &sa, NULL));
+    SALDL_ASSERT(!sigaction(SIGTERM, &sa, NULL));
 #else
     signal(SIGINT, sig_handler);
     signal(SIGTERM, sig_handler);

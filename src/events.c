@@ -54,10 +54,9 @@ void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVE
   saldl_block_sig_pth();
 
   /* initialize mutex */
-  int ret_attr_init = pthread_mutexattr_init(&ev_this->ev_mutex_attr);
-  int ret_attr_settype = pthread_mutexattr_settype(&ev_this->ev_mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
-  int ret_mutex_init = pthread_mutex_init(&ev_this->ev_mutex, &ev_this->ev_mutex_attr);
-  SALDL_ASSERT(!ret_attr_init && !ret_attr_settype && !ret_mutex_init);
+  SALDL_ASSERT(!pthread_mutexattr_init(&ev_this->ev_mutex_attr));
+  SALDL_ASSERT(!pthread_mutexattr_settype(&ev_this->ev_mutex_attr, PTHREAD_MUTEX_ERRORCHECK));
+  SALDL_ASSERT(!pthread_mutex_init(&ev_this->ev_mutex, &ev_this->ev_mutex_attr));
 
   /* Max time-out between events */
   if (!ev_this->tv.tv_sec && !ev_this->tv.tv_usec) { // keep tv as-is if it's already set
