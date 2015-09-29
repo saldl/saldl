@@ -1070,6 +1070,10 @@ void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
 }
 
 void reset_storage_tmpf(thread_s *thread) {
+  SALDL_ASSERT(thread);
+  SALDL_ASSERT(thread->chunk);
+  SALDL_ASSERT(thread->chunk->storage);
+
   file_s *storage = thread->chunk->storage;
   fflush(storage->file);
   thread->chunk->size_complete = saldl_max(fsize(storage->file), 4096) - 4096;
