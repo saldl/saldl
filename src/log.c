@@ -192,12 +192,12 @@ void pre_fatal(const char *name, const char *format, ...) {
 
 void fatal_abort(const char *name, const char *format, ...) {
   va_list args;
-  exit_routine();
   if (format) {
     va_start(args,format);
     log_stderr(fatal_msg_prefix, name, format, args);
     va_end(args);
   }
+  exit_routine();
   raise(SIGABRT);
   /* Convince the compiler that this function will not return */
   exit(EXIT_FAILURE);
@@ -205,12 +205,12 @@ void fatal_abort(const char *name, const char *format, ...) {
 
 void fatal(const char *name, const char *format, ...) {
   va_list args;
-  exit_routine();
   if (format) {
     va_start(args,format);
     log_stderr(fatal_msg_prefix, name, format, args);
     va_end(args);
   }
+  exit_routine();
   exit(EXIT_FAILURE);
 }
 
