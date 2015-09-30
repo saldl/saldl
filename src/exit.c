@@ -44,9 +44,19 @@ void saldl_handle_signals() {
 }
 
 void exit_routine() {
-  info_msg(FN, "Running exit routine.\n");
 
   if (info_global) {
+
+    if (info_global->called_exit) {
+      /* Recursive calls to exit_routine() will probably cause more
+       * harm than good. Just return here and call it a day. */
+      debug_msg(FN, "exit_routine() was already called, skipping..\n");
+      return;
+    }
+    else {
+      info_global->called_exit = true;
+      debug_msg(FN, "Running exit_routine()\n");
+    }
 
     /* We don't want any interruptions */
     saldl_block_sig_pth();
@@ -84,7 +94,7 @@ void exit_routine() {
 
   }
 
-  info_msg(FN, "done.\n");
+  debug_msg(FN, "done.\n");
 }
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

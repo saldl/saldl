@@ -185,6 +185,7 @@ typedef struct {
   event_s ev_queue;
   event_s ev_status;
   event_s ev_ctrl;
+  bool called_exit;
 } info_s;
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */
