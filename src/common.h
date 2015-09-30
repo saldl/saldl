@@ -28,7 +28,6 @@
 #include <limits.h>
 #include <libgen.h> /* basename() */
 #include <inttypes.h> /* strtoimax(), strtoumax() */
-#include <signal.h>
 #include <sys/stat.h> /* mkdir(), stat() */
 
 #include "log.h"

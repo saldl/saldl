@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdarg.h> /* va stuff */
+#include <signal.h>
 
 #define FN __func__
 #define FL __FILE__
@@ -50,8 +51,8 @@
     if (!(cond)) {\
       pre_fatal(FL, "Assert[%s/%d]: ", FN, LN);\
       fputs(STR((cond)) ".\n", stderr);\
-      pre_fatal(NULL, "Your system is in bad shape, or this could be a bug in saldl.");\
-      fatal(NULL, "Please file a bug report: %s\n", SALDL_BUG);\
+      pre_fatal(NULL, "Your system is in bad shape, or this could be a bug in saldl.\n");\
+      fatal_abort(NULL, "Please file a bug report: %s\n", SALDL_BUG);\
     }\
   } while(0)
 
@@ -96,6 +97,7 @@ log_func def_info_msg;
 log_func def_warn_msg;
 log_func def_err_msg;
 log_func pre_fatal;
+log_func  __attribute__((__noreturn__)) fatal_abort;
 log_func  __attribute__((__noreturn__)) fatal;
 void null_msg();
 
