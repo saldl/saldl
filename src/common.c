@@ -56,6 +56,7 @@ char* windows_exe_path() {
 
 char* saldl_lstrip(char *str) {
   char *tmp = str;
+  SALDL_ASSERT(tmp);
 
   while (*tmp == ' ' || *tmp == '\t') {
     tmp++;
@@ -102,8 +103,12 @@ char* saldl_strdup(const char *str) {
 }
 
 long fsize(FILE *f) {
-  long curr = ftell(f);
+  long curr;
   long size;
+
+  SALDL_ASSERT(f);
+
+  curr = ftell(f);
   fseek(f, 0l, SEEK_END);
   size = ftell(f);
   fseek(f, curr, SEEK_SET);
@@ -111,8 +116,12 @@ long fsize(FILE *f) {
 }
 
 off_t fsizeo(FILE *f) {
-  off_t curr = ftello(f);
+  off_t curr;
   off_t size;
+
+  SALDL_ASSERT(f);
+
+  curr = ftello(f);
   fseeko(f, 0, SEEK_END);
   size = ftello(f);
   fseeko(f, curr, SEEK_SET);
@@ -120,12 +129,17 @@ off_t fsizeo(FILE *f) {
 }
 
 off_t fsize2(char *fname) {
+  int ret;
   struct stat st = {0};
-  int ret = stat(fname, &st);
+
+  SALDL_ASSERT(fname);
+
+  ret = stat(fname, &st);
   return ret ? ret : st.st_size;
 }
 
 int saldl_mkdir(const char *path, mode_t mode) {
+  SALDL_ASSERT(path);
 #ifdef HAVE__MKDIR
   (void) mode;
   return _mkdir(path);
@@ -242,7 +256,11 @@ size_t saldl_max_z_umax(uintmax_t a, uintmax_t b) {
 }
 
 char* valid_filename(const char *pre_valid) {
-  char *corrected_name = saldl_strdup(pre_valid);
+  char *corrected_name;
+
+  SALDL_ASSERT(pre_valid);
+
+  corrected_name = saldl_strdup(pre_valid);
   while ( strchr(corrected_name,'/') ) {
     memset(strchr(corrected_name,'/') , '_', 1);
   }
@@ -263,8 +281,7 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   char *ext_str, *ext_str_empty;
   size_t ext_len = 0;
 
-  if (!pre_trunc) return NULL;
-
+  SALDL_ASSERT(pre_trunc);
   trunc_name = saldl_strdup(pre_trunc); /* allocates enough bits */
 
   pre_trunc_copy = saldl_strdup(pre_trunc);
