@@ -229,6 +229,8 @@ static long num_redirects(CURL *handle) {
 static void check_redirects(CURL *handle, info_s *info_ptr) {
   long redirects;
   char *url;
+
+  SALDL_ASSERT(handle);
   curl_easy_getinfo(handle, CURLINFO_REDIRECT_COUNT, &redirects);
 
   if (redirects) {
