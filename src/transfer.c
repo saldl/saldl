@@ -119,6 +119,10 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     }
   }
 
+  if (strcasestr(header, "Content-Encoding:") == header) {
+    info_ptr->untrusted_file_size = true;
+  }
+
   if (strcasestr(header, "Content-Type:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
     info_ptr->content_type = saldl_strdup(h_info);
@@ -721,7 +725,9 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
     if (p->initialized) {
 
       if (!info_ptr->file_size && dltotal) {
+        debug_msg(FN, "Setting file_size from dltotal=%ju\n", dltotal);
         info_ptr->file_size = dltotal;
+        info_ptr->untrusted_file_size = true;
       }
 
       curl_off_t offset = dltotal && info_ptr->file_size > dltotal ? (curl_off_t)info_ptr->file_size - dltotal : 0;
