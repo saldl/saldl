@@ -167,6 +167,7 @@ typedef struct {
   bool extra_resume_set;
   char *content_type;
   bool redirected;
+  long redirects_count;
   FILE* file;
   FILE* ctrl_file;
   char tmp_dirname[PATH_MAX];

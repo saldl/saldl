@@ -219,6 +219,13 @@ static size_t  mem_write_function(  void  *ptr,  size_t  size, size_t nmemb, voi
   return realsize;
 }
 
+static long num_redirects(CURL *handle) {
+  long redirects = 0;
+  SALDL_ASSERT(handle);
+  curl_easy_getinfo(handle, CURLINFO_REDIRECT_COUNT, &redirects);
+  return redirects;
+}
+
 static void check_redirects(CURL *handle, info_s *info_ptr) {
   long redirects;
   char *url;
@@ -725,6 +732,15 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
   if (info_ptr) {
     progress_s *p = &info_ptr->global_progress;
     if (p->initialized) {
+      long curr_redirects_count = num_redirects(info_ptr->threads[0].ehandle);
+
+      if (info_ptr->file_size_from_dltotal && curr_redirects_count != info_ptr->redirects_count) {
+        debug_msg(FN, "Resetting file_size from dltotal, redirect count changed from %ld to %ld.\n",
+            info_ptr->redirects_count, curr_redirects_count);
+        info_ptr->file_size = 0;
+      }
+
+      info_ptr->redirects_count = curr_redirects_count;
 
       if (!info_ptr->file_size && dltotal) {
         debug_msg(FN, "Setting file_size from dltotal=%ju.\n", dltotal);
