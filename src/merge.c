@@ -87,7 +87,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
     fatal(FN, ".part file failed to seek.\n");
   }
 
-  fflush(tmp_f->file);
+  saldl_fflush(tmp_f->file);
   tmp_buf = saldl_calloc(size, sizeof(char));
 
   if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
@@ -97,7 +97,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
     fatal(FN, "Write to file %s failed at offset %jd: %s\n", tmp_f->name, (intmax_t)offset, strerror(errno));
   }
 
-  fflush(f); /* Very important, especially if the process was killed/interrupted */
+  saldl_fflush(f); /* Very important, especially if the process was killed/interrupted */
 
   set_chunk_merged(chunk);
 

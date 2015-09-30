@@ -24,7 +24,6 @@
 #endif
 
 #include <string.h>
-#include <errno.h>
 
 /*#include "vt100.h"*/
 #include "common.h"

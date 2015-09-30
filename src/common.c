@@ -102,6 +102,15 @@ char* saldl_strdup(const char *str) {
   return dup;
 }
 
+void saldl_fflush(FILE *f) {
+  int ret;
+  SALDL_ASSERT(f);
+  ret = fflush(f);
+  if (ret) {
+    fatal(FN, "%s\n", strerror(errno));
+  }
+}
+
 long fsize(FILE *f) {
   long curr;
   long size;

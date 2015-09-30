@@ -186,11 +186,11 @@ static size_t file_write_function(void  *ptr, size_t  size, size_t nmemb, void *
     return 0;
   }
 
-  fflush(tmp_f->file);
+  saldl_fflush(tmp_f->file);
   if ( fwrite(ptr, size, nmemb, tmp_f->file) !=  nmemb ) {
     fatal(FN, "Writing %zu bytes to file %s failed: %s\n", realsize, tmp_f->name, strerror(errno));
   }
-  fflush(tmp_f->file);
+  saldl_fflush(tmp_f->file);
 
   return realsize;
 }
@@ -1075,7 +1075,7 @@ void reset_storage_tmpf(thread_s *thread) {
   SALDL_ASSERT(thread->chunk->storage);
 
   file_s *storage = thread->chunk->storage;
-  fflush(storage->file);
+  saldl_fflush(storage->file);
   thread->chunk->size_complete = saldl_max(fsize(storage->file), 4096) - 4096;
   curl_set_ranges(thread->ehandle, thread->chunk);
   info_msg(FN, "restarting chunk %s from offset %zu\n", storage->name, thread->chunk->size_complete);
