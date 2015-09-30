@@ -133,6 +133,15 @@ int sal_dl(saldl_params *params_ptr) {
   }
 
   /*** Final Steps ***/
+
+  /* One last check  */
+  if (info.file_size) {
+    off_t saved_file_size = fsizeo(info.file);
+    if (saved_file_size != info.file_size) {
+      fatal(NULL, "Unexpected saved file size (%ju!=%ju).\n", saved_file_size, info.file_size);
+    }
+  }
+
   fclose(info.file);
   if (rename(info.part_filename, params_ptr->filename) ) {
     err_msg(NULL, "Failed to rename now-complete %s to %s: %s\n", info.part_filename, params_ptr->filename, strerror(errno));
