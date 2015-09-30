@@ -107,6 +107,7 @@ typedef struct {
   char err_buf[CURL_ERROR_SIZE];
   void (*reset_storage)();
   chunk_s *chunk;
+  bool single;
 } thread_s;
 
 /* chunks_progress_s: progress of all chunks */

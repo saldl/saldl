@@ -1167,7 +1167,7 @@ void saldl_perform(thread_s *thread) {
 
     /* Break if everything went okay */
     if (ret == CURLE_OK && thread->chunk->size_complete == thread->chunk->size) {
-      break;
+      goto saldl_perform_success;
     }
 
     switch (ret) {
@@ -1175,12 +1175,23 @@ void saldl_perform(thread_s *thread) {
         if (thread->chunk->size) {
           if (!thread->chunk->size_complete) {
             /* This happens sometimes, especially when tunneling through proxies! Consider it non-fatal and retry */
-            info_msg(NULL, "libcurl returned CURLE_OK for chunk %zu before getting any data , restarting (retry %zu, delay=%zu).\n", thread->chunk->idx, ++retries, delay);
-          } else {
-            fatal(FN, "libcurl returned CURLE_OK for chunk %zu, but completed size(%zu) != requested size(%zu). This should never happen.\n",
-                thread->chunk->idx ,thread->chunk->size_complete, thread->chunk->size);
+            info_msg(FN, "libcurl returned CURLE_OK for chunk %zu before getting any data , restarting (retry %zu, delay=%zu).\n", thread->chunk->idx, ++retries, delay);
           }
-        } else {
+          else {
+            /* Trust libcurl here if single mode */
+            if (thread->single) {
+              warn_msg(FN, "Returned CURLE_OK, but completed size(%zu) != requested size(%zu).\n",
+                  thread->chunk->size_complete, thread->chunk->size);
+              warn_msg(FN, "We trust libcurl and assume that's okay if single mode.\n");
+              goto saldl_perform_success;
+            }
+            else {
+              fatal(FN, "Returned CURLE_OK for chunk %zu, but completed size(%zu) != requested size(%zu).\n",
+                  thread->chunk->idx ,thread->chunk->size_complete, thread->chunk->size);
+            }
+          }
+        }
+        else {
           return; // Avoid endless loop if server does not report file size
         }
         break;
@@ -1224,6 +1235,7 @@ semi_fatal_perform_retry:
         break;
     }
   }
+saldl_perform_success: ;
 }
 
 void* thread_func(void* threadS) {

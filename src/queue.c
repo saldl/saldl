@@ -98,6 +98,10 @@ void prep_next(info_s *info_ptr, thread_s *thread, chunk_s *chunk, int init) {
   thread->chunk = chunk;
   info_ptr->prepare_storage(thread->chunk, storage_info);
 
+  if (params_ptr->single_mode) {
+    thread->single = true;
+  }
+
   if (init) {
     thread->ehandle = curl_easy_init() ;
     set_params(thread, params_ptr);
