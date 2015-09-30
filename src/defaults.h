@@ -26,6 +26,7 @@
 /* Project Info */
 #define SALDL_NAME "saldl"
 #define SALDL_WWW "https://saldl.github.io"
+#define SALDL_BUG "https://github.com/saldl/saldl/issues"
 
 /* Version is defined by the build system, set to unknown if it wasn't. */
 #ifndef SALDL_VERSION

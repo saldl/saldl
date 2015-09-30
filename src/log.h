@@ -48,7 +48,10 @@
 #define SALDL_ASSERT(cond) \
   do {\
     if (!(cond)) {\
-      fatal(FL, "Assert[%s/%d]: " STR((cond)) ".\n", FN, LN);\
+      pre_fatal(FL, "Assert[%s/%d]: ", FN, LN);\
+      fputs(STR((cond)) ".\n", stderr);\
+      pre_fatal(NULL, "Your system is in bad shape, or this could be a bug in saldl.");\
+      fatal(NULL, "Please file a bug report: %s\n", SALDL_BUG);\
     }\
   } while(0)
 
