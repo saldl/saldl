@@ -173,7 +173,8 @@ typedef struct {
   char part_filename[PATH_MAX];
   char ctrl_filename[PATH_MAX];
   off_t file_size;
-  bool untrusted_file_size;
+  bool file_size_from_dltotal;
+  bool content_encoded;
   thread_s *threads;
   chunk_s *chunks;
   progress_s global_progress;

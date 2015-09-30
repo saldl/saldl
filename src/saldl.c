@@ -135,7 +135,7 @@ int sal_dl(saldl_params *params_ptr) {
   /*** Final Steps ***/
 
   /* One last check  */
-  if (info.file_size && !info.untrusted_file_size) {
+  if (info.file_size && !info.content_encoded && !info.file_size_from_dltotal) {
     off_t saved_file_size = fsizeo(info.file);
     if (saved_file_size != info.file_size) {
       fatal(NULL, "Unexpected saved file size (%ju!=%ju).\n", saved_file_size, info.file_size);
