@@ -332,7 +332,7 @@ int main(int argc,char **argv) {
     return saldl_version();
   }
 
-  sal_dl(&params);
+  saldl(&params);
   free(full_argv);
   return 0;
 }

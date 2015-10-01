@@ -24,7 +24,7 @@
 
 info_s *info_global = NULL; /* Referenced in the signal handler */
 
-int sal_dl(saldl_params *params_ptr) {
+int saldl(saldl_params *params_ptr) {
   /* Definitions */
   info_s info = {0};
   info.params = params_ptr;
