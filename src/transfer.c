@@ -100,55 +100,52 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
   curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
 }
 
-static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *userdata) {
-  info_s *info_ptr = userdata;
-  char *header = saldl_strdup(ptr);
-  char *tmp;
+static void headers_info(info_s *info_ptr) {
+  headers_s *h = &info_ptr->headers;
 
-  /* Strip \r\n */
-  if ( (tmp = strstr(header, "\r\n")) ) {
-    memset(tmp, '\0', 2);
-  }
-
-  if (strcasestr(header, "Content-Range:") == header) {
-    debug_msg(FN, "%s\n", header);
+  if (h->content_range) {
     char *tmp;
+    debug_msg(FN, "Content-Range: %s\n", h->content_range);
 
-    if ( (tmp =strcasestr(header, "/")) ) {
+    if ( (tmp = strcasestr(h->content_range, "/")) ) {
       info_ptr->file_size = parse_num_o(tmp+1, 0);
+      debug_msg(FN, "file size from Content-Range: %ju\n", info_ptr->file_size);
     }
+
+    free(h->content_range);
   }
 
-  if (strcasestr(header, "Content-Encoding:") == header) {
-    char *h_info = saldl_lstrip(header + strlen("Content-Encoding:"));
-    debug_msg(FN, "Content encoded with %s, strict downloaded file size checking will be skipped.\n", h_info);
+  if (h->content_encoding) {
+    debug_msg(FN, "Content-Encoding: %s\n", h->content_encoding);
     info_ptr->content_encoded = true;
+    free(h->content_encoding);
   }
 
-  if (strcasestr(header, "Content-Type:") == header) {
-    char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
-    info_ptr->content_type = saldl_strdup(h_info);
+  if (h->content_type) {
+    /* XXX: content_type block should always be after content_encoding block */
+    debug_msg(FN, "Content-Type: %s\n", h->content_type);
+    info_ptr->content_type = saldl_strdup(h->content_type);
 
-    if (strcasestr(h_info, "gzip")) {
-      debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
-      info_ptr->params->no_compress = true;
+    if (strcasestr(h->content_type, "gzip")) {
+      if (!info_ptr->params->no_compress) {
+        debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
+        info_ptr->params->no_compress = true;
+      }
+
+      info_ptr->content_encoded = false;
+      /* XXX: no_decompress in case Content-Encoding was forced anyway */
+      info_ptr->params->no_decompress = true;
     }
+
+    free(h->content_type);
   }
 
-  if (!info_ptr->params->no_attachment_detection &&
-      (tmp = strcasestr(header, "Content-Disposition:")) == header ) {
+  if (h->content_disposition && !info_ptr->params->no_attachment_detection) {
+    char *tmp;
+    debug_msg(FN, "Content-Disposition: %s\n", h->content_disposition);
 
-    debug_msg(FN, "%s\n", header);
-
-    /* Assumptions:
-     *   1- There is only one assignment in the header line.
-     *   2- The assignment has the filename as an rvalue.
-     *   3- The assignment is located at the end of the header line.
-     * If one of the assumptions is not met. Current code will produce broken results.
-     * Having said that, the relevant RFC and the W3C documentation only show examples
-     * that will work with this code.
-     * */
-    if ( (tmp = strrchr(header, '=')) ) {
+    /* We assume attachment filename is the last assignment */
+    if ( (tmp = strrchr(h->content_disposition, '=')) ) {
       tmp++;
 
       /* Strip ';' if present at the end */
@@ -159,7 +156,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
       /* Strip quotes if they are present */
       if (*tmp == '"') {
         char *end = strrchr(tmp, '"');
-        if (end && (long unsigned)(end - tmp) + 1 == strlen(tmp) ) {
+        if (end && (size_t)(end - tmp + 1) == strlen(tmp) ) {
           debug_msg(FN, "Stripping quotes from %s\n", tmp);
           tmp++;
           *end = '\0';
@@ -177,6 +174,47 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
       info_ptr->params->attachment_filename = saldl_strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
       debug_msg(FN, "After basename: %s\n", info_ptr->params->attachment_filename);
     }
+
+    free(h->content_disposition);
+  }
+
+  if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
+      debug_msg(FN, "Content compressed and will be decompressed.\n");
+      debug_msg(FN, "Strict downloaded file size checking will be skipped.\n");
+    }
+
+}
+
+static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *userdata) {
+  info_s *info_ptr = userdata;
+  headers_s *h = &info_ptr->headers;
+
+  char *header = saldl_strdup(ptr);
+
+  /* Strip \r\n */
+  char *tmp;
+  if ( (tmp = strstr(header, "\r\n")) ) {
+    memset(tmp, '\0', 2);
+  }
+
+  if (strcasestr(header, "Content-Range:") == header) {
+    char *h_info = saldl_lstrip(header + strlen("Content-Range:"));
+    h->content_range = saldl_strdup(h_info);
+  }
+
+  if (strcasestr(header, "Content-Encoding:") == header) {
+    char *h_info = saldl_lstrip(header + strlen("Content-Encoding:"));
+    h->content_encoding = saldl_strdup(h_info);
+  }
+
+  if (strcasestr(header, "Content-Type:") == header) {
+    char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
+    h->content_type = saldl_strdup(h_info);
+  }
+
+  if (strcasestr(header, "Content-Disposition:") == header ) {
+    char *h_info = saldl_lstrip(header + strlen("Content-Disposition:"));
+    h->content_disposition = saldl_strdup(h_info);
   }
 
   free(header);
@@ -532,8 +570,12 @@ void remote_info(info_s *info_ptr) {
    * We also make a 2nd check if filesize was not set. This
    * could happen with non-HTTP protocols like FTP.
    */
-  if (request_remote_info_with_ranges(&tmp, params_ptr) || !info_ptr->file_size) {
+  int ret_ranges = request_remote_info_with_ranges(&tmp, params_ptr);
+  headers_info(info_ptr);
+
+  if (ret_ranges || !info_ptr->file_size) {
     request_remote_info_simple(&tmp);
+    headers_info(info_ptr);
     /* We didn't get file size from Content-Range, so get it from Content-Length */
     info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle);
   }

@@ -151,6 +151,13 @@ typedef struct {
   long pos;
 } control_s;
 
+typedef struct {
+  char *content_range;
+  char *content_encoding;
+  char *content_type;
+  char *content_disposition;
+} headers_s;
+
 /* info_s: mother of all structs */
 typedef struct {
   saldl_params *params;
@@ -177,6 +184,7 @@ typedef struct {
   off_t file_size;
   bool file_size_from_dltotal;
   bool content_encoded;
+  headers_s headers;
   thread_s *threads;
   chunk_s *chunks;
   progress_s global_progress;
