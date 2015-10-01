@@ -788,7 +788,6 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
       if (!info_ptr->file_size && dltotal) {
         debug_msg(FN, "Setting file_size from dltotal=%ju.\n", dltotal);
-        debug_msg(FN, "Strict downloaded file size checking will be skipped.\n");
         info_ptr->file_size = dltotal;
         info_ptr->file_size_from_dltotal = true;
       }
