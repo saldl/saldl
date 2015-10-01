@@ -138,7 +138,10 @@ int sal_dl(saldl_params *params_ptr) {
   if (info.file_size && (!info.content_encoded || params_ptr->no_decompress) && !params_ptr->no_remote_info) {
     off_t saved_file_size = fsizeo(info.file);
     if (saved_file_size != info.file_size) {
-      fatal(NULL, "Unexpected saved file size (%ju!=%ju).\n", saved_file_size, info.file_size);
+      pre_fatal(FN, "Unexpected saved file size (%ju!=%ju).\n", saved_file_size, info.file_size);
+      pre_fatal(FN, "This could happen if you're downloading from a dynamic site.\n");
+      pre_fatal(FN, "If that's the case and the download is small, retry with --no-remote-info\n");
+      fatal(FN, "If you think that's a bug in saldl, report it: https://github.com/saldl/saldl/issues\n");
     }
   }
   else {
