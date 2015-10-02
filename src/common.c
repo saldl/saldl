@@ -102,12 +102,15 @@ char* saldl_strdup(const char *str) {
   return dup;
 }
 
-void saldl_fflush(FILE *f) {
+void saldl_fflush(const char *label, FILE *f) {
   int ret;
+  SALDL_ASSERT(label);
   SALDL_ASSERT(f);
+
   ret = fflush(f);
+
   if (ret) {
-    fatal(FN, "%s\n", strerror(errno));
+    fatal(FN, "Flushing '%s' failed: %s\n", label, strerror(errno));
   }
 }
 

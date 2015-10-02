@@ -114,7 +114,7 @@ static void ctrl_update_cb(evutil_socket_t fd, short what, void *arg) {
   }
   fputc('\n', info_ptr->ctrl_file);
 
-  saldl_fflush(info_ptr->ctrl_file);
+  saldl_fflush(info_ptr->ctrl_filename, info_ptr->ctrl_file);
 }
 
 void* sync_ctrl(void *void_info_ptr) {

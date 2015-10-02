@@ -71,8 +71,6 @@ int merge_finished_single() {
 }
 
 int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
-
-  FILE *f = info_ptr->file;
   size_t size = chunk->size;
   off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
@@ -83,21 +81,22 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
   if ( fseeko(tmp_f->file, 0, SEEK_SET) ) {
     fatal(FN, "%s failed to rewind.\n", tmp_f->name);
   }
-  if ( fseeko(f, offset, SEEK_SET) ) {
+  if ( fseeko(info_ptr->file, offset, SEEK_SET) ) {
     fatal(FN, ".part file failed to seek.\n");
   }
 
-  saldl_fflush(tmp_f->file);
+  saldl_fflush(tmp_f->name, tmp_f->file);
   tmp_buf = saldl_calloc(size, sizeof(char));
 
   if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
     fatal(FN, "Reading from tmp file %s at offset %jd failed, chunk_size=%zu, fread() returned %zu.\n", tmp_f->name, (intmax_t)offset, size, f_ret);
   }
-  if ( fwrite(tmp_buf, 1, size, f) != size ) {
+  if ( fwrite(tmp_buf, 1, size, info_ptr->file) != size ) {
     fatal(FN, "Write to file %s failed at offset %jd: %s\n", tmp_f->name, (intmax_t)offset, strerror(errno));
   }
 
-  saldl_fflush(f); /* Very important, especially if the process was killed/interrupted */
+  /* Very important, especially if the process was killed/interrupted */
+  saldl_fflush(info_ptr->part_filename, info_ptr->file);
 
   set_chunk_merged(chunk);
 
