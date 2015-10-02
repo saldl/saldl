@@ -50,7 +50,7 @@ static void extra_resume(info_s *info_ptr, char* chunks_progress_str) {
           }
 
           snprintf(idx_filename, PATH_MAX, "%s/%zu", info_ptr->tmp_dirname, idx);
-          tmpf_size = fsize2(idx_filename);
+          tmpf_size = fsize_sys(idx_filename);
 
           if (tmpf_size == (size_t)-1) {
             debug_msg(FN, "Can't stat %s, the file does not exist! This could be caused by using mem bufs or unsynced ctrl file.\n", idx_filename);

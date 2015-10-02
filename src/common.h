@@ -51,7 +51,7 @@ char* saldl_strdup(const char *str);
 void saldl_fflush(FILE *f);
 long fsize(FILE *f);
 off_t fsizeo(FILE *f);
-off_t fsize2(char *fname);
+off_t fsize_sys(char *fname);
 int saldl_mkdir(const char *path, mode_t mode);
 
 void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);

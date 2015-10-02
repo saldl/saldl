@@ -137,7 +137,7 @@ off_t fsizeo(FILE *f) {
   return size;
 }
 
-off_t fsize2(char *fname) {
+off_t fsize_sys(char *fname) {
   int ret;
   struct stat st = {0};
 
