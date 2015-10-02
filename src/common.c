@@ -198,14 +198,73 @@ void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
   }
 }
 
+#ifdef HAVE_SIGACTION
+void saldl_sigaction(int sig, const struct sigaction *restrict act, struct sigaction *restrict oact) {
+  int ret;
+  SALDL_ASSERT(act || oact);
+
+  ret = sigaction(sig, act, oact);
+
+  if (ret) {
+    fatal(FN, "Failed: %s\n", strerror(errno));
+  }
+}
+
+static void saldl_pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+  int ret;
+  SALDL_ASSERT(set || oldset);
+
+  ret = pthread_sigmask(how, set, oldset);
+
+  if (ret) {
+    fatal(FN, "Failed to change the mask of blocked signals: %s\n", strerror(errno));
+  }
+}
+#else
+void saldl_win_signal(int signum, void (*handler)(int)) {
+  void (*ret)(int);
+  SALDL_ASSERT(handler);
+
+  ret = signal(signum, handler);
+
+  if (ret == SIG_ERR) {
+    fatal(FN, "Failed to set signal handler: %s\n", strerror(errno));
+  }
+}
+#endif
+
+#ifdef HAVE_SIGADDSET
+void saldl_sigaddset(sigset_t *set, int signum) {
+  int ret;
+  SALDL_ASSERT(set);
+
+  ret = sigaddset(set, signum);
+
+  if (ret) {
+    fatal(FN, "Failed to add to signal set: %s\n", strerror(errno));
+  }
+}
+
+void saldl_sigemptyset(sigset_t *set) {
+  int ret;
+  SALDL_ASSERT(set);
+
+  ret = sigemptyset(set);
+
+  if (ret) {
+    fatal(FN, "Failed to empty signal set: %s\n", strerror(errno));
+  }
+}
+#endif
+
 void saldl_block_sig_pth() {
 #ifdef HAVE_SIGADDSET
   /* Don't interrupt thread, Let the signal handler work properly */
   sigset_t set;
-  sigemptyset(&set);
-  sigaddset(&set, SIGINT);
-  sigaddset(&set, SIGTERM);
-  SALDL_ASSERT(!pthread_sigmask(SIG_SETMASK, &set, NULL));
+  saldl_sigemptyset(&set);
+  saldl_sigaddset(&set, SIGINT);
+  saldl_sigaddset(&set, SIGTERM);
+  saldl_pthread_sigmask(SIG_SETMASK, &set, NULL);
 #endif
 }
 
@@ -213,8 +272,8 @@ void saldl_unblock_sig_pth() {
 #ifdef HAVE_SIGADDSET
   /* Unblock any blocked signals, */
   sigset_t set;
-  sigemptyset(&set);
-  SALDL_ASSERT(!pthread_sigmask(SIG_SETMASK, &set, NULL));
+  saldl_sigemptyset(&set);
+  saldl_pthread_sigmask(SIG_SETMASK, &set, NULL);
 
 #endif
 }
@@ -222,14 +281,14 @@ void saldl_unblock_sig_pth() {
 #ifdef HAVE_SIGACTION
 void ignore_sig(int sig, struct sigaction *sa_save) {
   struct sigaction sa_ign;
-  sigaction(sig, NULL, sa_save);
+  saldl_sigaction(sig, NULL, sa_save);
   sa_ign = *sa_save;
   sa_ign.sa_handler = SIG_IGN;
-  sigaction(sig, &sa_ign, NULL);
+  saldl_sigaction(sig, &sa_ign, NULL);
 }
 
 void restore_sig_handler(int sig, struct sigaction *sa_restore) {
-  sigaction(sig, sa_restore, NULL);
+  saldl_sigaction(sig, sa_restore, NULL);
 }
 #endif
 

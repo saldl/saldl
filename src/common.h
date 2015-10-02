@@ -57,12 +57,21 @@ off_t fsize_sys(char *fname);
 int saldl_mkdir(const char *path, mode_t mode);
 
 void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
+
 void saldl_block_sig_pth();
 void saldl_unblock_sig_pth();
+
+#ifdef HAVE_SIGADDSET
+void saldl_sigaddset(sigset_t *set, int signum);
+void saldl_sigemptyset(sigset_t *set);
+#endif
 
 #ifdef HAVE_SIGACTION
 void ignore_sig(int sig, struct sigaction *sa_save);
 void restore_sig_handler(int sig, struct sigaction *sa_restore);
+void saldl_sigaction(int sig, const struct sigaction *restrict act, struct sigaction *restrict oact);
+#else
+void saldl_win_signal(int signum, void (*handler)(int));
 #endif
 
 void saldl_fputc(int c, FILE *stream, const char *label);

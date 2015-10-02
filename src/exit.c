@@ -32,14 +32,16 @@ void sig_handler(int sig) {
 void saldl_handle_signals() {
 #ifdef HAVE_SIGACTION
     struct sigaction sa;
+
+    saldl_sigemptyset(&sa.sa_mask);
     sa.sa_handler = sig_handler;
-    sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
-    SALDL_ASSERT(!sigaction(SIGINT, &sa, NULL));
-    SALDL_ASSERT(!sigaction(SIGTERM, &sa, NULL));
+
+    saldl_sigaction(SIGINT, &sa, NULL);
+    saldl_sigaction(SIGTERM, &sa, NULL);
 #else
-    signal(SIGINT, sig_handler);
-    signal(SIGTERM, sig_handler);
+    saldl_win_signal(SIGINT, sig_handler);
+    saldl_win_signal(SIGTERM, sig_handler);
 #endif
 }
 
