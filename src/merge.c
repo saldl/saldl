@@ -120,6 +120,10 @@ int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
     if ( fwrite(buf->memory,1, size, info_ptr->file) != size ) {
       fatal(FN, "Write to file failed at offset %jd: %s\n", (intmax_t)offset, strerror(errno));
     }
+
+    /* Very important, especially if the process was killed/interrupted */
+    saldl_fflush(info_ptr->part_filename, info_ptr->file);
+
     free(buf->memory);
     free(buf);
   }
