@@ -12,6 +12,12 @@ Many **options** are available to change the default behavior.
 
 Detailed documentation is available in a form of a [manual page](https://saldl.github.io/saldl.1.html).
 
+### Q: Where can I ask questions about saldl?
+
+All users questions are bugs in documentation.
+
+Feel free to ask any question in the [Documentation meta bug](https://github.com/saldl/saldl/issues/4).
+
 ## Screenshot
 
 ```
