@@ -82,7 +82,7 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
     info_msg(FN, " chunk_count: %zu\n", ctrl->chunk_count);
     info_msg(FN, " chunks_progress_str: %s\n", ctrl->chunks_progress_str);
   }
-  fclose(f_ctrl);
+  saldl_fclose(ctrl_filename, f_ctrl);
   return 0;
 }
 

@@ -100,9 +100,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
 
   set_chunk_merged(chunk);
 
-  if ( fclose(tmp_f->file) ) {
-    fatal(FN, "Closing file %s failed: %s\n", tmp_f->name, strerror(errno));
-  }
+  saldl_fclose(tmp_f->name, tmp_f->file);
 
   if ( remove(tmp_f->name) ) {
     fatal(FN, "Removing file %s failed: %s\n", tmp_f->name, strerror(errno));

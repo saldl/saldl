@@ -90,7 +90,7 @@ static off_t resume_was_single(info_s *info_ptr) {
     done_size  = saldl_max_o(4096, fsizeo(f_part)) - 4096; /* -4096 in case last bits are corrupted */
     info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->params->chunk_size);
     info_msg(FN, " done_size:  %jd (based on the size of %s)\n", (intmax_t)done_size, info_ptr->part_filename);
-    fclose(f_part);
+    saldl_fclose(info_ptr->part_filename, f_part);
   }
 
   return done_size;

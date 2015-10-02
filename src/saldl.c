@@ -148,12 +148,12 @@ int saldl(saldl_params *params_ptr) {
     debug_msg(FN, "Strict check for finished file size skipped.\n");
   }
 
-  fclose(info.file);
+  saldl_fclose(info.part_filename, info.file);
   if (rename(info.part_filename, params_ptr->filename) ) {
     err_msg(NULL, "Failed to rename now-complete %s to %s: %s\n", info.part_filename, params_ptr->filename, strerror(errno));
   }
 
-  fclose(info.ctrl_file);
+  saldl_fclose(info.ctrl_filename, info.ctrl_file);
   if ( remove(info.ctrl_filename) ) {
     err_msg(NULL, "Failed to remove %s: %s\n", info.ctrl_filename, strerror(errno));
   }

@@ -114,6 +114,18 @@ void saldl_fflush(const char *label, FILE *f) {
   }
 }
 
+void saldl_fclose(const char *label, FILE *f) {
+  int ret;
+  SALDL_ASSERT(label);
+  SALDL_ASSERT(f);
+
+  ret = fclose(f);
+
+  if (ret) {
+    fatal(FN, "Closing '%s' failed: %s\n", label, strerror(errno));
+  }
+}
+
 long fsize(FILE *f) {
   long curr;
   long size;
