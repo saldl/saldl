@@ -126,29 +126,44 @@ void saldl_fclose(const char *label, FILE *f) {
   }
 }
 
-long fsize(FILE *f) {
-  long curr;
-  long size;
-
+void saldl_fseeko(const char *label, FILE *f, off_t offset, int whence) {
+  int ret;
+  SALDL_ASSERT(label);
   SALDL_ASSERT(f);
 
-  curr = ftell(f);
-  fseek(f, 0l, SEEK_END);
-  size = ftell(f);
-  fseek(f, curr, SEEK_SET);
-  return size;
+  ret = fseeko(f, offset, whence);
+
+  if (ret) {
+    fatal(FN, "Seeking in '%s' failed: %s\n", label, strerror(errno));
+  }
 }
 
-off_t fsizeo(FILE *f) {
+off_t saldl_ftello(const char *label, FILE *f) {
+  off_t ret;
+
+  SALDL_ASSERT(label);
+  SALDL_ASSERT(f);
+
+  ret = ftello(f);
+
+  if (ret == -1) {
+    fatal(FN, "ftello() in '%s' failed: %s\n", label, strerror(errno));
+  }
+
+  return ret;
+}
+
+off_t saldl_fsizeo(const char *label, FILE *f) {
   off_t curr;
   off_t size;
 
+  SALDL_ASSERT(label);
   SALDL_ASSERT(f);
 
-  curr = ftello(f);
-  fseeko(f, 0, SEEK_END);
-  size = ftello(f);
-  fseeko(f, curr, SEEK_SET);
+  curr = saldl_ftello(label, f);
+  saldl_fseeko(label, f, 0, SEEK_END);
+  size = saldl_ftello(label, f);
+  saldl_fseeko(label, f, curr, SEEK_SET);
   return size;
 }
 

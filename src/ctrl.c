@@ -33,20 +33,26 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
 
   FILE *f_ctrl = fopen(ctrl_filename, "rb");
 
-  if (! fsize(f_ctrl) ) { /* ctrl file is empty */
+  off_t ctrl_fsize = saldl_fsizeo(ctrl_filename, f_ctrl);
+  SALDL_ASSERT((uintmax_t)ctrl_fsize <= SIZE_MAX);
+  SALDL_ASSERT(ctrl_fsize <= INT_MAX);
+
+  if (!ctrl_fsize) {
     fatal(FN, "ctrl file is empty.\n");
-  } else {
+  }
+  else {
     char *p;
     char ctrl_file_size_str[s_num_digits(OFF_T_MAX)];
     char ctrl_chunk_size_str[u_num_digits(SIZE_MAX)];
     char ctrl_rem_size_str[u_num_digits(SIZE_MAX)];
 
-    ctrl->chunks_progress_str = saldl_calloc( fsize(f_ctrl), sizeof(char) ); /* fsize() guarantees allocating enough bytes */
+    /* ctrl_fsize guarantees allocating enough bytes */
+    ctrl->chunks_progress_str = saldl_calloc((size_t)ctrl_fsize, sizeof(char) );
 
     char *ret_fgets1 = fgets(ctrl_file_size_str, s_num_digits(OFF_T_MAX), f_ctrl);
     char *ret_fgets2 = fgets(ctrl_chunk_size_str, u_num_digits(SIZE_MAX), f_ctrl);
     char *ret_fgets3 = fgets(ctrl_rem_size_str, u_num_digits(SIZE_MAX), f_ctrl);
-    char *ret_fgets4 = fgets(ctrl->chunks_progress_str, fsize(f_ctrl), f_ctrl);
+    char *ret_fgets4 = fgets(ctrl->chunks_progress_str, ctrl_fsize, f_ctrl);
 
     if (!ret_fgets1 || !ret_fgets2 || !ret_fgets3 || !ret_fgets4) {
       fatal(FN, "Reading the ctrl file failed. Are you sure it's not corrupt!\n");
@@ -107,7 +113,7 @@ static void ctrl_update_cb(evutil_socket_t fd, short what, void *arg) {
     memset(&ctrl->raw_status[counter], '0' + info_ptr->chunks[counter].progress, 1);
   }
 
-  fseek(info_ptr->ctrl_file, ctrl->pos, SEEK_SET);
+  saldl_fseeko(info_ptr->ctrl_filename, info_ptr->ctrl_file, ctrl->pos, SEEK_SET);
 
   if ( fputs(ctrl->raw_status, info_ptr->ctrl_file) == EOF  ) {
     err_msg(NULL, "fail updating control file.\n");
@@ -139,9 +145,7 @@ void* sync_ctrl(void *void_info_ptr) {
   snprintf(char_rem_size, u_num_digits(SIZE_MAX), "%zu", info_ptr->rem_size);
 
   /* Rewind ctrl_file */
-  if ( fseek(info_ptr->ctrl_file, 0l, SEEK_SET) ) {
-    fatal(FN, "%s failed to rewind.\n", info_ptr->ctrl_filename);
-  }
+  saldl_fseeko(info_ptr->ctrl_filename, info_ptr->ctrl_file, 0, SEEK_SET);
 
   /* Start writing in ctrl_file */
   fputs(char_file_size, info_ptr->ctrl_file);
@@ -150,7 +154,7 @@ void* sync_ctrl(void *void_info_ptr) {
   fputc('\n', info_ptr->ctrl_file);
   fputs(char_rem_size, info_ptr->ctrl_file);
   fputc('\n', info_ptr->ctrl_file);
-  ctrl->pos = ftell(info_ptr->ctrl_file);
+  ctrl->pos = saldl_ftello(info_ptr->ctrl_filename, info_ptr->ctrl_file);
 
   /* event loop */
   events_init(&info_ptr->ev_ctrl, ctrl_update_cb, info_ptr, EVENT_CTRL);

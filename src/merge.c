@@ -78,12 +78,8 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
   char *tmp_buf = NULL;
   size_t f_ret = 0;
 
-  if ( fseeko(tmp_f->file, 0, SEEK_SET) ) {
-    fatal(FN, "%s failed to rewind.\n", tmp_f->name);
-  }
-  if ( fseeko(info_ptr->file, offset, SEEK_SET) ) {
-    fatal(FN, ".part file failed to seek.\n");
-  }
+  saldl_fseeko(tmp_f->name, tmp_f->file, 0, SEEK_SET);
+  saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
 
   saldl_fflush(tmp_f->name, tmp_f->file);
   tmp_buf = saldl_calloc(size, sizeof(char));
@@ -114,16 +110,14 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
 }
 
 int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
-
-  FILE *f = info_ptr->file;
   size_t size = chunk->size;
   off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
   mem_s *buf = chunk->storage;
 
-  fseeko(f, offset, SEEK_SET);
+  saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
   if (buf->memory) {
-    if ( fwrite(buf->memory,1, size,f) != size ) {
+    if ( fwrite(buf->memory,1, size, info_ptr->file) != size ) {
       fatal(FN, "Write to file failed at offset %jd: %s\n", (intmax_t)offset, strerror(errno));
     }
     free(buf->memory);

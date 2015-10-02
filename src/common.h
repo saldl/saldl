@@ -50,8 +50,9 @@ void* saldl_realloc(void *ptr, size_t size);
 char* saldl_strdup(const char *str);
 void saldl_fflush(const char *label, FILE *f);
 void saldl_fclose(const char *label, FILE *f);
-long fsize(FILE *f);
-off_t fsizeo(FILE *f);
+void saldl_fseeko(const char *label, FILE *f, off_t offset, int whence);
+off_t saldl_ftello(const char *label, FILE *f);
+off_t saldl_fsizeo(const char *label, FILE *f);
 off_t fsize_sys(char *fname);
 int saldl_mkdir(const char *path, mode_t mode);
 

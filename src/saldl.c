@@ -136,7 +136,7 @@ int saldl(saldl_params *params_ptr) {
 
   /* One last check  */
   if (info.file_size && (!info.content_encoded || params_ptr->no_decompress) && !params_ptr->no_remote_info) {
-    off_t saved_file_size = fsizeo(info.file);
+    off_t saved_file_size = saldl_fsizeo(info.part_filename, info.file);
     if (saved_file_size != info.file_size) {
       pre_fatal(FN, "Unexpected saved file size (%ju!=%ju).\n", saved_file_size, info.file_size);
       pre_fatal(FN, "This could happen if you're downloading from a dynamic site.\n");

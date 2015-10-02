@@ -1123,16 +1123,16 @@ void set_reset_storage(info_s *info_ptr) {
 
 void reset_storage_single(thread_s *thread) {
   file_s *storage = thread->chunk->storage;
-  off_t offset = saldl_max_o(fsizeo(storage->file), 4096) - 4096;
+  off_t offset = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
   curl_easy_setopt(thread->ehandle, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)offset);
-  fseeko(storage->file, offset, SEEK_SET);
+  saldl_fseeko(storage->name, storage->file, offset, SEEK_SET);
   info_msg(FN, "restarting from offset %jd\n", (intmax_t)offset);
 }
 
 void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
   SALDL_ASSERT(part_file->file);
   if (chunk->size_complete) {
-    fseeko(part_file->file, chunk->size_complete, SEEK_SET);
+    saldl_fseeko(part_file->name, part_file->file, chunk->size_complete, SEEK_SET);
   }
   chunk->storage = part_file;
 }
@@ -1144,10 +1144,14 @@ void reset_storage_tmpf(thread_s *thread) {
 
   file_s *storage = thread->chunk->storage;
   saldl_fflush(storage->name, storage->file);
-  thread->chunk->size_complete = saldl_max(fsize(storage->file), 4096) - 4096;
+
+  off_t size_complete = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
+  SALDL_ASSERT((uintmax_t)size_complete <= SIZE_MAX);
+  thread->chunk->size_complete = (size_t)size_complete;
+
   curl_set_ranges(thread->ehandle, thread->chunk);
   info_msg(FN, "restarting chunk %s from offset %zu\n", storage->name, thread->chunk->size_complete);
-  fseeko(storage->file, thread->chunk->size_complete, SEEK_SET);
+  saldl_fseeko(storage->name, storage->file, thread->chunk->size_complete, SEEK_SET);
   thread->chunk->size_complete = 0;
 }
 
@@ -1159,7 +1163,7 @@ void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
     if (! (tmp_f->file = fopen(tmp_f->name, "rb+"))) {
       fatal(FN, "Failed to open %s for read/write: %s\n", tmp_f->name, strerror(errno));
     }
-    fseeko(tmp_f->file, chunk->size_complete, SEEK_SET);
+    saldl_fseeko(tmp_f->name, tmp_f->file, chunk->size_complete, SEEK_SET);
   } else {
     if (! (tmp_f->file = fopen(tmp_f->name, "wb+"))) {
       fatal(FN, "Failed to open %s for read/write: %s\n", tmp_f->name, strerror(errno));
