@@ -65,7 +65,9 @@ void ignore_sig(int sig, struct sigaction *sa_save);
 void restore_sig_handler(int sig, struct sigaction *sa_restore);
 #endif
 
-void fputs_count(uintmax_t count, const char* str, FILE* stream);
+void saldl_fputc(int c, FILE *stream, const char *label);
+void saldl_fputs(const char *str, FILE *stream, const char *label);
+void saldl_fputs_count(uintmax_t count, const char* str, FILE* stream, const char *label);
 double human_size(double size);
 const char* human_size_suffix(double size);
 size_t s_num_digits(intmax_t num);

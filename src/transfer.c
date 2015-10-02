@@ -802,7 +802,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
       if (p->initialized == 1) {
         p->initialized++;
-        fputs_count(lines+1, "\n", stderr); // +1 in case offset becomes non-zero
+        saldl_fputs_count(lines+1, "\n", stderr, "stderr"); // +1 in case offset becomes non-zero
       }
 
       p->curr = saldl_utime();
@@ -829,7 +829,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
           p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : INT64_MAX;
         }
 
-        fputs_count(lines+!!offset, up, stderr);
+        saldl_fputs_count(lines+!!offset, up, stderr, "stderr");
         fprintf(stderr, "%s%s%sSingle mode progress:%s\n", erase_after, info_color, bold, end);
         fprintf(stderr, " %s%sProgress:%s\t%.2f%s / %.2f%s\n",
             erase_after, bold, end,

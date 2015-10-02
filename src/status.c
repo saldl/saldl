@@ -153,7 +153,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
         p->dur);
     fprintf(stderr,"%s%s%s\n", erase_screen_after, chunks_status, ret_char);
 
-    fputs_count(*lines, up, stderr);
+    saldl_fputs_count(*lines, up, stderr, "stderr");
   }
 }
 
@@ -190,7 +190,7 @@ void* status_display(void *void_info_ptr) {
 
   /* finalize and cleanup */
   if (!info_ptr->params->no_status) {
-    fputs_count(lines, "\n", stderr);
+    saldl_fputs_count(lines, "\n", stderr, "stderr");
   }
 
   free(chunks_status);

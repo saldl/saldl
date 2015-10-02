@@ -233,9 +233,42 @@ void restore_sig_handler(int sig, struct sigaction *sa_restore) {
 }
 #endif
 
-void fputs_count(uintmax_t count, const char* str, FILE* stream) {
+void saldl_fputc(int c, FILE *stream, const char *label) {
+  int ret;
+
+  SALDL_ASSERT(c >= 0);
+  SALDL_ASSERT(c <= CHAR_MAX);
+  SALDL_ASSERT(stream);
+  SALDL_ASSERT(label);
+
+  ret = fputc(c, stream);
+
+  if (ret == EOF) {
+    fatal(FN, "Writing to '%s' failed.\n", label);
+  }
+}
+
+void saldl_fputs(const char *str, FILE *stream, const char *label) {
+  int ret;
+
+  SALDL_ASSERT(str);
+  SALDL_ASSERT(stream);
+  SALDL_ASSERT(label);
+
+  ret = fputs(str, stream);
+  if (ret == EOF) {
+    fatal(FN, "Writing to '%s' failed.\n", label);
+  }
+}
+
+void saldl_fputs_count(uintmax_t count, const char* str, FILE* stream, const char *label) {
+  SALDL_ASSERT(count >= 1);
+  SALDL_ASSERT(str);
+  SALDL_ASSERT(stream);
+  SALDL_ASSERT(label);
+
   for (uintmax_t loops = 1; loops <= count; loops++) {
-    fputs(str, stream);
+    saldl_fputs(str, stream, label);
   }
 }
 

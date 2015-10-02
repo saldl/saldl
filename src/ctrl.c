@@ -115,10 +115,8 @@ static void ctrl_update_cb(evutil_socket_t fd, short what, void *arg) {
 
   saldl_fseeko(info_ptr->ctrl_filename, info_ptr->ctrl_file, ctrl->pos, SEEK_SET);
 
-  if ( fputs(ctrl->raw_status, info_ptr->ctrl_file) == EOF  ) {
-    err_msg(NULL, "fail updating control file.\n");
-  }
-  fputc('\n', info_ptr->ctrl_file);
+  saldl_fputs(ctrl->raw_status, info_ptr->ctrl_file, info_ptr->ctrl_filename);
+  saldl_fputc('\n', info_ptr->ctrl_file, info_ptr->ctrl_filename);
 
   saldl_fflush(info_ptr->ctrl_filename, info_ptr->ctrl_file);
 }
@@ -132,7 +130,8 @@ void* sync_ctrl(void *void_info_ptr) {
   info_ptr->ev_ctrl.event_status = EVENT_THREAD_STARTED;
 
   /* Initialize ctrl */
-  ctrl->raw_status = saldl_calloc(info_ptr->chunk_count + 1, sizeof(char)); /* +1 because fputs() needs \0 termination to know where to stop */
+  /* +1 because saldl_fputs() needs \0 termination to know where to stop */
+  ctrl->raw_status = saldl_calloc(info_ptr->chunk_count + 1, sizeof(char));
   memset(ctrl->raw_status,'0', info_ptr->chunk_count);
   ctrl->pos = 0; // redundant?
 
@@ -148,12 +147,12 @@ void* sync_ctrl(void *void_info_ptr) {
   saldl_fseeko(info_ptr->ctrl_filename, info_ptr->ctrl_file, 0, SEEK_SET);
 
   /* Start writing in ctrl_file */
-  fputs(char_file_size, info_ptr->ctrl_file);
-  fputc('\n', info_ptr->ctrl_file);
-  fputs(char_chunk_size, info_ptr->ctrl_file);
-  fputc('\n', info_ptr->ctrl_file);
-  fputs(char_rem_size, info_ptr->ctrl_file);
-  fputc('\n', info_ptr->ctrl_file);
+  saldl_fputs(char_file_size, info_ptr->ctrl_file, info_ptr->ctrl_filename);
+  saldl_fputc('\n', info_ptr->ctrl_file, info_ptr->ctrl_filename);
+  saldl_fputs(char_chunk_size, info_ptr->ctrl_file, info_ptr->ctrl_filename);
+  saldl_fputc('\n', info_ptr->ctrl_file, info_ptr->ctrl_filename);
+  saldl_fputs(char_rem_size, info_ptr->ctrl_file, info_ptr->ctrl_filename);
+  saldl_fputc('\n', info_ptr->ctrl_file, info_ptr->ctrl_filename);
   ctrl->pos = saldl_ftello(info_ptr->ctrl_filename, info_ptr->ctrl_file);
 
   /* event loop */
