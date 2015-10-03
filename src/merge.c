@@ -87,12 +87,8 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
   if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
     fatal(FN, "Reading from tmp file %s at offset %jd failed, chunk_size=%zu, fread() returned %zu.\n", tmp_f->name, (intmax_t)offset, size, f_ret);
   }
-  if ( fwrite(tmp_buf, 1, size, info_ptr->file) != size ) {
-    fatal(FN, "Write to file %s failed at offset %jd: %s\n", tmp_f->name, (intmax_t)offset, strerror(errno));
-  }
 
-  /* Very important, especially if the process was killed/interrupted */
-  saldl_fflush(info_ptr->part_filename, info_ptr->file);
+  saldl_fwrite_fflush(tmp_buf, 1, size, info_ptr->file, info_ptr->part_filename, offset);
 
   set_chunk_merged(chunk);
 
@@ -116,20 +112,10 @@ int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
   mem_s *buf = chunk->storage;
 
   saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
-  if (buf->memory) {
-    if ( fwrite(buf->memory,1, size, info_ptr->file) != size ) {
-      fatal(FN, "Write to file failed at offset %jd: %s\n", (intmax_t)offset, strerror(errno));
-    }
+  saldl_fwrite_fflush(buf->memory, 1, size, info_ptr->file, info_ptr->part_filename, offset);
 
-    /* Very important, especially if the process was killed/interrupted */
-    saldl_fflush(info_ptr->part_filename, info_ptr->file);
-
-    free(buf->memory);
-    free(buf);
-  }
-  else {
-    fatal(FN, "buffer does not exist, offset=%jd\n", (intmax_t)offset);
-  }
+  free(buf->memory);
+  free(buf);
 
   set_chunk_merged(chunk);
 

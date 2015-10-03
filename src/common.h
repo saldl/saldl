@@ -49,6 +49,7 @@ void* saldl_malloc(size_t size);
 void* saldl_realloc(void *ptr, size_t size);
 char* saldl_strdup(const char *str);
 void saldl_fflush(const char *label, FILE *f);
+void saldl_fwrite_fflush(const void *read_buf, size_t size, size_t nmemb, FILE *out_file, const char *out_name, off_t offset_info);
 void saldl_fclose(const char *label, FILE *f);
 void saldl_fseeko(const char *label, FILE *f, off_t offset, int whence);
 off_t saldl_ftello(const char *label, FILE *f);

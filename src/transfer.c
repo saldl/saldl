@@ -230,11 +230,7 @@ static size_t file_write_function(void  *ptr, size_t  size, size_t nmemb, void *
     return 0;
   }
 
-  saldl_fflush(tmp_f->name, tmp_f->file);
-  if ( fwrite(ptr, size, nmemb, tmp_f->file) !=  nmemb ) {
-    fatal(FN, "Writing %zu bytes to file %s failed: %s\n", realsize, tmp_f->name, strerror(errno));
-  }
-  saldl_fflush(tmp_f->name, tmp_f->file);
+  saldl_fwrite_fflush(ptr, size, nmemb, tmp_f->file, tmp_f->name, 0);
 
   return realsize;
 }

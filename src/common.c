@@ -114,6 +114,35 @@ void saldl_fflush(const char *label, FILE *f) {
   }
 }
 
+void saldl_fwrite_fflush(const void *read_buf, size_t size, size_t nmemb, FILE *out_file, const char *out_name, off_t offset_info) {
+  size_t ret;
+  size_t write_size;
+
+  SALDL_ASSERT(read_buf);
+  SALDL_ASSERT(size);
+  SALDL_ASSERT(nmemb);
+  SALDL_ASSERT(size * nmemb <= SIZE_MAX);
+  SALDL_ASSERT(out_file);
+
+  saldl_fflush(out_name, out_file);
+
+  ret = fwrite(read_buf, size, nmemb, out_file);
+  write_size = size * nmemb;
+
+  if (ret != nmemb) {
+    if (offset_info) {
+      fatal(FN, "Writing %zu bytes to '%s' failed at offset %jd: %s\n",
+          write_size, out_name, offset_info, strerror(errno));
+    }
+    else {
+      fatal(FN, "Writing %zu bytes to '%s' failed: %s\n",
+          write_size, out_name, strerror(errno));
+    }
+  }
+
+  saldl_fflush(out_name, out_file);
+}
+
 void saldl_fclose(const char *label, FILE *f) {
   int ret;
   SALDL_ASSERT(label);
