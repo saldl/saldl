@@ -3,20 +3,25 @@
 A multi-platform command-line downloader optimized for speed and early
 preview, based on libcurl.
 
-By default, saldl splits a download into fixed-sized chunks and download
-them in-order with multiple concurrent connections.
+**saldl** splits a download into fixed-sized chunks and download
+them in-order with multiple concurrent connections. Classic modes
+(single chunk single connection, no. of chunks = no. of connections)
+are also available as *options*.
 
-Many **options** are available to change the default behavior.
+Many **options** are available to change the default behavior and
+customize network requests.
 
 ## Documentation
 
-Detailed documentation is available in a form of a [manual page](https://saldl.github.io/saldl.1.html).
+Detailed documentation is available in the form of a [manual page](https://saldl.github.io/saldl.1.html).
 
 ### Q: Where can I ask questions about saldl?
 
-All users questions are bugs in documentation.
+We consider all questions ,(potential) users might have, bugs in
+documentation.
 
-Feel free to ask any question in the [Documentation meta bug](https://github.com/saldl/saldl/issues/4).
+Feel free to ask any question about *saldl* in
+the [dedicated meta bug for users questions](https://github.com/saldl/saldl/issues/4).
 
 ## Screenshot
 
