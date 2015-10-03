@@ -152,11 +152,21 @@ int check_resume(info_s *info_ptr) {
     done_size = resume_was_default(info_ptr, &ctrl);
   }
 
+  /* We will use this to silence all remaining info_msg calls
+   * in this function if already_finished */
+  log_func *local_info_msg = info_msg;
+
+  if (done_size && done_size == info_ptr->file_size) {
+    info_msg(FN, "All data was merged in a previous session.\n");
+    info_ptr->already_finished = true;
+    local_info_msg = (log_func *)null_msg;
+  }
+
   if (info_ptr->params->single_mode) {
     info_ptr->chunks[0].size_complete = done_size;
-    info_msg(FN, "Resuming using single mode from offset: %.2f%s\n", human_size(done_size), human_size_suffix(done_size));
+    local_info_msg(FN, "Resuming using single mode from offset: %.2f%s\n", human_size(done_size), human_size_suffix(done_size));
   } else {
-    info_msg(FN, "Resuming from offset: %zu*%.2f%s (%.2f%s)\n",
+    local_info_msg(FN, "Resuming from offset: %zu*%.2f%s (%.2f%s)\n",
         info_ptr->initial_merged_count, human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
         human_size((off_t)info_ptr->params->chunk_size*info_ptr->initial_merged_count), human_size_suffix((off_t)info_ptr->params->chunk_size*info_ptr->initial_merged_count));
   }
@@ -169,8 +179,10 @@ int check_resume(info_s *info_ptr) {
   /* Correct num_connections if remaining chunks are not as many */
   size_t orig_num_connections = info_ptr->params->num_connections;
   size_t rem_chunks = info_ptr->chunk_count - info_ptr->initial_merged_count;
-  if ( (info_ptr->params->num_connections = saldl_min(orig_num_connections, rem_chunks)) != orig_num_connections ) {
-    info_msg(FN, "Remaining data after resume relatively small, use %zu connection(s)...\n", info_ptr->params->num_connections);
+  info_ptr->params->num_connections = saldl_min(orig_num_connections, rem_chunks);
+
+  if (info_ptr->params->num_connections  != orig_num_connections ) {
+    local_info_msg(FN, "Remaining data after resume relatively small, use %zu connection(s)...\n", info_ptr->params->num_connections);
   }
 
   ctrl_cleanup_info(&ctrl);

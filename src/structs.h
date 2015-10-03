@@ -197,6 +197,7 @@ typedef struct {
   event_s ev_queue;
   event_s ev_status;
   event_s ev_ctrl;
+  bool already_finished;
   bool called_exit;
 } info_s;
 

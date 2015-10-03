@@ -86,17 +86,8 @@ int saldl(saldl_params *params_ptr) {
   }
 
   /* Check if download was interrupted after all data was merged */
-  if (params_ptr->single_mode) {
-    if (info.chunks[0].size_complete == (uintmax_t)info.file_size) {
-      info_msg(FN, "Download was finished and all data was merged in a previous run.\n");
-      goto saldl_all_data_merged;
-    }
-  }
-  else {
-    if (info.initial_merged_count == info.chunk_count) {
-      info_msg(FN, "Download was finished and all data was merged in a previous run.\n");
-      goto saldl_all_data_merged;
-    }
+  if (info.already_finished) {
+    goto saldl_all_data_merged;
   }
 
   /* threads */
