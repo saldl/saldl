@@ -124,6 +124,12 @@ static void headers_info(info_s *info_ptr) {
   if (h->content_type) {
     /* XXX: content_type block should always be after content_encoding block */
     debug_msg(FN, "Content-Type: %s\n", h->content_type);
+
+    if (info_ptr->content_type) {
+      debug_msg(FN, "Clearing Content-Type: %s", info_ptr->content_type);
+      saldl_free(info_ptr->content_type);
+    }
+
     info_ptr->content_type = saldl_strdup(h->content_type);
 
     if (strcasestr(h->content_type, "gzip")) {
