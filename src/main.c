@@ -333,7 +333,7 @@ int main(int argc,char **argv) {
   }
 
   saldl(&params);
-  free(full_argv);
+  saldl_free(full_argv);
   return 0;
 }
 

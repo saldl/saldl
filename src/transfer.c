@@ -45,11 +45,11 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
     }
 #endif
     curl_easy_setopt(handle, CURLOPT_COOKIELIST, cookie);
-    free(cookie);
+    saldl_free(cookie);
     curr = next;
   } while (sep);
 
-  free(copy_cookie_str);
+  saldl_free(copy_cookie_str);
 }
 
 char* saldl_user_agent() {
@@ -112,13 +112,13 @@ static void headers_info(info_s *info_ptr) {
       debug_msg(FN, "file size from Content-Range: %ju\n", info_ptr->file_size);
     }
 
-    free(h->content_range);
+    saldl_free(h->content_range);
   }
 
   if (h->content_encoding) {
     debug_msg(FN, "Content-Encoding: %s\n", h->content_encoding);
     info_ptr->content_encoded = true;
-    free(h->content_encoding);
+    saldl_free(h->content_encoding);
   }
 
   if (h->content_type) {
@@ -137,7 +137,7 @@ static void headers_info(info_s *info_ptr) {
       info_ptr->params->no_decompress = true;
     }
 
-    free(h->content_type);
+    saldl_free(h->content_type);
   }
 
   if (h->content_disposition && !info_ptr->params->no_attachment_detection) {
@@ -175,7 +175,7 @@ static void headers_info(info_s *info_ptr) {
       debug_msg(FN, "After basename: %s\n", info_ptr->params->attachment_filename);
     }
 
-    free(h->content_disposition);
+    saldl_free(h->content_disposition);
   }
 
   if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
@@ -217,7 +217,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     h->content_disposition = saldl_strdup(h_info);
   }
 
-  free(header);
+  saldl_free(header);
   return size * nmemb;
 }
 
@@ -446,7 +446,7 @@ static void set_names(info_s* info_ptr) {
         info_msg(FN, "Before stripping GET attrs: %s\n", pre_filename);
         info_msg(FN, "After  stripping GET attrs: %s\n", params_ptr->filename);
       }
-      free(pre_filename);
+      saldl_free(pre_filename);
     }
 
   }
@@ -476,7 +476,7 @@ static void set_names(info_s* info_ptr) {
     info_msg(FN, "Prepending root_dir(%s) to filename(%s).\n", params_ptr->root_dir, params_ptr->filename);
     params_ptr->filename = saldl_calloc(full_buf_size, sizeof(char)); // +1 for '\0'
     snprintf(params_ptr->filename, full_buf_size, "%s/%s", params_ptr->root_dir, curr_filename);
-    free(curr_filename);
+    saldl_free(curr_filename);
   }
 
   if (params_ptr->auto_trunc || params_ptr->smart_trunc) {
@@ -911,7 +911,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
       curl_easy_setopt(thread->ehandle, CURLOPT_CAINFO, ca_bundle_path);
     }
 
-    free(exe_dir);
+    saldl_free(exe_dir);
   }
 #endif
 
@@ -992,7 +992,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     else {
       char *default_agent = saldl_user_agent();
       curl_easy_setopt(thread->ehandle, CURLOPT_USERAGENT, default_agent);
-      free(default_agent);
+      saldl_free(default_agent);
     }
   }
 

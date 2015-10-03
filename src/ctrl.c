@@ -21,7 +21,7 @@
 #include "ctrl.h"
 
 void ctrl_cleanup_info(ctrl_info_s *ctrl) {
-  free(ctrl->chunks_progress_str);
+  saldl_free(ctrl->chunks_progress_str);
 }
 
 int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
@@ -167,7 +167,7 @@ void* sync_ctrl(void *void_info_ptr) {
   events_deinit(&info_ptr->ev_ctrl);
 
   /* finalize and cleanup */
-  free(ctrl->raw_status);
+  saldl_free(ctrl->raw_status);
   return info_ptr;
 }
 

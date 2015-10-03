@@ -98,9 +98,9 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
     fatal(FN, "Removing file %s failed: %s\n", tmp_f->name, strerror(errno));
   }
 
-  free(tmp_buf);
-  free(tmp_f->name);
-  free(tmp_f);
+  saldl_free(tmp_buf);
+  saldl_free(tmp_f->name);
+  saldl_free(tmp_f);
 
   return 0;
 }
@@ -114,8 +114,8 @@ int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
   saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
   saldl_fwrite_fflush(buf->memory, 1, size, info_ptr->file, info_ptr->part_filename, offset);
 
-  free(buf->memory);
-  free(buf);
+  saldl_free(buf->memory);
+  saldl_free(buf);
 
   set_chunk_merged(chunk);
 

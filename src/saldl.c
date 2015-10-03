@@ -168,19 +168,19 @@ saldl_all_data_merged:
   curl_cleanup(&info);
 
   /* Make valgrind happy */
-  free(info.chunks);
-  free(info.threads);
-  free(params_ptr->filename);
-  free(params_ptr->attachment_filename);
-  free(params_ptr->inline_cookies);
-  free(params_ptr->root_dir);
-  free(params_ptr->user_agent);
-  free(params_ptr->post);
-  free(params_ptr->raw_post);
-  free(params_ptr->cookie_file);
-  free(params_ptr->referer);
-  free(params_ptr->proxy);
-  free(params_ptr->tunnel_proxy);
+  saldl_free(info.chunks);
+  saldl_free(info.threads);
+  saldl_free(params_ptr->filename);
+  saldl_free(params_ptr->attachment_filename);
+  saldl_free(params_ptr->inline_cookies);
+  saldl_free(params_ptr->root_dir);
+  saldl_free(params_ptr->user_agent);
+  saldl_free(params_ptr->post);
+  saldl_free(params_ptr->raw_post);
+  saldl_free(params_ptr->cookie_file);
+  saldl_free(params_ptr->referer);
+  saldl_free(params_ptr->proxy);
+  saldl_free(params_ptr->tunnel_proxy);
 
   fprintf(stderr, "%s\n", finish_msg);
   return 0;

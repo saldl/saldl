@@ -193,7 +193,7 @@ void* status_display(void *void_info_ptr) {
     saldl_fputs_count(lines, "\n", stderr, "stderr");
   }
 
-  free(chunks_status);
+  saldl_free(chunks_status);
   return info_ptr;
 }
 
