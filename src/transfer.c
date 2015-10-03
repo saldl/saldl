@@ -175,9 +175,13 @@ static void headers_info(info_s *info_ptr) {
         tmp += strlen(to_strip);
       }
 
-      /* Pass the result to attachment_filename */
+      if (info_ptr->params->attachment_filename) {
+        debug_msg(FN, "Clearing attachment filename: %s", info_ptr->params->attachment_filename);
+        saldl_free(info_ptr->content_type);
+      }
+
       debug_msg(FN, "Before basename: %s\n", tmp);
-      info_ptr->params->attachment_filename = saldl_strdup( basename(tmp) ); /* Last use of tmp (and header), so no need to back it up or use a copy */
+      info_ptr->params->attachment_filename = saldl_strdup( basename(tmp) );
       debug_msg(FN, "After basename: %s\n", info_ptr->params->attachment_filename);
     }
 
