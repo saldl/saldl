@@ -85,6 +85,20 @@ int saldl(saldl_params *params_ptr) {
     fatal(FN, "Failed to open '%s' for read/write : %s\n", info.ctrl_filename, strerror(errno) );
   }
 
+  /* Check if download was interrupted after all data was merged */
+  if (params_ptr->single_mode) {
+    if (info.chunks[0].size_complete == (uintmax_t)info.file_size) {
+      info_msg(FN, "Download was finished and all data was merged in a previous run.\n");
+      goto saldl_all_data_merged;
+    }
+  }
+  else {
+    if (info.initial_merged_count == info.chunk_count) {
+      info_msg(FN, "Download was finished and all data was merged in a previous run.\n");
+      goto saldl_all_data_merged;
+    }
+  }
+
   /* threads */
   info.threads = saldl_calloc(params_ptr->num_connections, sizeof(thread_s));
   set_reset_storage(&info);
@@ -124,6 +138,7 @@ int saldl(saldl_params *params_ptr) {
   event_queue(&info.ev_trigger, NULL);
   join_event_pth(&info.ev_trigger ,&info.trigger_events_pth);
 
+saldl_all_data_merged:
 
   /* Remove tmp_dirname */
   if ( !params_ptr->mem_bufs && !params_ptr->single_mode ) {
