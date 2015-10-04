@@ -1,4 +1,4 @@
-# saldl
+# ![saldl banner](https://raw.githubusercontent.com/saldl/misc/master/saldl_banner_alpha.png)
 
 A multi-platform command-line downloader optimized for speed and early
 preview, based on libcurl.
