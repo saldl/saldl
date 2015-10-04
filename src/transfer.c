@@ -171,7 +171,7 @@ static void headers_info(info_s *info_ptr) {
 
       /* Strip UTF-8'' if tmp starts with it, this usually comes from filename*=UTF-8''string */
       const char *to_strip = "UTF-8''";
-      if (strstr(tmp, to_strip) == tmp) {
+      if (strcasestr(tmp, to_strip) == tmp) {
         tmp += strlen(to_strip);
       }
 
