@@ -15,13 +15,9 @@ customize network requests.
 
 Detailed documentation is available in the form of a [manual page](https://saldl.github.io/saldl.1.html).
 
-### Where can (potential) users ask questions about saldl?
+### Contact
 
-We consider all questions ,potential users might have about saldl, bugs
-in documentation.
-
-Feel free to ask any question about saldl
-[here](https://github.com/saldl/saldl/issues/4).
+[Users Chat & Questions](https://github.com/saldl/saldl/issues/4)
 
 ## Screenshot
 
