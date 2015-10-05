@@ -283,7 +283,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     return 1;
   }
 
-    params_ptr->url = full_argv[optind];
+    params_ptr->url = strdup(full_argv[optind]);
 
   return 0;
 }

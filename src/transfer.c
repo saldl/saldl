@@ -285,6 +285,7 @@ static void check_redirects(CURL *handle, info_s *info_ptr) {
 
   if (redirects) {
     curl_easy_getinfo(handle, CURLINFO_EFFECTIVE_URL, &url);
+    saldl_free(info_ptr->params->url);
     info_ptr->params->url = saldl_strdup(url); /* Note: strdup() because the pointer will be killed after curl_easy_cleanup() */
     info_ptr->redirected = true;
   }
