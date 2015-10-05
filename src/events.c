@@ -21,7 +21,7 @@
 
 void join_event_pth(event_s *ev_this, pthread_t *event_thread_id) {
   if (ev_this->event_status > EVENT_NULL) {
-    pthread_join(*event_thread_id, NULL);
+    SALDL_ASSERT(!pthread_join(*event_thread_id, NULL));
     debug_event_msg(FN, "Setting %s status to EVENT_NULL.\n", str_EVENT_FD(ev_this->vFD));
     ev_this->event_status = EVENT_NULL;
   }
