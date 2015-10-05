@@ -207,6 +207,8 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     memset(tmp, '\0', 2);
   }
 
+  debug_msg(FN, "header=%s\n", header);
+
   if (strcasestr(header, "Content-Range:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Range:"));
     saldl_free(h->content_range);
