@@ -320,12 +320,16 @@ int main(int argc,char **argv) {
   }
 
   /* Parse opts */
-  if ( parse_opts(&params, full_argc, full_argv) ) {
+  int ret_parse = parse_opts(&params, full_argc, full_argv);
+  saldl_free(full_argv);
+
+  if (ret_parse) {
     /* We want --version to work, no matter what */
     if (params.print_version) {
       return saldl_version();
-    } else
+    } else {
       return usage(argv[0]);
+    }
   }
 
   if (params.print_version) {
@@ -333,7 +337,6 @@ int main(int argc,char **argv) {
   }
 
   saldl(&params);
-  saldl_free(full_argv);
   return 0;
 }
 
