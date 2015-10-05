@@ -209,21 +209,25 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
 
   if (strcasestr(header, "Content-Range:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Range:"));
+    saldl_free(h->content_range);
     h->content_range = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Encoding:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Encoding:"));
+    saldl_free(h->content_encoding);
     h->content_encoding = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Type:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
+    saldl_free(h->content_type);
     h->content_type = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Disposition:") == header ) {
     char *h_info = saldl_lstrip(header + strlen("Content-Disposition:"));
+    saldl_free(h->content_disposition);
     h->content_disposition = saldl_strdup(h_info);
   }
 
