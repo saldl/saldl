@@ -43,8 +43,9 @@
 char* windows_exe_path();
 #endif
 
+#define saldl_free(x) do { free((x)); (x) = NULL; } while(0)
+
 char* saldl_lstrip(char *str);
-void saldl_free(void *ptr);
 void* saldl_calloc(size_t nmemb, size_t size);
 void* saldl_malloc(size_t size);
 void* saldl_realloc(void *ptr, size_t size);

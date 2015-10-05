@@ -65,11 +65,6 @@ char* saldl_lstrip(char *str) {
   return tmp;
 }
 
-void saldl_free(void *ptr) {
-  free(ptr);
-  ptr = NULL;
-}
-
 /* 0 nmemb is banned, 0 size is banned */
 void* saldl_calloc(size_t nmemb, size_t size) {
   void *p = NULL;
