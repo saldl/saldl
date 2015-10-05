@@ -204,7 +204,7 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
   /* Strip \r\n */
   char *tmp;
   if ( (tmp = strstr(header, "\r\n")) ) {
-    memset(tmp, '\0', 2);
+    *tmp = '\0';
   }
 
   debug_msg(FN, "header=%s\n", header);
