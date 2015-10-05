@@ -30,6 +30,7 @@ static void saldl_free_all(info_s *info_ptr) {
   /* Make valgrind happy */
   saldl_free(info_ptr->chunks);
   saldl_free(info_ptr->threads);
+  saldl_free(info_ptr->content_type);
   saldl_free(params_ptr->filename);
   saldl_free(params_ptr->attachment_filename);
   saldl_free(params_ptr->inline_cookies);
