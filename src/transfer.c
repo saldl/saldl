@@ -421,7 +421,9 @@ static void set_names(info_s* info_ptr) {
 
   if (!params_ptr->filename) {
     char *prev_unescaped, *unescaped;
-    CURL *handle = curl_easy_init();
+
+    /* curl_easy_unescape() does not require an initialized handle */
+    CURL *handle = NULL;
 
     /* Get initial filename (=url if no attachment name) */
     if (params_ptr->attachment_filename) {
