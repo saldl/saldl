@@ -28,19 +28,20 @@ static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   /* Make valgrind happy */
-  saldl_free(info_ptr->chunks);
-  saldl_free(info_ptr->threads);
   saldl_free(info_ptr->content_type);
+  saldl_free(info_ptr->threads);
+  saldl_free(info_ptr->chunks);
+
   saldl_free(params_ptr->url);
+  saldl_free(params_ptr->root_dir);
   saldl_free(params_ptr->filename);
   saldl_free(params_ptr->attachment_filename);
+  saldl_free(params_ptr->referer);
+  saldl_free(params_ptr->cookie_file);
   saldl_free(params_ptr->inline_cookies);
-  saldl_free(params_ptr->root_dir);
-  saldl_free(params_ptr->user_agent);
   saldl_free(params_ptr->post);
   saldl_free(params_ptr->raw_post);
-  saldl_free(params_ptr->cookie_file);
-  saldl_free(params_ptr->referer);
+  saldl_free(params_ptr->user_agent);
   saldl_free(params_ptr->proxy);
   saldl_free(params_ptr->tunnel_proxy);
 }
