@@ -51,8 +51,9 @@ int saldl(saldl_params *params_ptr) {
   info_s info = {0};
   info.params = params_ptr;
 
-  /* Activate pthreads support in libevent */
-  evthread_use_pthreads();
+  /* Library initializations, should run only once */
+  SALDL_ASSERT(!curl_global_init(CURL_GLOBAL_ALL));
+  SALDL_ASSERT(!evthread_use_pthreads());
 
   /* Handle signals */
   info_global = &info;
@@ -61,9 +62,6 @@ int saldl(saldl_params *params_ptr) {
   /* Need to be set as early as possible */
   set_color(&params_ptr->no_color);
   set_verbosity(&params_ptr->verbosity, &params_ptr->libcurl_verbosity);
-
-  /* should run only once */
-  curl_global_init(CURL_GLOBAL_ALL);
 
   /* get/set initial info */
   check_url(params_ptr->url);
