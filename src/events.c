@@ -84,7 +84,7 @@ void events_activate(event_s *ev_this) {
 
 void events_deactivate(event_s *ev_this) {
   SALDL_ASSERT(ev_this->event_status >= EVENT_INIT);
-  while ( pthread_mutex_lock(&ev_this->ev_mutex) == EDEADLK );
+  saldl_pthread_mutex_lock_retry_deadlock(&ev_this->ev_mutex);
 
   /* Check if not already deactivated. Remember that active events will
    * run, even after calling event_base_loopexit(). */
@@ -98,12 +98,12 @@ void events_deactivate(event_s *ev_this) {
     SALDL_ASSERT(!event_base_loopexit(ev_this->ev_b, NULL));
   }
 
-  SALDL_ASSERT(!pthread_mutex_unlock(&ev_this->ev_mutex));
+  saldl_pthread_mutex_unlock(&ev_this->ev_mutex);
 }
 
 void events_deinit(event_s *ev_this) {
   SALDL_ASSERT(ev_this->event_status == EVENT_INIT);
-  while ( pthread_mutex_lock(&ev_this->ev_mutex) == EDEADLK );
+  saldl_pthread_mutex_lock_retry_deadlock(&ev_this->ev_mutex);
 
   debug_event_msg(FN, "De-init %s.\n", str_EVENT_FD(ev_this->vFD));
 
@@ -116,7 +116,7 @@ void events_deinit(event_s *ev_this) {
   ev_this->event_status = EVENT_THREAD_STARTED;
 
   /* Unlock and destroy mutex */
-  SALDL_ASSERT(!pthread_mutex_unlock(&ev_this->ev_mutex));
+  saldl_pthread_mutex_unlock(&ev_this->ev_mutex);
   SALDL_ASSERT(!pthread_mutex_destroy(&ev_this->ev_mutex));
   SALDL_ASSERT(!pthread_mutexattr_destroy(&ev_this->ev_mutex_attr));
 }
@@ -125,7 +125,7 @@ static void event_trigger(event_s *ev_this) {
   saldl_block_sig_pth();
 
   if (ev_this && ev_this->event_status >= EVENT_INIT) {
-    while ( pthread_mutex_lock(&ev_this->ev_mutex) == EDEADLK );
+    saldl_pthread_mutex_lock_retry_deadlock(&ev_this->ev_mutex);
 
     /* We strictly check for EVENT_ACTIVE in mutex lock to avoid races with deactivation code */
     if ( ev_this->event_status == EVENT_ACTIVE) {
@@ -133,7 +133,7 @@ static void event_trigger(event_s *ev_this) {
       event_active(ev_this->ev, EV_WRITE|EV_PERSIST, 1);
     }
 
-    SALDL_ASSERT(!pthread_mutex_unlock(&ev_this->ev_mutex));
+    saldl_pthread_mutex_unlock(&ev_this->ev_mutex);
   }
   saldl_unblock_sig_pth();
 }

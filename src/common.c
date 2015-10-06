@@ -227,6 +227,38 @@ void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
   }
 }
 
+void saldl_pthread_mutex_lock_retry_deadlock(pthread_mutex_t *mutex) {
+  int ret;
+  SALDL_ASSERT(mutex);
+
+  while(1) {
+
+    /* Note: PTHREAD_MUTEX_ERRORCHECK attr is set */
+    ret = pthread_mutex_lock(mutex);
+
+    switch (ret) {
+      case 0:
+        return;
+      case EDEADLK:
+        continue;
+      default:
+        fatal(FN, "Acquiring mutex failed, %s.\n", strerror(ret));
+    }
+
+  }
+
+}
+
+void saldl_pthread_mutex_unlock(pthread_mutex_t *mutex) {
+  /* Note: PTHREAD_MUTEX_ERRORCHECK attr is set */
+  int ret = pthread_mutex_unlock(mutex);
+  SALDL_ASSERT(mutex);
+
+  if (ret) {
+    fatal(FN, "Failed: %s.\n", strerror(ret));
+  }
+}
+
 #ifdef HAVE_SIGACTION
 void saldl_sigaction(int sig, const struct sigaction *restrict act, struct sigaction *restrict oact) {
   int ret;
