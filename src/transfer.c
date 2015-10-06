@@ -945,7 +945,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
    * HTTP/2 by default now. And I decided to disable it for all
    * protocols here.
    */
-  curl_easy_setopt(thread->ehandle, CURLOPT_TCP_NODELAY, 1);
+  curl_easy_setopt(thread->ehandle, CURLOPT_TCP_NODELAY, 1l);
 
   /* Send post fields if provided */
 
@@ -1021,7 +1021,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
 
     /* We do this here as setting no_decompress with no_compress is meaningless */
     if (params_ptr->no_decompress) {
-      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_CONTENT_DECODING, 0);
+      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_CONTENT_DECODING, 0l);
     }
   }
 
