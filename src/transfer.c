@@ -936,6 +936,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
   /* CURLOPT_DEFAULT_PROTOCOL was introduced in libcurl 7.45.0 */
   curl_version_info_data *libcurl_info = curl_version_info(CURLVERSION_NOW);
   if (libcurl_info->version_num >= 0x072d00) {
+    /* If protocol unknown, assume https */
     curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
   }
 #endif
