@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <stdarg.h> /* va stuff */
 #include <signal.h>
+#include <string.h>
+#include <errno.h>
 
 #define FN __func__
 #define FL __FILE__

@@ -23,9 +23,6 @@
 #error redefining SALDL_UTILS_H
 #endif
 
-#include <string.h>
-
-/*#include "vt100.h"*/
 #include "common.h"
 #include "merge.h"
 

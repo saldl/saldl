@@ -23,13 +23,11 @@
 #error redefining SALDL_COMMON_H
 #endif
 
-#include <string.h>
 #include <unistd.h>
 #include <limits.h>
 #include <libgen.h> /* basename() */
 #include <inttypes.h> /* strtoimax(), strtoumax() */
 #include <sys/stat.h> /* mkdir(), stat() */
-#include <errno.h>
 
 #include "log.h"
 #include "progress.h"

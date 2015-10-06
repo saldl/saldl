@@ -17,23 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "log.h"
+
 #ifdef HAVE_CLOCK_MONOTONIC_RAW
 
 #include <time.h>
 double saldl_utime() {
   struct timespec tp;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+  int ret = clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+
+  if (ret) {
+    fatal(FN, "clock_gettime() failed, %s.\n", strerror(errno));
+  }
+
   return tp.tv_sec + tp.tv_nsec/1000.0/1000.0/1000.0;
 }
 
 #elif defined(HAVE_GETTIMEOFDAY)
 
-#include <stddef.h> // NULL
 #include <sys/time.h>
 
 double saldl_utime() {
   struct timeval tv;
-  gettimeofday(&tv, NULL);
+  int ret = gettimeofday(&tv, NULL);
+
+  if (ret) {
+    fatal(FN, "gettimeofday() failed, %s.\n", strerror(errno));
+  }
+
   return tv.tv_sec + tv.tv_usec/1000.0/1000.0;
 }
 
