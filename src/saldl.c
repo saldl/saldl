@@ -81,22 +81,22 @@ int saldl(saldl_params *params_ptr) {
 
   /* exit here if dry_run was set */
   if ( params_ptr->dry_run  ) {
-    info_msg(NULL, "Dry-run done.\n");
+    info_msg(FN, "Dry-run done.\n");
     saldl_free_all(&info);
     return 0;
   }
 
   if (params_ptr->resume) {
     if ( !(info.file = fopen(info.part_filename,"rb+")) ) {
-      fatal(NULL, "Failed to open %s for writing: %s\n", info.part_filename, strerror(errno));
+      fatal(FN, "Failed to open %s for writing: %s\n", info.part_filename, strerror(errno));
     }
   }
   else {
     if ( !params_ptr->force  && !access(info.part_filename,F_OK)) {
-      fatal(NULL, "%s exists, enable 'resume' or 'force' to overwrite.\n", info.part_filename);
+      fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.\n", info.part_filename);
     }
     if ( !(info.file = fopen(info.part_filename,"wb")) ) {
-      fatal(NULL, "Failed to open %s for writing: %s\n", info.part_filename, strerror(errno));
+      fatal(FN, "Failed to open %s for writing: %s\n", info.part_filename, strerror(errno));
     }
   }
   set_modes(&info); /* Keep it between opening file and ctrl_file */
@@ -155,7 +155,7 @@ saldl_all_data_merged:
   /* Remove tmp_dirname */
   if ( !params_ptr->mem_bufs && !params_ptr->single_mode ) {
     if ( rmdir(info.tmp_dirname) ) {
-      err_msg(NULL, "Failed to delete %s: %s\n", info.tmp_dirname, strerror(errno) );
+      err_msg(FN, "Failed to delete %s: %s\n", info.tmp_dirname, strerror(errno) );
     }
   }
 
@@ -177,12 +177,12 @@ saldl_all_data_merged:
 
   saldl_fclose(info.part_filename, info.file);
   if (rename(info.part_filename, params_ptr->filename) ) {
-    err_msg(NULL, "Failed to rename now-complete %s to %s: %s\n", info.part_filename, params_ptr->filename, strerror(errno));
+    err_msg(FN, "Failed to rename now-complete %s to %s: %s\n", info.part_filename, params_ptr->filename, strerror(errno));
   }
 
   saldl_fclose(info.ctrl_filename, info.ctrl_file);
   if ( remove(info.ctrl_filename) ) {
-    err_msg(NULL, "Failed to remove %s: %s\n", info.ctrl_filename, strerror(errno));
+    err_msg(FN, "Failed to remove %s: %s\n", info.ctrl_filename, strerror(errno));
   }
 
   /* cleanups */
