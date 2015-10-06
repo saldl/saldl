@@ -64,12 +64,12 @@ void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVE
   }
 
   /* setup event base and the event itself */
-  ev_this->ev_b = event_base_new();
+  SALDL_ASSERT(ev_this->ev_b = event_base_new());
   ev_this->vFD = vFD;
   ev_this->ev = event_new(ev_this->ev_b, vFD, EV_WRITE|EV_PERSIST, cb, cb_data);
 
   /* Add the event with tv as max time-out */
-  event_add(ev_this->ev, &ev_this->tv);
+  SALDL_ASSERT(!event_add(ev_this->ev, &ev_this->tv));
 
   /* Initialization done */
   ev_this->event_status = EVENT_INIT;
@@ -79,7 +79,7 @@ void events_activate(event_s *ev_this) {
   SALDL_ASSERT(ev_this->event_status == EVENT_INIT);
   debug_event_msg(FN, "Activating %s.\n", str_EVENT_FD(ev_this->vFD));
   ev_this->event_status = EVENT_ACTIVE;
-  event_base_loop(ev_this->ev_b, 0);
+  SALDL_ASSERT(event_base_loop(ev_this->ev_b, 0) >= 0);
 }
 
 void events_deactivate(event_s *ev_this) {
@@ -95,10 +95,10 @@ void events_deactivate(event_s *ev_this) {
     ev_this->event_status = EVENT_INIT;
 
     /* Unlike loopbreak, this will run all active events before exiting */
-    event_base_loopexit(ev_this->ev_b, NULL);
+    SALDL_ASSERT(!event_base_loopexit(ev_this->ev_b, NULL));
   }
 
-  pthread_mutex_unlock(&ev_this->ev_mutex);
+  SALDL_ASSERT(!pthread_mutex_unlock(&ev_this->ev_mutex));
 }
 
 void events_deinit(event_s *ev_this) {
@@ -116,9 +116,9 @@ void events_deinit(event_s *ev_this) {
   ev_this->event_status = EVENT_THREAD_STARTED;
 
   /* Unlock and destroy mutex */
-  pthread_mutex_unlock(&ev_this->ev_mutex);
-  pthread_mutex_destroy(&ev_this->ev_mutex);
-  pthread_mutexattr_destroy(&ev_this->ev_mutex_attr);
+  SALDL_ASSERT(!pthread_mutex_unlock(&ev_this->ev_mutex));
+  SALDL_ASSERT(!pthread_mutex_destroy(&ev_this->ev_mutex));
+  SALDL_ASSERT(!pthread_mutexattr_destroy(&ev_this->ev_mutex_attr));
 }
 
 static void event_trigger(event_s *ev_this) {
@@ -133,7 +133,7 @@ static void event_trigger(event_s *ev_this) {
       event_active(ev_this->ev, EV_WRITE|EV_PERSIST, 1);
     }
 
-    pthread_mutex_unlock(&ev_this->ev_mutex);
+    SALDL_ASSERT(!pthread_mutex_unlock(&ev_this->ev_mutex));
   }
   saldl_unblock_sig_pth();
 }
