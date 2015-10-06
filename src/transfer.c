@@ -934,6 +934,14 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
   }
 #endif
 
+#if LIBCURL_VERSION_MINOR >= 45
+  /* CURLOPT_DEFAULT_PROTOCOL was introduced in libcurl 7.45.0 */
+  curl_version_info_data *libcurl_info = curl_version_info(CURLVERSION_NOW);
+  if (libcurl_info->version_num >= 0x072d00) {
+    curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
+  }
+#endif
+
   if (!params_ptr->no_http2) {
     /* Try HTTP/2, but don't care about the return value.
      * Most libcurl binaries would not include support for HTTP/2 in the short term */
