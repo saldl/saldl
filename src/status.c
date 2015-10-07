@@ -120,39 +120,30 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
     }
 
     main_info_msg("Chunk progress", " ");
-    fprintf(stderr,"%s  %sMerged:%s       \t %zu / %zu (+%zu finished)\n",
-        erase_after, bold, end,
+    status_msg("Merged", "          \t %zu / %zu (+%zu finished)",
         chsp->merged, info_ptr->chunk_count, chsp->finished);
-    fprintf(stderr,"%s  %sStarted:%s      \t %zu / %zu (%zu empty)\n",
-        erase_after, bold, end,
+    status_msg("Started", "         \t %zu / %zu (%zu empty)",
         chsp->started, info_ptr->chunk_count, chsp->empty_started);
-    fprintf(stderr,"%s  %sNot started:%s        \t %zu / %zu ((+%zu queued)\n",
-        erase_after, bold, end,
+    status_msg("Not started", "     \t %zu / %zu ((+%zu queued)",
         chsp->not_started, info_ptr->chunk_count, chsp->queued);
-    fprintf(stderr,"%s  %sSize complete:%s  \t %.2f%s / %.2f%s (%.2f%c)\n",
-        erase_after, bold, end,
+    status_msg("Size complete", "   \t %.2f%s / %.2f%s (%.2f%c)",
         human_size(p->complete_size), human_size_suffix(p->complete_size),
         human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
         PCT(p->complete_size, info_ptr->file_size), '%');
     if (p->initial_complete_size) {
-      fprintf(stderr,"%s  %sSession complete:%s  \t %.2f%s / %.2f%s (%.2f%c)\n",
-          erase_after, bold, end,
+      status_msg("Session complete", "\t %.2f%s / %.2f%s (%.2f%c)",
           human_size(session_complete_size), human_size_suffix(session_complete_size),
           human_size(session_size), human_size_suffix(session_size),
           PCT(session_complete_size, session_size), '%');
     }
-    fprintf(stderr,"%s  %sRate:%s           \t %.2f%s/s : %.2f%s/s\n",
-        erase_after, bold, end,
+    status_msg("Rate", "            \t %.2f%s/s : %.2f%s/s",
         human_size(p->rate), human_size_suffix(p->rate),
         human_size(p->curr_rate), human_size_suffix(p->curr_rate));
-    fprintf(stderr,"%s  %sRemaining:%s      \t %.1fs : %.1fs\n",
-        erase_after, bold, end,
-        p->rem, p->curr_rem);
-    fprintf(stderr,"%s  %sDuration:%s       \t %.1fs\n",
-        erase_after, bold, end,
-        p->dur);
-    fprintf(stderr,"%s%s%s\n", erase_screen_after, chunks_status, ret_char);
 
+    status_msg("Remaining", "       \t %.1fs : %.1fs", p->rem, p->curr_rem);
+    status_msg("Duration", "        \t %.1fs", p->dur);
+
+    fprintf(stderr,"%s%s%s\n", erase_screen_after, chunks_status, ret_char);
     saldl_fputs_count(*lines, up, stderr, "stderr");
   }
 }

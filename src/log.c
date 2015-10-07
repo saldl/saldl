@@ -188,6 +188,15 @@ void main_info_msg(const char *name, const char *format, ...) {
   }
 }
 
+void status_msg(const char *name, const char *format, ...) {
+  va_list args;
+  if (format) {
+    va_start(args, format);
+    log_stderr("  ", name, format, args);
+    va_end(args);
+  }
+}
+
 void pre_fatal(const char *name, const char *format, ...) {
   /* Use this if you want multi-line fatal messages.
    * The last call should be fatal().

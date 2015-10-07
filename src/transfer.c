@@ -844,23 +844,24 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
         saldl_fputs_count(lines+!!offset, up, stderr, "stderr");
         main_info_msg("Single mode progress", " ");
-        fprintf(stderr, " %s%sProgress:%s\t%.2f%s / %.2f%s\n",
-            erase_after, bold, end,
+
+        status_msg("Progress", " \t%.2f%s / %.2f%s",
             human_size(dlnow + offset), human_size_suffix(dlnow + offset),
             human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size));
+
         if (offset) {
-          fprintf(stderr, " %s%s        %s\t%.2f%s / %.2f%s (Offset: %.2f%s)\n",
-              erase_after, bold, end,
+          status_msg(NULL, "        \t%.2f%s / %.2f%s (Offset: %.2f%s)",
               human_size(dlnow), human_size_suffix(dlnow),
               human_size(dltotal), human_size_suffix(dltotal),
               human_size(offset), human_size_suffix(offset));
         }
-        fprintf(stderr, " %s%sRate:%s  \t%.2f%s/s : %.2f%s/s\n",
-            erase_after, bold, end,
+
+        status_msg("Rate", "     \t%.2f%s/s : %.2f%s/s",
             human_size(p->rate), human_size_suffix(p->rate),
             human_size(p->curr_rate), human_size_suffix(p->curr_rate));
-        fprintf(stderr, " %s%sRemaining:%s\t%.1fs : %.1fs\n", erase_after, bold, end, p->rem, p->curr_rem);
-        fprintf(stderr, " %s%sDuration:%s\t%.1fs\n", erase_after, bold, end, p->dur);
+
+        status_msg("Remaining", "\t%.1fs : %.1fs", p->rem, p->curr_rem);
+        status_msg("Duration", " \t%.1fs", p->dur);
       }
     }
   }
