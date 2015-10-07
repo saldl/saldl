@@ -530,7 +530,9 @@ static void set_names(info_s* info_ptr) {
   }
 }
 
-static void print_remote_info(info_s *info_ptr) {
+static void print_info(info_s *info_ptr) {
+  fprintf(stderr,"%s%sURL:%s %s\n", bold, info_color, end, info_ptr->params->url);
+
   if (info_ptr->redirect_url) {
     fprintf(stderr, "%s%sRedirected:%s %s\n", bold, info_color, end, info_ptr->redirect_url);
   }
@@ -548,7 +550,7 @@ static void print_remote_info(info_s *info_ptr) {
   }
 }
 
-void remote_info(info_s *info_ptr) {
+void get_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   thread_s tmp = {0};
 
@@ -599,7 +601,7 @@ void remote_info(info_s *info_ptr) {
 
 no_remote:
   set_names(info_ptr);
-  print_remote_info(info_ptr);
+  print_info(info_ptr);
 
 }
 
@@ -664,7 +666,6 @@ void check_url(char *url) {
   if (! strcmp(url, "") ) {
     fatal(NULL, "Invalid empty url \"%s\".\n", url);
   }
-  fprintf(stderr,"%s%sURL:%s %s\n", bold, info_color, end, url);
 }
 
 void set_info(info_s *info_ptr) {

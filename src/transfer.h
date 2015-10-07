@@ -30,7 +30,7 @@ char* saldl_user_agent();
 void chunks_init(info_s*);
 void curl_set_ranges(CURL*, chunk_s*);
 void check_remote_file_size(info_s*);
-void remote_info(info_s*);
+void get_info(info_s*);
 void set_info(info_s*);
 void print_chunk_info(info_s*);
 void check_url(char*);

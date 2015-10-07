@@ -66,7 +66,7 @@ int saldl(saldl_params *params_ptr) {
 
   /* get/set initial info */
   check_url(params_ptr->url);
-  remote_info(&info);
+  get_info(&info);
   set_info(&info);
   check_remote_file_size(&info);
 
