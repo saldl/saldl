@@ -28,6 +28,7 @@ static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   /* Make valgrind happy */
+  saldl_free(info_ptr->redirect_url);
   saldl_free(info_ptr->content_type);
   saldl_free(info_ptr->threads);
   saldl_free(info_ptr->chunks);

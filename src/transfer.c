@@ -103,6 +103,17 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
 static void headers_info(info_s *info_ptr) {
   headers_s *h = &info_ptr->headers;
 
+  if (h->location) {
+    debug_msg(FN, "Location: %s\n", h->location);
+
+    if (info_ptr->redirect_url) {
+      debug_msg(FN, "Clearing Location: %s", info_ptr->redirect_url);
+      saldl_free(info_ptr->redirect_url);
+    }
+
+    info_ptr->redirect_url = saldl_strdup(h->location);
+  }
+
   if (h->content_range) {
     char *tmp;
     debug_msg(FN, "Content-Range: %s\n", h->content_range);
@@ -207,6 +218,12 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
     *tmp = '\0';
   }
 
+  if (strcasestr(header, "Location:") == header) {
+    char *h_info = saldl_lstrip(header + strlen("Location:"));
+    saldl_free(h->location);
+    h->location = saldl_strdup(h_info);
+  }
+
   if (strcasestr(header, "Content-Range:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Range:"));
     saldl_free(h->content_range);
@@ -272,21 +289,6 @@ static long num_redirects(CURL *handle) {
   SALDL_ASSERT(handle);
   curl_easy_getinfo(handle, CURLINFO_REDIRECT_COUNT, &redirects);
   return redirects;
-}
-
-static void check_redirects(CURL *handle, info_s *info_ptr) {
-  long redirects;
-  char *url;
-
-  SALDL_ASSERT(handle);
-  curl_easy_getinfo(handle, CURLINFO_REDIRECT_COUNT, &redirects);
-
-  if (redirects) {
-    curl_easy_getinfo(handle, CURLINFO_EFFECTIVE_URL, &url);
-    saldl_free(info_ptr->params->url);
-    info_ptr->params->url = saldl_strdup(url); /* Note: strdup() because the pointer will be killed after curl_easy_cleanup() */
-    info_ptr->redirected = true;
-  }
 }
 
 static void request_remote_info_simple(thread_s *tmp) {
@@ -530,8 +532,8 @@ static void set_names(info_s* info_ptr) {
 }
 
 static void print_remote_info(info_s *info_ptr) {
-  if (info_ptr->redirected) {
-    fprintf(stderr, "%s%sRedirected:%s %s\n", bold, info_color, end, info_ptr->params->url);
+  if (info_ptr->redirect_url) {
+    fprintf(stderr, "%s%sRedirected:%s %s\n", bold, info_color, end, info_ptr->redirect_url);
   }
 
   if (info_ptr->content_type) {
@@ -592,8 +594,6 @@ void remote_info(info_s *info_ptr) {
     /* We didn't get file size from Content-Range, so get it from Content-Length */
     info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle);
   }
-
-  check_redirects(tmp.ehandle, info_ptr);
 
   curl_easy_cleanup(tmp.ehandle);
   /* remote part ends here */

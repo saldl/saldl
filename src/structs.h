@@ -152,6 +152,7 @@ typedef struct {
 } control_s;
 
 typedef struct {
+  char *location;
   char *content_range;
   char *content_encoding;
   char *content_type;
@@ -173,8 +174,8 @@ typedef struct {
   size_t chunk_count;
   size_t initial_merged_count;
   bool extra_resume_set;
+  char *redirect_url;
   char *content_type;
-  bool redirected;
   long redirects_count;
   FILE* file;
   FILE* ctrl_file;
