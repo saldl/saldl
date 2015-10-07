@@ -124,16 +124,19 @@ void events_deinit(event_s *ev_this) {
 static void event_trigger(event_s *ev_this) {
   saldl_block_sig_pth();
 
-  if (ev_this && ev_this->event_status >= EVENT_INIT) {
+  if (ev_this && ev_this->event_status == EVENT_ACTIVE) {
     saldl_pthread_mutex_lock_retry_deadlock(&ev_this->ev_mutex);
 
-    /* We strictly check for EVENT_ACTIVE in mutex lock to avoid races with deactivation code */
+    /* We check for EVENT_ACTIVE again in mutex lock to avoid races with deactivation code */
     if ( ev_this->event_status == EVENT_ACTIVE) {
       debug_event_msg(FN, "Triggering %s.\n", str_EVENT_FD(ev_this->vFD));
       event_active(ev_this->ev, EV_WRITE|EV_PERSIST, 1);
     }
 
-    saldl_pthread_mutex_unlock(&ev_this->ev_mutex);
+    /* Before unlocking the mutex, make sure event wasn't de-initialized somehow. */
+    if (ev_this->event_status >= EVENT_INIT) {
+      saldl_pthread_mutex_unlock(&ev_this->ev_mutex);
+    }
   }
   saldl_unblock_sig_pth();
 }
