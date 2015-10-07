@@ -21,6 +21,20 @@
 
 #include "saldl.h"
 
+static void print_libcurl_protocols(const char * const *protocols) {
+  intptr_t index = 0;
+  SALDL_ASSERT(protocols);
+
+  fprintf(stderr, "Protocols:");
+
+  while (protocols[index]) {
+    fprintf(stderr, " %s", protocols[index]);
+    index++;
+  }
+
+  fprintf(stderr, ".\n");
+}
+
 static int saldl_version() {
   curl_version_info_data *curl_info = curl_version_info(CURLVERSION_NOW);
   fprintf(stderr, "%s %s (%s)\n", SALDL_NAME, SALDL_VERSION, SALDL_WWW);
@@ -34,6 +48,7 @@ static int saldl_version() {
   fprintf(stderr, "\n");
   fprintf(stderr, "Built against: libcurl %s\n", LIBCURL_VERSION);
   fprintf(stderr, "Loaded: libcurl %s (%s)\n", curl_info->version, curl_info->ssl_version);
+  print_libcurl_protocols(curl_info->protocols);
   return 0;
 }
 
