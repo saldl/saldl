@@ -939,6 +939,9 @@ void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_da
     /* If protocol unknown, assume https */
     curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
   }
+#else
+  /* Silence unused-variable warning */
+  (void)curl_info;
 #endif
 
   if (!params_ptr->no_http2) {
