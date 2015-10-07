@@ -51,11 +51,10 @@
 #define SALDL_ASSERT(cond) \
   do {\
     if (!(cond)) {\
-      pre_fatal(FL, "Assert[%s/%d]: ", FN, LN);\
+      pre_fatal(FL, "Assert[%s/%d]: %s", FN, LN, STR((cond)));\
       /* We don't use saldl_fputs() to avoid recursive assertions */ \
-      fputs(STR((cond)) ".\n", stderr);\
-      pre_fatal(NULL, "Your system is in bad shape, or this could be a bug in saldl.\n");\
-      fatal_abort(NULL, "Please file a bug report: %s\n", SALDL_BUG);\
+      pre_fatal(NULL, "Your system is in bad shape, or this could be a bug in saldl.");\
+      fatal_abort(NULL, "Please file a bug report: %s", SALDL_BUG);\
     }\
   } while(0)
 

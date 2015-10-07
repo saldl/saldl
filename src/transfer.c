@@ -104,7 +104,7 @@ static void headers_info(info_s *info_ptr) {
   headers_s *h = &info_ptr->headers;
 
   if (h->location) {
-    debug_msg(FN, "Location: %s\n", h->location);
+    debug_msg(FN, "Location: %s", h->location);
 
     if (info_ptr->redirect_url) {
       debug_msg(FN, "Clearing Location: %s", info_ptr->redirect_url);
@@ -116,25 +116,25 @@ static void headers_info(info_s *info_ptr) {
 
   if (h->content_range) {
     char *tmp;
-    debug_msg(FN, "Content-Range: %s\n", h->content_range);
+    debug_msg(FN, "Content-Range: %s", h->content_range);
 
     if ( (tmp = strcasestr(h->content_range, "/")) ) {
       info_ptr->file_size = parse_num_o(tmp+1, 0);
-      debug_msg(FN, "file size from Content-Range: %ju\n", info_ptr->file_size);
+      debug_msg(FN, "file size from Content-Range: %ju", info_ptr->file_size);
     }
 
     saldl_free(h->content_range);
   }
 
   if (h->content_encoding) {
-    debug_msg(FN, "Content-Encoding: %s\n", h->content_encoding);
+    debug_msg(FN, "Content-Encoding: %s", h->content_encoding);
     info_ptr->content_encoded = true;
     saldl_free(h->content_encoding);
   }
 
   if (h->content_type) {
     /* XXX: content_type block should always be after content_encoding block */
-    debug_msg(FN, "Content-Type: %s\n", h->content_type);
+    debug_msg(FN, "Content-Type: %s", h->content_type);
 
     if (info_ptr->content_type) {
       debug_msg(FN, "Clearing Content-Type: %s", info_ptr->content_type);
@@ -145,7 +145,7 @@ static void headers_info(info_s *info_ptr) {
 
     if (strcasestr(h->content_type, "gzip")) {
       if (!info_ptr->params->no_compress) {
-        debug_msg(FN, "Skipping compression request, the content is already gzipped.\n");
+        debug_msg(FN, "Skipping compression request, the content is already gzipped.");
         info_ptr->params->no_compress = true;
       }
 
@@ -159,7 +159,7 @@ static void headers_info(info_s *info_ptr) {
 
   if (h->content_disposition && !info_ptr->params->no_attachment_detection) {
     char *tmp;
-    debug_msg(FN, "Content-Disposition: %s\n", h->content_disposition);
+    debug_msg(FN, "Content-Disposition: %s", h->content_disposition);
 
     /* We assume attachment filename is the last assignment */
     if ( (tmp = strrchr(h->content_disposition, '=')) ) {
@@ -174,7 +174,7 @@ static void headers_info(info_s *info_ptr) {
       if (*tmp == '"') {
         char *end = strrchr(tmp, '"');
         if (end && (size_t)(end - tmp + 1) == strlen(tmp) ) {
-          debug_msg(FN, "Stripping quotes from %s\n", tmp);
+          debug_msg(FN, "Stripping quotes from %s", tmp);
           tmp++;
           *end = '\0';
         }
@@ -191,17 +191,17 @@ static void headers_info(info_s *info_ptr) {
         saldl_free(info_ptr->content_type);
       }
 
-      debug_msg(FN, "Before basename: %s\n", tmp);
+      debug_msg(FN, "Before basename: %s", tmp);
       info_ptr->params->attachment_filename = saldl_strdup( basename(tmp) );
-      debug_msg(FN, "After basename: %s\n", info_ptr->params->attachment_filename);
+      debug_msg(FN, "After basename: %s", info_ptr->params->attachment_filename);
     }
 
     saldl_free(h->content_disposition);
   }
 
   if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
-      debug_msg(FN, "Content compressed and will be decompressed.\n");
-      debug_msg(FN, "Strict downloaded file size checking will be skipped.\n");
+      debug_msg(FN, "Content compressed and will be decompressed.");
+      debug_msg(FN, "Strict downloaded file size checking will be skipped.");
     }
 
 }
@@ -300,7 +300,7 @@ static void request_remote_info_simple(thread_s *tmp) {
 
 semi_fatal_request_retry:
   ret = curl_easy_perform(tmp->ehandle);
-  debug_msg(FN, "ret=%u\n", ret);
+  debug_msg(FN, "ret=%u", ret);
 
   switch (ret) {
     case CURLE_OK:
@@ -310,23 +310,23 @@ semi_fatal_request_retry:
     case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
       semi_fatal_retries++;
       if (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
-        info_msg(FN, "libcurl returned semi-fatal (%d: %s), retry %d/%d\n",
+        info_msg(FN, "libcurl returned semi-fatal (%d: %s), retry %d/%d",
             ret, tmp->err_buf,
             semi_fatal_retries, MAX_SEMI_FATAL_RETRIES);
         goto semi_fatal_request_retry;
       }
       else {
-        fatal(FN, "libcurl returned semi-fatal (%d: %s). max retries(%d) exceeded.\n",
+        fatal(FN, "libcurl returned semi-fatal (%d: %s). max retries(%d) exceeded.",
             ret, tmp->err_buf,
             MAX_SEMI_FATAL_RETRIES);
       }
       break;
     default:
-      fatal(FN, "libcurl returned (%d: %s) while trying to get remote info.\n", ret, tmp->err_buf);
+      fatal(FN, "libcurl returned (%d: %s) while trying to get remote info.", ret, tmp->err_buf);
   }
 
   curl_easy_getinfo(tmp->ehandle, CURLINFO_RESPONSE_CODE, &response);
-  debug_msg(FN, "response=%ld\n", response );
+  debug_msg(FN, "response=%ld", response );
 }
 
 static off_t remote_info_simple_file_size(CURL *handle) {
@@ -336,10 +336,10 @@ static off_t remote_info_simple_file_size(CURL *handle) {
   curl_easy_getinfo(handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&d_size);
 
   size = (off_t)d_size;
-  debug_msg(FN, "filesize=%jd\n", size);
+  debug_msg(FN, "filesize=%jd", size);
 
   if ( size == -1 ) {
-    debug_msg(FN, "Zeroing filesize, was -1.\n");
+    debug_msg(FN, "Zeroing filesize, was -1.");
     size = 0;
   }
 
@@ -356,16 +356,16 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
   double content_length = 0;
 
   if (params_ptr->assume_range_support) {
-    debug_msg(FN, "Range support assumed, skipping check.\n");
+    debug_msg(FN, "Range support assumed, skipping check.");
     return 0;
   }
 
   if (params_ptr->single_mode && !params_ptr->resume) {
-    debug_msg(FN, "Skipping unnecessary range check.\n");
+    debug_msg(FN, "Skipping unnecessary range check.");
     goto no_range;
   }
 
-  debug_msg(FN, "Checking server response with range support..\n");
+  debug_msg(FN, "Checking server response with range support..");
   curl_easy_setopt(tmp->ehandle, CURLOPT_RANGE, "4096-8191");
 
   while (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
@@ -377,7 +377,7 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
     }
     else {
       semi_fatal_retries++;
-      warn_msg(FN, "libcurl returned semi-fatal error (%d: %s), retry %d/%d.\n", ret, tmp->err_buf, semi_fatal_retries, MAX_SEMI_FATAL_RETRIES);
+      warn_msg(FN, "libcurl returned semi-fatal error (%d: %s), retry %d/%d.", ret, tmp->err_buf, semi_fatal_retries, MAX_SEMI_FATAL_RETRIES);
     }
 
   }
@@ -393,7 +393,7 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
        * concurrent connections to FTP servers seems problematic.
        * So, we force single mode, but allow resume if requested.
        */
-      warn_msg(FN, "Range support works. But we force single mode for ftp URLs.\n");
+      warn_msg(FN, "Range support works. But we force single mode for ftp URLs.");
       params_ptr->single_mode = true;
     }
 
@@ -402,13 +402,13 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
   }
   /* Range check failed */
   else {
-    warn_msg(FN, "Wrong link, server lacks range support or file too small.\n");
-    warn_msg(FN, "We well make a second check without ranges.\n");
-    debug_msg(FN, "Expected length %.0lf, got %.0lf\n", expected_length, content_length);
+    warn_msg(FN, "Wrong link, server lacks range support or file too small.");
+    warn_msg(FN, "We well make a second check without ranges.");
+    debug_msg(FN, "Expected length %.0lf, got %.0lf", expected_length, content_length);
   }
 
 no_range:
-  warn_msg(FN, "Single mode force-enabled, resume force-disabled.\n");
+  warn_msg(FN, "Single mode force-enabled, resume force-disabled.");
   params_ptr->single_mode = true;
   params_ptr->resume = false;
   return -1;
@@ -461,8 +461,8 @@ static void set_names(info_s* info_ptr) {
       }
 
       if ( strcmp(pre_filename, params_ptr->filename) ) {
-        info_msg(FN, "Before stripping GET attrs: %s\n", pre_filename);
-        info_msg(FN, "After  stripping GET attrs: %s\n", params_ptr->filename);
+        info_msg(FN, "Before stripping GET attrs: %s", pre_filename);
+        info_msg(FN, "After  stripping GET attrs: %s", params_ptr->filename);
       }
       saldl_free(pre_filename);
     }
@@ -470,12 +470,12 @@ static void set_names(info_s* info_ptr) {
   }
 
   if ( !strcmp(params_ptr->filename,"") || !strcmp(params_ptr->filename,".") || !strcmp(params_ptr->filename,"..") || !strcmp(params_ptr->filename,"...") || ( strrchr(params_ptr->filename,'/') && ( !strcmp(strrchr(params_ptr->filename,'/'), "/") || !strcmp(strrchr(params_ptr->filename,'/'), "/.") || !strcmp(strrchr(params_ptr->filename,'/'), "/..") ) ) ) {
-    fatal(NULL, "Invalid filename \"%s\".\n", params_ptr->filename);
+    fatal(NULL, "Invalid filename \"%s\".", params_ptr->filename);
   }
 
   if ( params_ptr->no_path ) {
     if ( strchr(params_ptr->filename, '/') ) {
-      info_msg(FN, "Replacing %s/%s with %s_%s in %s\n", error_color, end, ok_color, end, params_ptr->filename);
+      info_msg(FN, "Replacing %s/%s with %s_%s in %s", error_color, end, ok_color, end, params_ptr->filename);
     }
     params_ptr->filename = valid_filename(params_ptr->filename);
   }
@@ -491,7 +491,7 @@ static void set_names(info_s* info_ptr) {
     char *curr_filename = params_ptr->filename;
     size_t full_buf_size = strlen(params_ptr->root_dir) + strlen(curr_filename) + 2; // +1 for '/', +1 for '\0'
 
-    info_msg(FN, "Prepending root_dir(%s) to filename(%s).\n", params_ptr->root_dir, params_ptr->filename);
+    info_msg(FN, "Prepending root_dir(%s) to filename(%s).", params_ptr->root_dir, params_ptr->filename);
     params_ptr->filename = saldl_calloc(full_buf_size, sizeof(char)); // +1 for '\0'
     snprintf(params_ptr->filename, full_buf_size, "%s/%s", params_ptr->root_dir, curr_filename);
     saldl_free(curr_filename);
@@ -510,15 +510,15 @@ static void set_names(info_s* info_ptr) {
     }
 
     if ( strlen(before_trunc) != strlen(params_ptr->filename) ) {
-      warn_msg(NULL,"Filename truncated:\n");
-      warn_msg(NULL,"  Original: %s\n", before_trunc);
-      warn_msg(NULL,"  Truncated: %s\n", params_ptr->filename);
+      warn_msg(NULL,"Filename truncated:");
+      warn_msg(NULL,"  Original: %s", before_trunc);
+      warn_msg(NULL,"  Truncated: %s", params_ptr->filename);
     }
   }
 
   /* Check if filename exists  */
   if (!access(params_ptr->filename,F_OK)) {
-    fatal(NULL, "%s exists, quiting...\n", params_ptr->filename);
+    fatal(NULL, "%s exists, quiting...", params_ptr->filename);
   }
 
   /* Set part/ctrl filenames, tmp dir */
@@ -555,7 +555,7 @@ void get_info(info_s *info_ptr) {
   thread_s tmp = {0};
 
   if (params_ptr->no_remote_info) {
-    warn_msg(FN, "no_remote_info enforces both enabling single mode and disabling resume.\n");
+    warn_msg(FN, "no_remote_info enforces both enabling single mode and disabling resume.");
     params_ptr->single_mode = true;
     params_ptr->resume = false;
     goto no_remote;
@@ -573,7 +573,7 @@ void get_info(info_s *info_ptr) {
   curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, &info_ptr->headers);
 
   if (params_ptr->head && !params_ptr->post && !params_ptr->raw_post) {
-    info_msg(FN, "Using HEAD for remote info.\n");
+    info_msg(FN, "Using HEAD for remote info.");
     curl_easy_setopt(tmp.ehandle,CURLOPT_NOBODY,1l);
   }
 
@@ -614,7 +614,7 @@ void check_remote_file_size(info_s *info_ptr) {
   }
 
   if (info_ptr->chunk_count > 1 && info_ptr->chunk_count < info_ptr->params->num_connections) {
-    info_msg(NULL, "File relatively small, use %zu connection(s)\n", info_ptr->chunk_count);
+    info_msg(NULL, "File relatively small, use %zu connection(s)", info_ptr->chunk_count);
     info_ptr->params->num_connections = info_ptr->chunk_count;
   }
 }
@@ -623,7 +623,7 @@ static void whole_file(info_s *info_ptr) {
   if (0 < info_ptr->file_size) {
     info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)info_ptr->params->chunk_size , (uintmax_t)info_ptr->file_size  / info_ptr->params->num_connections);
     info_ptr->params->chunk_size = info_ptr->params->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
-    info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.\n",
+    info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.",
         human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
         human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
         info_ptr->params->num_connections);
@@ -633,12 +633,12 @@ static void whole_file(info_s *info_ptr) {
 static void auto_size_func(info_s *info_ptr, int auto_size) {
   int cols = tty_width();
   if (cols <= 0) {
-    info_msg(NULL, "Couldn't retrieve tty width. Chunk size will not be modified.\n");
+    info_msg(NULL, "Couldn't retrieve tty width. Chunk size will not be modified.");
     return;
   }
 
   if (cols <= 2) {
-    info_msg(NULL, "Retrieved tty width (%d) is too small.\n", cols);
+    info_msg(NULL, "Retrieved tty width (%d) is too small.", cols);
     return;
   }
 
@@ -647,12 +647,12 @@ static void auto_size_func(info_s *info_ptr, int auto_size) {
 
     if ( info_ptr->params->num_connections > (size_t)cols ) {
       info_ptr->params->num_connections = (size_t)cols; /* Limit active connections to 1 line */
-      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.\n", info_ptr->params->num_connections, cols);
+      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.", info_ptr->params->num_connections, cols);
     }
 
     if ( ( info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_ptr->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
       info_ptr->params->chunk_size = (info_ptr->params->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
-      info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.\n",
+      info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.",
           human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
           info_ptr->params->num_connections, cols, auto_size);
     }
@@ -664,7 +664,7 @@ static void auto_size_func(info_s *info_ptr, int auto_size) {
 void check_url(char *url) {
   /* TODO: Add more checks */
   if (! strcmp(url, "") ) {
-    fatal(NULL, "Invalid empty url \"%s\".\n", url);
+    fatal(NULL, "Invalid empty url \"%s\".", url);
   }
 }
 
@@ -688,7 +688,7 @@ void set_info(info_s *info_ptr) {
 
   /* Chunk size should be at least 4k */
   if (info_ptr->params->chunk_size < 4096) {
-    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).\n", info_ptr->params->chunk_size);
+    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).", info_ptr->params->chunk_size);
     info_ptr->params->chunk_size = 4096;
   }
 
@@ -753,7 +753,7 @@ void global_progress_update(info_s *info_ptr, bool init) {
           not_started++;
           break;
         default:
-          fatal(FN, "Invalid progress value %d for chunk %zu\n", chunk.progress, idx);
+          fatal(FN, "Invalid progress value %d for chunk %zu", chunk.progress, idx);
           break;
       }
     }
@@ -792,7 +792,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       long curr_redirects_count = num_redirects(info_ptr->threads[0].ehandle);
 
       if (info_ptr->file_size_from_dltotal && curr_redirects_count != info_ptr->redirects_count) {
-        debug_msg(FN, "Resetting file_size from dltotal, redirect count changed from %ld to %ld.\n",
+        debug_msg(FN, "Resetting file_size from dltotal, redirect count changed from %ld to %ld.",
             info_ptr->redirects_count, curr_redirects_count);
         info_ptr->file_size = 0;
       }
@@ -800,7 +800,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       info_ptr->redirects_count = curr_redirects_count;
 
       if (!info_ptr->file_size && dltotal) {
-        debug_msg(FN, "Setting file_size from dltotal=%ju.\n", dltotal);
+        debug_msg(FN, "Setting file_size from dltotal=%ju.", dltotal);
         info_ptr->file_size = dltotal;
         info_ptr->file_size_from_dltotal = true;
       }
@@ -877,13 +877,13 @@ static int chunk_progress(void *void_chunk_ptr, curl_off_t dltotal, curl_off_t d
 
   /* Check bad server behavior, e.g. if dltotal becomes file_size mid-transfer. */
   if (dltotal && dltotal != (chunk->range_end - chunk->curr_range_start + 1) ) {
-    fatal(FN, "Transfer size(%jd) does not match requested range(%jd-%jd) in chunk %zu, this is a sign of a bad server, retry with a single connection.\n", (intmax_t)dltotal, (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end, chunk->idx);
+    fatal(FN, "Transfer size(%jd) does not match requested range(%jd-%jd) in chunk %zu, this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end, chunk->idx);
   }
 
   if (dlnow) { /* dltotal & dlnow can both be 0 initially */
     curl_off_t curr_chunk_size = chunk->range_end - chunk->curr_range_start + 1;
     if (dltotal != curr_chunk_size) {
-      fatal(FN, "Transfer size does not equal requested range: %jd!=%jd for chunk %zu, this is a sign of a bad server, retry with a single connection.\n", (intmax_t)dltotal, (intmax_t)curr_chunk_size, chunk->idx);
+      fatal(FN, "Transfer size does not equal requested range: %jd!=%jd for chunk %zu, this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)curr_chunk_size, chunk->idx);
     }
     rem = (size_t)(dltotal-dlnow);
   } else if (chunk->size_complete) { /* dltotal & dlnow can also both be 0 initially if a chunk download restarted */
@@ -922,7 +922,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     snprintf(ca_bundle_path, PATH_MAX, "%s/ca-bundle.trust.crt", exe_dir);
 
     if ( access(ca_bundle_path, F_OK) ) {
-      warn_msg(FN, "CA bundle file %s does not exist.\n", ca_bundle_path);
+      warn_msg(FN, "CA bundle file %s does not exist.", ca_bundle_path);
     }
     else {
       curl_easy_setopt(thread->ehandle, CURLOPT_CAINFO, ca_bundle_path);
@@ -971,7 +971,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
     /* Add custom_headers to the request */
     curl_easy_setopt(thread->ehandle, CURLOPT_HTTPHEADER, custom_headers);
   } else if (params_ptr->post) {
-    debug_msg(FN, "POST fields: %s\n", params_ptr->post);
+    debug_msg(FN, "POST fields: %s", params_ptr->post);
     curl_easy_setopt(thread->ehandle,CURLOPT_POSTFIELDS, params_ptr->post);
   }
 
@@ -993,7 +993,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
   curl_easy_setopt(thread->ehandle,CURLOPT_FOLLOWLOCATION,1l); /* Handle redirects */
 
   if (params_ptr->libcurl_verbosity) {
-    debug_msg(FN, "enabling libcurl verbose output.\n");
+    debug_msg(FN, "enabling libcurl verbose output.");
     curl_easy_setopt(thread->ehandle,CURLOPT_VERBOSE,1l);
   }
 
@@ -1067,13 +1067,13 @@ void set_single_mode(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   if (!params_ptr->single_mode) {
-    info_msg(FN, "File small, enabling single mode.\n");
+    info_msg(FN, "File small, enabling single mode.");
     params_ptr->single_mode = true;
   }
 
   /* XXX: Should we try to support large files with single mode in 32b systems? */
   if ((uintmax_t)info_ptr->file_size > (uintmax_t)SIZE_MAX) {
-    fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu \n", (intmax_t)info_ptr->file_size, SIZE_MAX);
+    fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu ", (intmax_t)info_ptr->file_size, SIZE_MAX);
   }
 
   info_ptr->params->chunk_size = (size_t)info_ptr->file_size;
@@ -1088,14 +1088,14 @@ void set_modes(info_s *info_ptr) {
 
   if (! access(info_ptr->tmp_dirname, F_OK) ) {
     if (params_ptr->mem_bufs || params_ptr->single_mode) {
-      warn_msg(FN, "%s seems to be left over. You have to delete the dir manually.\n", info_ptr->tmp_dirname);
+      warn_msg(FN, "%s seems to be left over. You have to delete the dir manually.", info_ptr->tmp_dirname);
     } else if (!info_ptr->extra_resume_set) {
-      fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete the dir manually.\n", info_ptr->tmp_dirname);
+      fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete the dir manually.", info_ptr->tmp_dirname);
     }
   }
 
   if ( params_ptr->single_mode ) { /* Write to .part file directly, no mem or file buffers */
-    info_msg(NULL, "single mode, writing to %s directly.\n", info_ptr->part_filename);
+    info_msg(NULL, "single mode, writing to %s directly.", info_ptr->part_filename);
     storage_info_ptr->name = info_ptr->part_filename;
     storage_info_ptr->file = info_ptr->file;
     info_ptr->prepare_storage = &prepare_storage_single;
@@ -1111,10 +1111,10 @@ void set_modes(info_s *info_ptr) {
 
   if ( saldl_mkdir(info_ptr->tmp_dirname, S_IRWXU) ) { /* mkdir with 700 perms */
     if (errno != EEXIST) {
-      fatal(FN, "Failed to create %s: %s\n", info_ptr->tmp_dirname, strerror(errno) );
+      fatal(FN, "Failed to create %s: %s", info_ptr->tmp_dirname, strerror(errno) );
     }
   } else if ( info_ptr->extra_resume_set ) {
-    warn_msg(FN, "%s did not exist. Maybe previous run used memory buffers or the dir was deleted manually.\n", info_ptr->tmp_dirname);
+    warn_msg(FN, "%s did not exist. Maybe previous run used memory buffers or the dir was deleted manually.", info_ptr->tmp_dirname);
   }
 
   storage_info_ptr->name = info_ptr->tmp_dirname;
@@ -1148,7 +1148,7 @@ void reset_storage_single(thread_s *thread) {
   off_t offset = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
   curl_easy_setopt(thread->ehandle, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)offset);
   saldl_fseeko(storage->name, storage->file, offset, SEEK_SET);
-  info_msg(FN, "restarting from offset %jd\n", (intmax_t)offset);
+  info_msg(FN, "restarting from offset %jd", (intmax_t)offset);
 }
 
 void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
@@ -1172,7 +1172,7 @@ void reset_storage_tmpf(thread_s *thread) {
   thread->chunk->size_complete = (size_t)size_complete;
 
   curl_set_ranges(thread->ehandle, thread->chunk);
-  info_msg(FN, "restarting chunk %s from offset %zu\n", storage->name, thread->chunk->size_complete);
+  info_msg(FN, "restarting chunk %s from offset %zu", storage->name, thread->chunk->size_complete);
   saldl_fseeko(storage->name, storage->file, thread->chunk->size_complete, SEEK_SET);
   thread->chunk->size_complete = 0;
 }
@@ -1183,12 +1183,12 @@ void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
   snprintf(tmp_f->name, PATH_MAX, "%s/%zu", dir->name, chunk->idx);
   if (chunk->size_complete) {
     if (! (tmp_f->file = fopen(tmp_f->name, "rb+"))) {
-      fatal(FN, "Failed to open %s for read/write: %s\n", tmp_f->name, strerror(errno));
+      fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
     }
     saldl_fseeko(tmp_f->name, tmp_f->file, chunk->size_complete, SEEK_SET);
   } else {
     if (! (tmp_f->file = fopen(tmp_f->name, "wb+"))) {
-      fatal(FN, "Failed to open %s for read/write: %s\n", tmp_f->name, strerror(errno));
+      fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
     }
   }
   chunk->storage = tmp_f;
@@ -1242,18 +1242,18 @@ void saldl_perform(thread_s *thread) {
         if (thread->chunk->size) {
           if (!thread->chunk->size_complete) {
             /* This happens sometimes, especially when tunneling through proxies! Consider it non-fatal and retry */
-            info_msg(FN, "libcurl returned CURLE_OK for chunk %zu before getting any data , restarting (retry %zu, delay=%zu).\n", thread->chunk->idx, ++retries, delay);
+            info_msg(FN, "libcurl returned CURLE_OK for chunk %zu before getting any data , restarting (retry %zu, delay=%zu).", thread->chunk->idx, ++retries, delay);
           }
           else {
             /* Trust libcurl here if single mode */
             if (thread->single) {
-              warn_msg(FN, "Returned CURLE_OK, but completed size(%zu) != requested size(%zu).\n",
+              warn_msg(FN, "Returned CURLE_OK, but completed size(%zu) != requested size(%zu).",
                   thread->chunk->size_complete, thread->chunk->size);
-              warn_msg(FN, "We trust libcurl and assume that's okay if single mode.\n");
+              warn_msg(FN, "We trust libcurl and assume that's okay if single mode.");
               goto saldl_perform_success;
             }
             else {
-              fatal(FN, "Returned CURLE_OK for chunk %zu, but completed size(%zu) != requested size(%zu).\n",
+              fatal(FN, "Returned CURLE_OK for chunk %zu, but completed size(%zu) != requested size(%zu).",
                   thread->chunk->idx ,thread->chunk->size_complete, thread->chunk->size);
             }
           }
@@ -1268,12 +1268,12 @@ void saldl_perform(thread_s *thread) {
         retries++;
         if (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
           warn_msg(FN, "libcurl returned semi-fatal (%d: %s) \
-              while downloading chunk %zu, retry %d/%d, delay=%zu.\n",
+              while downloading chunk %zu, retry %d/%d, delay=%zu.",
               ret, thread->err_buf, thread->chunk->idx,
               semi_fatal_retries, MAX_SEMI_FATAL_RETRIES, delay);
           goto semi_fatal_perform_retry;
         } else {
-          fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, max semi-fatal retries %u exceeded.\n", ret, thread->err_buf, thread->chunk->idx, MAX_SEMI_FATAL_RETRIES);
+          fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, max semi-fatal retries %u exceeded.", ret, thread->err_buf, thread->chunk->idx, MAX_SEMI_FATAL_RETRIES);
         }
       case CURLE_OPERATION_TIMEDOUT:
       case CURLE_PARTIAL_FILE: /* single mode */
@@ -1285,12 +1285,12 @@ void saldl_perform(thread_s *thread) {
         if (ret == CURLE_HTTP_RETURNED_ERROR) {
           curl_easy_getinfo(thread->ehandle, CURLINFO_RESPONSE_CODE, &response);
           if (response < 500) {
-            fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %zu.\n", ret, thread->err_buf, thread->chunk->idx);
+            fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %zu.", ret, thread->err_buf, thread->chunk->idx);
           } else {
-            info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).\n", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
+            info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
           }
         } else {
-          info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).\n", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
+          info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
         }
 semi_fatal_perform_retry:
         sleep(delay);
@@ -1298,7 +1298,7 @@ semi_fatal_perform_retry:
         delay=retries*3/2;
         break;
       default:
-        fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %zu.\n", ret, thread->err_buf, thread->chunk->idx);
+        fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %zu.", ret, thread->err_buf, thread->chunk->idx);
         break;
     }
   }

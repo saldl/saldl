@@ -110,7 +110,7 @@ void saldl_fflush(const char *label, FILE *f) {
   ret = fflush(f);
 
   if (ret) {
-    fatal(FN, "Flushing '%s' failed: %s\n", label, strerror(errno));
+    fatal(FN, "Flushing '%s' failed: %s", label, strerror(errno));
   }
 }
 
@@ -131,11 +131,11 @@ void saldl_fwrite_fflush(const void *read_buf, size_t size, size_t nmemb, FILE *
 
   if (ret != nmemb) {
     if (offset_info) {
-      fatal(FN, "Writing %zu bytes to '%s' failed at offset %jd: %s\n",
+      fatal(FN, "Writing %zu bytes to '%s' failed at offset %jd: %s",
           write_size, out_name, offset_info, strerror(errno));
     }
     else {
-      fatal(FN, "Writing %zu bytes to '%s' failed: %s\n",
+      fatal(FN, "Writing %zu bytes to '%s' failed: %s",
           write_size, out_name, strerror(errno));
     }
   }
@@ -151,7 +151,7 @@ void saldl_fclose(const char *label, FILE *f) {
   ret = fclose(f);
 
   if (ret) {
-    fatal(FN, "Closing '%s' failed: %s\n", label, strerror(errno));
+    fatal(FN, "Closing '%s' failed: %s", label, strerror(errno));
   }
 }
 
@@ -163,7 +163,7 @@ void saldl_fseeko(const char *label, FILE *f, off_t offset, int whence) {
   ret = fseeko(f, offset, whence);
 
   if (ret) {
-    fatal(FN, "Seeking in '%s' failed: %s\n", label, strerror(errno));
+    fatal(FN, "Seeking in '%s' failed: %s", label, strerror(errno));
   }
 }
 
@@ -176,7 +176,7 @@ off_t saldl_ftello(const char *label, FILE *f) {
   ret = ftello(f);
 
   if (ret == -1) {
-    fatal(FN, "ftello() in '%s' failed: %s\n", label, strerror(errno));
+    fatal(FN, "ftello() in '%s' failed: %s", label, strerror(errno));
   }
 
   return ret;
@@ -222,8 +222,8 @@ void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
   int ret = pthread_create(thread, attr, start_routine, arg);
 
   if (ret) {
-    pre_fatal(FN, "Failed with error: %s.\n", strerror(ret));
-    fatal(FN, "Please check your privileges and system limits.\n");
+    pre_fatal(FN, "Failed with error: %s.", strerror(ret));
+    fatal(FN, "Please check your privileges and system limits.");
   }
 }
 
@@ -241,10 +241,10 @@ void saldl_pthread_join_accept_einval(pthread_t thread, void **retval) {
          * possible that exit_routine() would be called while joining
          * a thread. Re-joining that thread would fail with EINVAL.
          * So we consider this non-fatal. And only issue a warning. */
-        warn_msg(FN, "EINVAL returned, pthread already joined!\n");
+        warn_msg(FN, "EINVAL returned, pthread already joined!");
         return;
       default:
-        fatal(FN, "Failed: %s.\n", strerror(ret));
+        fatal(FN, "Failed: %s.", strerror(ret));
     }
   }
 
@@ -265,7 +265,7 @@ void saldl_pthread_mutex_lock_retry_deadlock(pthread_mutex_t *mutex) {
       case EDEADLK:
         continue;
       default:
-        fatal(FN, "Acquiring mutex failed, %s.\n", strerror(ret));
+        fatal(FN, "Acquiring mutex failed, %s.", strerror(ret));
     }
 
   }
@@ -280,7 +280,7 @@ void saldl_pthread_mutex_unlock(pthread_mutex_t *mutex) {
   ret = pthread_mutex_unlock(mutex);
 
   if (ret) {
-    fatal(FN, "Failed: %s.\n", strerror(ret));
+    fatal(FN, "Failed: %s.", strerror(ret));
   }
 }
 
@@ -292,7 +292,7 @@ void saldl_sigaction(int sig, const struct sigaction *restrict act, struct sigac
   ret = sigaction(sig, act, oact);
 
   if (ret) {
-    fatal(FN, "Failed: %s\n", strerror(errno));
+    fatal(FN, "Failed: %s", strerror(errno));
   }
 }
 
@@ -303,7 +303,7 @@ static void saldl_pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset
   ret = pthread_sigmask(how, set, oldset);
 
   if (ret) {
-    fatal(FN, "Failed to change the mask of blocked signals: %s\n", strerror(errno));
+    fatal(FN, "Failed to change the mask of blocked signals: %s", strerror(errno));
   }
 }
 #else
@@ -314,7 +314,7 @@ void saldl_win_signal(int signum, void (*handler)(int)) {
   ret = signal(signum, handler);
 
   if (ret == SIG_ERR) {
-    fatal(FN, "Failed to set signal handler: %s\n", strerror(errno));
+    fatal(FN, "Failed to set signal handler: %s", strerror(errno));
   }
 }
 #endif
@@ -327,7 +327,7 @@ void saldl_sigaddset(sigset_t *set, int signum) {
   ret = sigaddset(set, signum);
 
   if (ret) {
-    fatal(FN, "Failed to add to signal set: %s\n", strerror(errno));
+    fatal(FN, "Failed to add to signal set: %s", strerror(errno));
   }
 }
 
@@ -338,7 +338,7 @@ void saldl_sigemptyset(sigset_t *set) {
   ret = sigemptyset(set);
 
   if (ret) {
-    fatal(FN, "Failed to empty signal set: %s\n", strerror(errno));
+    fatal(FN, "Failed to empty signal set: %s", strerror(errno));
   }
 }
 #endif
@@ -389,7 +389,7 @@ void saldl_fputc(int c, FILE *stream, const char *label) {
   ret = fputc(c, stream);
 
   if (ret == EOF) {
-    fatal(FN, "Writing to '%s' failed.\n", label);
+    fatal(FN, "Writing to '%s' failed.", label);
   }
 }
 
@@ -402,7 +402,7 @@ void saldl_fputs(const char *str, FILE *stream, const char *label) {
 
   ret = fputs(str, stream);
   if (ret == EOF) {
-    fatal(FN, "Writing to '%s' failed.\n", label);
+    fatal(FN, "Writing to '%s' failed.", label);
   }
 }
 
@@ -467,7 +467,7 @@ off_t saldl_max_o(off_t a, off_t b) {
 size_t saldl_max_z_umax(uintmax_t a, uintmax_t b) {
   uintmax_t ret = a > b ? a : b;
   if ((intmax_t)ret < 0 || ret > (uintmax_t)SIZE_MAX) {
-    fatal(FN, "Max value %jd is out of size_t range 0-%zu.\n", (intmax_t)ret, SIZE_MAX);
+    fatal(FN, "Max value %jd is out of size_t range 0-%zu.", (intmax_t)ret, SIZE_MAX);
   }
   return (size_t)ret;
 }
@@ -541,15 +541,15 @@ size_t parse_num_d(const char *num_char) {
   num = strtod(num_char, p);
 
   if (strlen(*p)) {
-    fatal(FN, "Invalid value passed: '%s', expected a floating number.\n", num_char);
+    fatal(FN, "Invalid value passed: '%s', expected a floating number.", num_char);
   }
 
   if (num <= 0) {
-    fatal(FN, "Expected a positive value, %s(%lf) was passed.\n", num_char, num);
+    fatal(FN, "Expected a positive value, %s(%lf) was passed.", num_char, num);
   }
 
   if (num == HUGE_VAL) {
-    fatal(FN, "Value: %s parsed as %lf is considered huge.\n", num_char, num);
+    fatal(FN, "Value: %s parsed as %lf is considered huge.", num_char, num);
   }
 
   return num;
@@ -563,12 +563,12 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
   num = strtoumax(num_char, p, 10);
 
   if ((intmax_t)num < 0) {
-    fatal(FN, "Expected value >= 0, %s(%jd) was passed.\n", num_char, (intmax_t)num);
+    fatal(FN, "Expected value >= 0, %s(%jd) was passed.", num_char, (intmax_t)num);
   }
 
   if ( *p == num_char || strlen(*p) > suff_len ) {
     const char *suffix_msg = suff_len ? " possibly followed by a size suffix" : "";
-    fatal(FN, "Invalid value passed: '%s', expected integer value%s.\n", num_char, suffix_msg);
+    fatal(FN, "Invalid value passed: '%s', expected integer value%s.", num_char, suffix_msg);
   }
 
   switch (**p) {
@@ -590,12 +590,12 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
       num *= 1024*1024*1024;
       break;
     default:
-      fatal(FN, "Invalid value passed '%s', are you sure you used a valid size suffix?\n", num_char);
+      fatal(FN, "Invalid value passed '%s', are you sure you used a valid size suffix?", num_char);
       break;
   }
 
   if (num > SIZE_MAX) {
-    fatal(FN, "Value: %s(%ju) out of size_t range 0-%zu.\n", num_char, num, SIZE_MAX);
+    fatal(FN, "Value: %s(%ju) out of size_t range 0-%zu.", num_char, num, SIZE_MAX);
   }
 
   return (size_t)num;
@@ -609,12 +609,12 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
   num = strtoimax(num_char, p, 10);
 
   if (num < 0) {
-    fatal(FN, "Expected value >= 0, %s(%jd) was passed.\n", num_char, num);
+    fatal(FN, "Expected value >= 0, %s(%jd) was passed.", num_char, num);
   }
 
   if ( *p == num_char || strlen(*p) > suff_len ) {
     const char *suffix_msg = suff_len ? " possibly followed by a size suffix" : "";
-    fatal(FN, "Invalid value passed: '%s', expected integer value%s.\n", num_char, suffix_msg);
+    fatal(FN, "Invalid value passed: '%s', expected integer value%s.", num_char, suffix_msg);
   }
 
   switch (**p) {
@@ -636,12 +636,12 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
       num *= 1024*1024*1024;
       break;
     default:
-      fatal(FN, "Invalid value passed '%s', are you sure you used a valid size suffix?\n", num_char);
+      fatal(FN, "Invalid value passed '%s', are you sure you used a valid size suffix?", num_char);
       break;
   }
 
   if (num > OFF_T_MAX) {
-    fatal(FN, "Value: %s(%jd) out of positive off_t range 0-%jd.\n", num_char, num, (intmax_t)OFF_T_MAX);
+    fatal(FN, "Value: %s(%jd) out of positive off_t range 0-%jd.", num_char, num, (intmax_t)OFF_T_MAX);
   }
 
   return (off_t)num;

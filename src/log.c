@@ -92,13 +92,13 @@ void set_color(size_t *no_color) {
       finish_color = FINISH_COLOR;
       break;
   }
-  sprintf(debug_event_msg_prefix, "%s%s%s%s", bold, debug_event_color, DEBUG_EVENT_MSG_TXT, end);
-  sprintf(debug_msg_prefix, "%s%s%s%s", bold, debug_color, DEBUG_MSG_TXT, end);
-  sprintf(info_msg_prefix, "%s%s%s%s", bold, info_color, INFO_MSG_TXT, end);
-  sprintf(warn_msg_prefix, "%s%s%s%s", bold, warn_color, WARN_MSG_TXT, end);
-  sprintf(error_msg_prefix, "%s%s%s%s", bold, error_color, ERROR_MSG_TXT, end);
-  sprintf(fatal_msg_prefix, "%s%s%s%s", bold, fatal_color, FATAL_MSG_TXT, end);
-  sprintf(finish_msg, "%s%s%s%s%s", erase_screen_after, bold, finish_color, FINISH_MSG_TXT, end);
+  sprintf(debug_event_msg_prefix, "%s%s%s%s ", bold, debug_event_color, DEBUG_EVENT_MSG_TXT, end);
+  sprintf(debug_msg_prefix, "%s%s%s%s ", bold, debug_color, DEBUG_MSG_TXT, end);
+  sprintf(info_msg_prefix, "%s%s%s%s ", bold, info_color, INFO_MSG_TXT, end);
+  sprintf(warn_msg_prefix, "%s%s%s%s ", bold, warn_color, WARN_MSG_TXT, end);
+  sprintf(error_msg_prefix, "%s%s%s%s ", bold, error_color, ERROR_MSG_TXT, end);
+  sprintf(fatal_msg_prefix, "%s%s%s%s ", bold, fatal_color, FATAL_MSG_TXT, end);
+  sprintf(finish_msg, "%s%s%s%s%s ", erase_screen_after, bold, finish_color, FINISH_MSG_TXT, end);
 }
 
 void set_verbosity(size_t *verbosity, bool *libcurl_verbosity) {
@@ -134,9 +134,10 @@ void set_verbosity(size_t *verbosity, bool *libcurl_verbosity) {
 __attribute__(( format(SALDL_PRINTF_FORMAT,3,0) ))
   static void log_stderr(const char *type, const char *name, const char *format, va_list args) {
     fprintf(stderr, "%s%s%s", ret_char, erase_before, erase_screen_after);
-    if (type) fprintf(stderr,"%s ", type);
-    if (name) fprintf(stderr,"%s%s%s: ", bold, name, end);
+    if (type) fprintf(stderr, type);
+    if (name) fprintf(stderr,"%s%s:%s ", bold, name, end);
     vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
   }
 
 void null_msg() {

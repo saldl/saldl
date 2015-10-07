@@ -27,7 +27,7 @@ void ctrl_cleanup_info(ctrl_info_s *ctrl) {
 int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
 
   if (access(ctrl_filename,F_OK)) {
-    warn_msg(FN, "%s does not exist.\n", ctrl_filename);
+    warn_msg(FN, "%s does not exist.", ctrl_filename);
     return 1;
   }
 
@@ -38,7 +38,7 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
   SALDL_ASSERT(ctrl_fsize <= INT_MAX);
 
   if (!ctrl_fsize) {
-    fatal(FN, "ctrl file is empty.\n");
+    fatal(FN, "ctrl file is empty.");
   }
   else {
     char *p;
@@ -55,15 +55,15 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
     char *ret_fgets4 = fgets(ctrl->chunks_progress_str, ctrl_fsize, f_ctrl);
 
     if (!ret_fgets1 || !ret_fgets2 || !ret_fgets3 || !ret_fgets4) {
-      fatal(FN, "Reading the ctrl file failed. Are you sure it's not corrupt!\n");
+      fatal(FN, "Reading the ctrl file failed. Are you sure it's not corrupt!");
     }
 
     if ( fgetc(f_ctrl) != (char)EOF ) {
-      fatal(FN, "ctrl file should have ended here.\n");
+      fatal(FN, "ctrl file should have ended here.");
     }
 
     if (! ( strchr(ctrl_file_size_str, '\n') && strchr(ctrl_chunk_size_str, '\n') && strchr(ctrl_rem_size_str, '\n') && strchr(ctrl->chunks_progress_str, '\n') ) ) {
-      fatal(FN, "Parsing ctrl file failed.\n");
+      fatal(FN, "Parsing ctrl file failed.");
     }
 
     /* Needed for strtoimax()/strtoumax() in parse_num_o()/parse_num_z()  */
@@ -81,12 +81,12 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
     ctrl->rem_size = parse_num_z(ctrl_rem_size_str, 0);
     ctrl->chunk_count = strlen(ctrl->chunks_progress_str);
 
-    info_msg(FN, "ctrl file parsed:\n");
-    info_msg(FN, " file_size:  %jd\n", (intmax_t)ctrl->file_size);
-    info_msg(FN, " chunk_size: %zu\n", ctrl->chunk_size);
-    info_msg(FN, " rem_size: %zu\n", ctrl->rem_size);
-    info_msg(FN, " chunk_count: %zu\n", ctrl->chunk_count);
-    info_msg(FN, " chunks_progress_str: %s\n", ctrl->chunks_progress_str);
+    info_msg(FN, "ctrl file parsed:");
+    info_msg(FN, " file_size:  %jd", (intmax_t)ctrl->file_size);
+    info_msg(FN, " chunk_size: %zu", ctrl->chunk_size);
+    info_msg(FN, " rem_size: %zu", ctrl->rem_size);
+    info_msg(FN, " chunk_count: %zu", ctrl->chunk_count);
+    info_msg(FN, " chunks_progress_str: %s", ctrl->chunks_progress_str);
   }
   saldl_fclose(ctrl_filename, f_ctrl);
   return 0;
@@ -97,7 +97,7 @@ static void ctrl_update_cb(evutil_socket_t fd, short what, void *arg) {
   control_s *ctrl = &info_ptr->ctrl;
   event_s *ev_ctrl = &info_ptr->ev_ctrl;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d\n", ++ev_ctrl->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_ctrl->num_of_calls, str_EVENT_FD(fd) , what);
 
   /* .part file size will be used to infer progress made in single mode */
   if (info_ptr->params->single_mode) {
@@ -159,7 +159,7 @@ void* sync_ctrl(void *void_info_ptr) {
   events_init(&info_ptr->ev_ctrl, ctrl_update_cb, info_ptr, EVENT_CTRL);
 
   if (info_ptr->session_status != SESSION_INTERRUPTED && exist_prg(info_ptr, PRG_MERGED, false)) {
-    debug_msg(FN, "Start ev_ctrl loop.\n");
+    debug_msg(FN, "Start ev_ctrl loop.");
     events_activate(&info_ptr->ev_ctrl);
   }
 

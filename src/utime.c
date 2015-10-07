@@ -27,7 +27,7 @@ double saldl_utime() {
   int ret = clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
 
   if (ret) {
-    fatal(FN, "clock_gettime() failed, %s.\n", strerror(errno));
+    fatal(FN, "clock_gettime() failed, %s.", strerror(errno));
   }
 
   return tp.tv_sec + tp.tv_nsec/1000.0/1000.0/1000.0;
@@ -42,7 +42,7 @@ double saldl_utime() {
   int ret = gettimeofday(&tv, NULL);
 
   if (ret) {
-    fatal(FN, "gettimeofday() failed, %s.\n", strerror(errno));
+    fatal(FN, "gettimeofday() failed, %s.", strerror(errno));
   }
 
   return tv.tv_sec + tv.tv_usec/1000.0/1000.0;

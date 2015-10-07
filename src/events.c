@@ -22,7 +22,7 @@
 void join_event_pth(event_s *ev_this, pthread_t *event_thread_id) {
   if (ev_this->event_status > EVENT_NULL) {
     saldl_pthread_join_accept_einval(*event_thread_id, NULL);
-    debug_event_msg(FN, "Setting %s status to EVENT_NULL.\n", str_EVENT_FD(ev_this->vFD));
+    debug_event_msg(FN, "Setting %s status to EVENT_NULL.", str_EVENT_FD(ev_this->vFD));
     ev_this->event_status = EVENT_NULL;
   }
 }
@@ -48,7 +48,7 @@ const char* str_EVENT_FD (enum EVENT_FD fd) {
 void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVENT_FD vFD) {
   SALDL_ASSERT(ev_this->event_status == EVENT_THREAD_STARTED);
 
-  debug_event_msg(FN, "Init %s.\n", str_EVENT_FD(vFD));
+  debug_event_msg(FN, "Init %s.", str_EVENT_FD(vFD));
 
   /* Don't interrupt event threads, they will react to SESSION interrupted and exit cleanly */
   saldl_block_sig_pth();
@@ -77,7 +77,7 @@ void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVE
 
 void events_activate(event_s *ev_this) {
   SALDL_ASSERT(ev_this->event_status == EVENT_INIT);
-  debug_event_msg(FN, "Activating %s.\n", str_EVENT_FD(ev_this->vFD));
+  debug_event_msg(FN, "Activating %s.", str_EVENT_FD(ev_this->vFD));
   ev_this->event_status = EVENT_ACTIVE;
   SALDL_ASSERT(event_base_loop(ev_this->ev_b, 0) >= 0);
 }
@@ -89,7 +89,7 @@ void events_deactivate(event_s *ev_this) {
   /* Check if not already deactivated. Remember that active events will
    * run, even after calling event_base_loopexit(). */
   if (ev_this->event_status == EVENT_ACTIVE) {
-    debug_event_msg(FN, "Deactivating %s.\n", str_EVENT_FD(ev_this->vFD));
+    debug_event_msg(FN, "Deactivating %s.", str_EVENT_FD(ev_this->vFD));
 
     /* Stop triggering events */
     ev_this->event_status = EVENT_INIT;
@@ -105,7 +105,7 @@ void events_deinit(event_s *ev_this) {
   SALDL_ASSERT(ev_this->event_status == EVENT_INIT);
   saldl_pthread_mutex_lock_retry_deadlock(&ev_this->ev_mutex);
 
-  debug_event_msg(FN, "De-init %s.\n", str_EVENT_FD(ev_this->vFD));
+  debug_event_msg(FN, "De-init %s.", str_EVENT_FD(ev_this->vFD));
 
   /* Free libevent structs */
   event_free(ev_this->ev);
@@ -129,7 +129,7 @@ static void event_trigger(event_s *ev_this) {
 
     /* We check for EVENT_ACTIVE again in mutex lock to avoid races with deactivation code */
     if ( ev_this->event_status == EVENT_ACTIVE) {
-      debug_event_msg(FN, "Triggering %s.\n", str_EVENT_FD(ev_this->vFD));
+      debug_event_msg(FN, "Triggering %s.", str_EVENT_FD(ev_this->vFD));
       event_active(ev_this->ev, EV_WRITE|EV_PERSIST, 1);
     }
 
@@ -176,7 +176,7 @@ static void events_trigger_next_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
   event_s *ev_trigger = &info_ptr->ev_trigger;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d\n", ++ev_trigger->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_trigger->num_of_calls, str_EVENT_FD(fd) , what);
 
   if (info_ptr->events_queue_done) {
     events_deactivate(ev_trigger);
@@ -198,7 +198,7 @@ void* events_trigger_thread(void *void_info_ptr) {
   events_init(&info_ptr->ev_trigger, events_trigger_next_cb, info_ptr, EVENT_TRIGGER);
 
   if (!info_ptr->events_queue_done) {
-    debug_msg(FN, "Start ev_trigger loop.\n");
+    debug_msg(FN, "Start ev_trigger loop.");
     events_activate(&info_ptr->ev_trigger);
   }
 

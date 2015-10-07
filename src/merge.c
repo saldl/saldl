@@ -24,7 +24,7 @@ static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
   event_s *ev_merge = &info_ptr->ev_merge;
   chunk_s *chunks = info_ptr->chunks;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d\n", ++ev_merge->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_merge->num_of_calls, str_EVENT_FD(fd) , what);
 
   if (!exist_prg(info_ptr, PRG_MERGED, false) || info_ptr->session_status == SESSION_INTERRUPTED) {
     events_deactivate(ev_merge);
@@ -51,7 +51,7 @@ void* merger_thread(void *void_info_ptr) {
   events_init(&info_ptr->ev_merge, merge_finished_cb, info_ptr, EVENT_MERGE_FINISHED);
 
   if (exist_prg(info_ptr, PRG_MERGED, false) && info_ptr->session_status != SESSION_INTERRUPTED) {
-    debug_msg(FN, "Start ev_merge loop.\n");
+    debug_msg(FN, "Start ev_merge loop.");
     events_activate(&info_ptr->ev_merge);
   }
 
@@ -85,7 +85,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
   tmp_buf = saldl_calloc(size, sizeof(char));
 
   if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
-    fatal(FN, "Reading from tmp file %s at offset %jd failed, chunk_size=%zu, fread() returned %zu.\n", tmp_f->name, (intmax_t)offset, size, f_ret);
+    fatal(FN, "Reading from tmp file %s at offset %jd failed, chunk_size=%zu, fread() returned %zu.", tmp_f->name, (intmax_t)offset, size, f_ret);
   }
 
   saldl_fwrite_fflush(tmp_buf, 1, size, info_ptr->file, info_ptr->part_filename, offset);
@@ -95,7 +95,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
   saldl_fclose(tmp_f->name, tmp_f->file);
 
   if ( remove(tmp_f->name) ) {
-    fatal(FN, "Removing file %s failed: %s\n", tmp_f->name, strerror(errno));
+    fatal(FN, "Removing file %s failed: %s", tmp_f->name, strerror(errno));
   }
 
   saldl_free(tmp_buf);

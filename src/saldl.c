@@ -82,29 +82,29 @@ int saldl(saldl_params *params_ptr) {
 
   /* exit here if dry_run was set */
   if ( params_ptr->dry_run  ) {
-    info_msg(FN, "Dry-run done.\n");
+    info_msg(FN, "Dry-run done.");
     saldl_free_all(&info);
     return 0;
   }
 
   if (params_ptr->resume) {
     if ( !(info.file = fopen(info.part_filename,"rb+")) ) {
-      fatal(FN, "Failed to open %s for writing: %s\n", info.part_filename, strerror(errno));
+      fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
     }
   }
   else {
     if ( !params_ptr->force  && !access(info.part_filename,F_OK)) {
-      fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.\n", info.part_filename);
+      fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.", info.part_filename);
     }
     if ( !(info.file = fopen(info.part_filename,"wb")) ) {
-      fatal(FN, "Failed to open %s for writing: %s\n", info.part_filename, strerror(errno));
+      fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
     }
   }
   set_modes(&info); /* Keep it between opening file and ctrl_file */
 
   info.ctrl_file = fopen(info.ctrl_filename,"wb+");
   if (!info.ctrl_file) {
-    fatal(FN, "Failed to open '%s' for read/write : %s\n", info.ctrl_filename, strerror(errno) );
+    fatal(FN, "Failed to open '%s' for read/write : %s", info.ctrl_filename, strerror(errno) );
   }
 
   /* Check if download was interrupted after all data was merged */
@@ -156,7 +156,7 @@ saldl_all_data_merged:
   /* Remove tmp_dirname */
   if ( !params_ptr->mem_bufs && !params_ptr->single_mode ) {
     if ( rmdir(info.tmp_dirname) ) {
-      err_msg(FN, "Failed to delete %s: %s\n", info.tmp_dirname, strerror(errno) );
+      err_msg(FN, "Failed to delete %s: %s", info.tmp_dirname, strerror(errno) );
     }
   }
 
@@ -166,24 +166,24 @@ saldl_all_data_merged:
   if (info.file_size && (!info.content_encoded || params_ptr->no_decompress) && !params_ptr->no_remote_info) {
     off_t saved_file_size = saldl_fsizeo(info.part_filename, info.file);
     if (saved_file_size != info.file_size) {
-      pre_fatal(FN, "Unexpected saved file size (%ju!=%ju).\n", saved_file_size, info.file_size);
-      pre_fatal(FN, "This could happen if you're downloading from a dynamic site.\n");
-      pre_fatal(FN, "If that's the case and the download is small, retry with --no-remote-info\n");
-      fatal(FN, "If you think that's a bug in saldl, report it: https://github.com/saldl/saldl/issues\n");
+      pre_fatal(FN, "Unexpected saved file size (%ju!=%ju).", saved_file_size, info.file_size);
+      pre_fatal(FN, "This could happen if you're downloading from a dynamic site.");
+      pre_fatal(FN, "If that's the case and the download is small, retry with --no-remote-info");
+      fatal(FN, "If you think that's a bug in saldl, report it: https://github.com/saldl/saldl/issues");
     }
   }
   else {
-    debug_msg(FN, "Strict check for finished file size skipped.\n");
+    debug_msg(FN, "Strict check for finished file size skipped.");
   }
 
   saldl_fclose(info.part_filename, info.file);
   if (rename(info.part_filename, params_ptr->filename) ) {
-    err_msg(FN, "Failed to rename now-complete %s to %s: %s\n", info.part_filename, params_ptr->filename, strerror(errno));
+    err_msg(FN, "Failed to rename now-complete %s to %s: %s", info.part_filename, params_ptr->filename, strerror(errno));
   }
 
   saldl_fclose(info.ctrl_filename, info.ctrl_file);
   if ( remove(info.ctrl_filename) ) {
-    err_msg(FN, "Failed to remove %s: %s\n", info.ctrl_filename, strerror(errno));
+    err_msg(FN, "Failed to remove %s: %s", info.ctrl_filename, strerror(errno));
   }
 
   /* cleanups */

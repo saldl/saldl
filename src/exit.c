@@ -23,9 +23,9 @@ extern info_s* info_global;
 
 void sig_handler(int sig) {
 #ifdef HAVE_STRSIGNAL
-  fatal(FN, "signal %d(%s) was raised.\n", sig, strsignal(sig));
+  fatal(FN, "signal %d(%s) was raised.", sig, strsignal(sig));
 #else
-  fatal(FN, "signal %d was raised.\n", sig);
+  fatal(FN, "signal %d was raised.", sig);
 #endif
 }
 
@@ -52,12 +52,12 @@ void exit_routine() {
     if (info_global->called_exit) {
       /* Recursive calls to exit_routine() will probably cause more
        * harm than good. Just return here and call it a day. */
-      debug_msg(FN, "exit_routine() was already called, skipping..\n");
+      debug_msg(FN, "exit_routine() was already called, skipping..");
       return;
     }
     else {
       info_global->called_exit = true;
-      debug_msg(FN, "Running exit_routine()\n");
+      debug_msg(FN, "Running exit_routine()");
     }
 
     /* We don't want any interruptions */
@@ -96,7 +96,7 @@ void exit_routine() {
 
   }
 
-  debug_msg(FN, "done.\n");
+  debug_msg(FN, "done.");
 }
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

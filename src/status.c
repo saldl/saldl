@@ -76,7 +76,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
   int cols = tty_width() >= 0 ? tty_width() : 0;
   *lines = status_ptr->lines = cols ? info_ptr->chunk_count / cols + !!(info_ptr->chunk_count % cols) + 8 + !!p->initial_complete_size : 0 ; /*  +n: number of extra status lines */
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d\n", ++ev_status->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_status->num_of_calls, str_EVENT_FD(fd) , what);
 
 
   /* We check if the merge loop is already de-initialized to not lose status of any merged chunks */
@@ -181,7 +181,7 @@ void* status_display(void *void_info_ptr) {
   SALDL_ASSERT(info_ptr->global_progress.initialized);
 
   if (info_ptr->session_status != SESSION_INTERRUPTED && exist_prg(info_ptr, PRG_MERGED, false)) {
-    debug_msg(FN, "Start ev_status loop.\n");
+    debug_msg(FN, "Start ev_status loop.");
     events_activate(&info_ptr->ev_status);
   }
 

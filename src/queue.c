@@ -24,7 +24,7 @@ static size_t last_chunk_from_last_size(info_s *info_ptr) {
   off_t last_sz_1st =  info_ptr->params->last_size_first;
 
   if (last_sz_1st >= info_ptr->file_size) {
-    warn_msg(FN, "last_size_first > file_size, disabled.\n");
+    warn_msg(FN, "last_size_first > file_size, disabled.");
     last_sz_1st = 0;
   }
 
@@ -72,7 +72,7 @@ static chunk_s* pick_next_last_first(info_s *info_ptr) {
 
   /* -1 for indices */
   start_idx = last_first ? info_ptr->chunk_count - last_first : 0;
-  debug_msg(FN, "start_idx=%zu, end_idx=%zu\n", start_idx, end_idx);
+  debug_msg(FN, "start_idx=%zu, end_idx=%zu", start_idx, end_idx);
 
   /* Pick not-started chunk */
   return first_prg_with_range(info_ptr, PRG_NOT_STARTED, true, start_idx, end_idx);
@@ -134,7 +134,7 @@ static void queue_next_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
   event_s *ev_queue = &info_ptr->ev_queue;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d\n", ++ev_queue->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_queue->num_of_calls, str_EVENT_FD(fd) , what);
 
   if (info_ptr->session_status >= SESSION_QUEUE_INTERRUPTED || !exist_prg(info_ptr, PRG_NOT_STARTED, true) ) {
     events_deactivate(ev_queue);
@@ -158,7 +158,7 @@ void* queue_next_thread(void *void_info_ptr) {
   events_init(&info_ptr->ev_queue, queue_next_cb, info_ptr, EVENT_QUEUE);
 
   if (info_ptr->session_status < SESSION_QUEUE_INTERRUPTED && exist_prg(info_ptr, PRG_NOT_STARTED, true)) {
-    debug_msg(FN, "Start ev_queue loop.\n");
+    debug_msg(FN, "Start ev_queue loop.");
     events_activate(&info_ptr->ev_queue);
   }
 
