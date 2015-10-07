@@ -227,6 +227,29 @@ void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(
   }
 }
 
+void saldl_pthread_join_accept_einval(pthread_t thread, void **retval) {
+  int ret;
+
+  while (1) {
+    ret = pthread_join(thread, retval);
+
+    switch (ret) {
+      case 0:
+        return;
+      case EINVAL:
+        /* If download completed, and saldl was interrupted, it's
+         * possible that exit_routine() would be called while joining
+         * a thread. Re-joining that thread would fail with EINVAL.
+         * So we consider this non-fatal. And only issue a warning. */
+        warn_msg(FN, "EINVAL returned, pthread already joined!\n");
+        return;
+      default:
+        fatal(FN, "Failed: %s.\n", strerror(ret));
+    }
+  }
+
+}
+
 void saldl_pthread_mutex_lock_retry_deadlock(pthread_mutex_t *mutex) {
   int ret;
   SALDL_ASSERT(mutex);

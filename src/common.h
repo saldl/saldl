@@ -58,6 +58,7 @@ off_t fsize_sys(char *fname);
 int saldl_mkdir(const char *path, mode_t mode);
 
 void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
+void saldl_pthread_join_accept_einval(pthread_t thread, void **retval);
 void saldl_pthread_mutex_lock_retry_deadlock(pthread_mutex_t *mutex);
 void saldl_pthread_mutex_unlock(pthread_mutex_t *mutex);
 
