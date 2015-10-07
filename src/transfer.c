@@ -207,8 +207,7 @@ static void headers_info(info_s *info_ptr) {
 }
 
 static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *userdata) {
-  info_s *info_ptr = userdata;
-  headers_s *h = &info_ptr->headers;
+  headers_s *h = userdata;
 
   char *header = saldl_strdup(ptr);
 
@@ -569,7 +568,7 @@ void remote_info(info_s *info_ptr) {
   }
 
   curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERFUNCTION, header_function);
-  curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, info_ptr);
+  curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, &info_ptr->headers);
 
   if (params_ptr->head && !params_ptr->post && !params_ptr->raw_post) {
     info_msg(FN, "Using HEAD for remote info.\n");
