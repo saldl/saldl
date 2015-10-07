@@ -250,9 +250,11 @@ void saldl_pthread_mutex_lock_retry_deadlock(pthread_mutex_t *mutex) {
 }
 
 void saldl_pthread_mutex_unlock(pthread_mutex_t *mutex) {
-  /* Note: PTHREAD_MUTEX_ERRORCHECK attr is set */
-  int ret = pthread_mutex_unlock(mutex);
+  int ret;
   SALDL_ASSERT(mutex);
+
+  /* Note: PTHREAD_MUTEX_ERRORCHECK attr is set */
+  ret = pthread_mutex_unlock(mutex);
 
   if (ret) {
     fatal(FN, "Failed: %s.\n", strerror(ret));
