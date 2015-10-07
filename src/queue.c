@@ -104,7 +104,7 @@ void prep_next(info_s *info_ptr, thread_s *thread, chunk_s *chunk, int init) {
 
   if (init) {
     thread->ehandle = curl_easy_init() ;
-    set_params(thread, params_ptr);
+    set_params(thread, params_ptr, info_ptr->curl_info);
   }
 
   set_progress_params(thread, info_ptr);

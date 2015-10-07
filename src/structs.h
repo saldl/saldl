@@ -162,6 +162,7 @@ typedef struct {
 /* info_s: mother of all structs */
 typedef struct {
   saldl_params *params;
+  curl_version_info_data *curl_info;
   file_s storage_info;
   void (*prepare_storage)();
   int (*merge_finished)();

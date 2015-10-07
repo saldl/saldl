@@ -562,7 +562,7 @@ void get_info(info_s *info_ptr) {
 
   /* remote part starts here */
   tmp.ehandle = curl_easy_init();
-  set_params(&tmp, params_ptr);
+  set_params(&tmp, params_ptr, info_ptr->curl_info);
 
   if (!params_ptr->no_timeouts) {
     curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l); /* Resolving the host for the 1st time takes a long time sometimes */
@@ -911,7 +911,7 @@ void set_progress_params(thread_s *thread, info_s *info_ptr) {
   }
 }
 
-void set_params(thread_s *thread, saldl_params *params_ptr) {
+void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_data *curl_info) {
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
 #ifdef HAVE_GETMODULEFILENAME
@@ -934,8 +934,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr) {
 
 #if LIBCURL_VERSION_MINOR >= 45
   /* CURLOPT_DEFAULT_PROTOCOL was introduced in libcurl 7.45.0 */
-  curl_version_info_data *libcurl_info = curl_version_info(CURLVERSION_NOW);
-  if (libcurl_info->version_num >= 0x072d00) {
+  if (curl_info->version_num >= 0x072d00) { // >= 7.45
     /* If protocol unknown, assume https */
     curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
   }

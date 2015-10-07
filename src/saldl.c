@@ -24,6 +24,12 @@
 
 info_s *info_global = NULL; /* Referenced in the signal handler */
 
+void check_libcurl(curl_version_info_data *curl_info) {
+  if (curl_info->version_num < 0x072a00) { /* < 7.42 */
+    fatal(FN, "Loaded libcurl version %s (>= 7.42 required)", curl_info->version);
+  }
+}
+
 static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
@@ -52,10 +58,6 @@ int saldl(saldl_params *params_ptr) {
   info_s info = {0};
   info.params = params_ptr;
 
-  /* Library initializations, should run only once */
-  SALDL_ASSERT(!curl_global_init(CURL_GLOBAL_ALL));
-  SALDL_ASSERT(!evthread_use_pthreads());
-
   /* Handle signals */
   info_global = &info;
   saldl_handle_signals();
@@ -63,6 +65,14 @@ int saldl(saldl_params *params_ptr) {
   /* Need to be set as early as possible */
   set_color(&params_ptr->no_color);
   set_verbosity(&params_ptr->verbosity, &params_ptr->libcurl_verbosity);
+
+  /* Check if loaded libcurl is recent enough */
+  info.curl_info = curl_version_info(CURLVERSION_NOW);
+  check_libcurl(info.curl_info);
+
+  /* Library initializations, should run only once */
+  SALDL_ASSERT(!curl_global_init(CURL_GLOBAL_ALL));
+  SALDL_ASSERT(!evthread_use_pthreads());
 
   /* get/set initial info */
   check_url(params_ptr->url);
