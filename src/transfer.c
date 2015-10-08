@@ -45,11 +45,11 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
     }
 #endif
     curl_easy_setopt(handle, CURLOPT_COOKIELIST, cookie);
-    saldl_free(cookie);
+    SALDL_FREE(cookie);
     curr = next;
   } while (sep);
 
-  saldl_free(copy_cookie_str);
+  SALDL_FREE(copy_cookie_str);
 }
 
 char* saldl_user_agent() {
@@ -108,7 +108,7 @@ static void headers_info(info_s *info_ptr) {
 
     if (info_ptr->redirect_url) {
       debug_msg(FN, "Clearing Location: %s", info_ptr->redirect_url);
-      saldl_free(info_ptr->redirect_url);
+      SALDL_FREE(info_ptr->redirect_url);
     }
 
     info_ptr->redirect_url = saldl_strdup(h->location);
@@ -123,13 +123,13 @@ static void headers_info(info_s *info_ptr) {
       debug_msg(FN, "file size from Content-Range: %ju", info_ptr->file_size);
     }
 
-    saldl_free(h->content_range);
+    SALDL_FREE(h->content_range);
   }
 
   if (h->content_encoding) {
     debug_msg(FN, "Content-Encoding: %s", h->content_encoding);
     info_ptr->content_encoded = true;
-    saldl_free(h->content_encoding);
+    SALDL_FREE(h->content_encoding);
   }
 
   if (h->content_type) {
@@ -138,7 +138,7 @@ static void headers_info(info_s *info_ptr) {
 
     if (info_ptr->content_type) {
       debug_msg(FN, "Clearing Content-Type: %s", info_ptr->content_type);
-      saldl_free(info_ptr->content_type);
+      SALDL_FREE(info_ptr->content_type);
     }
 
     info_ptr->content_type = saldl_strdup(h->content_type);
@@ -154,7 +154,7 @@ static void headers_info(info_s *info_ptr) {
       info_ptr->params->no_decompress = true;
     }
 
-    saldl_free(h->content_type);
+    SALDL_FREE(h->content_type);
   }
 
   if (h->content_disposition && !info_ptr->params->no_attachment_detection) {
@@ -188,7 +188,7 @@ static void headers_info(info_s *info_ptr) {
 
       if (info_ptr->params->attachment_filename) {
         debug_msg(FN, "Clearing attachment filename: %s", info_ptr->params->attachment_filename);
-        saldl_free(info_ptr->content_type);
+        SALDL_FREE(info_ptr->content_type);
       }
 
       debug_msg(FN, "Before basename: %s", tmp);
@@ -196,7 +196,7 @@ static void headers_info(info_s *info_ptr) {
       debug_msg(FN, "After basename: %s", info_ptr->params->attachment_filename);
     }
 
-    saldl_free(h->content_disposition);
+    SALDL_FREE(h->content_disposition);
   }
 
   if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
@@ -219,35 +219,35 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
 
   if (strcasestr(header, "Location:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Location:"));
-    saldl_free(h->location);
+    SALDL_FREE(h->location);
     h->location = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Range:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Range:"));
-    saldl_free(h->content_range);
+    SALDL_FREE(h->content_range);
     h->content_range = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Encoding:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Encoding:"));
-    saldl_free(h->content_encoding);
+    SALDL_FREE(h->content_encoding);
     h->content_encoding = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Type:") == header) {
     char *h_info = saldl_lstrip(header + strlen("Content-Type:"));
-    saldl_free(h->content_type);
+    SALDL_FREE(h->content_type);
     h->content_type = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Disposition:") == header ) {
     char *h_info = saldl_lstrip(header + strlen("Content-Disposition:"));
-    saldl_free(h->content_disposition);
+    SALDL_FREE(h->content_disposition);
     h->content_disposition = saldl_strdup(h_info);
   }
 
-  saldl_free(header);
+  SALDL_FREE(header);
   return size * nmemb;
 }
 
@@ -464,7 +464,7 @@ static void set_names(info_s* info_ptr) {
         info_msg(FN, "Before stripping GET attrs: %s", pre_filename);
         info_msg(FN, "After  stripping GET attrs: %s", params_ptr->filename);
       }
-      saldl_free(pre_filename);
+      SALDL_FREE(pre_filename);
     }
 
   }
@@ -494,7 +494,7 @@ static void set_names(info_s* info_ptr) {
     info_msg(FN, "Prepending root_dir(%s) to filename(%s).", params_ptr->root_dir, params_ptr->filename);
     params_ptr->filename = saldl_calloc(full_buf_size, sizeof(char)); // +1 for '\0'
     snprintf(params_ptr->filename, full_buf_size, "%s/%s", params_ptr->root_dir, curr_filename);
-    saldl_free(curr_filename);
+    SALDL_FREE(curr_filename);
   }
 
   if (params_ptr->auto_trunc || params_ptr->smart_trunc) {
@@ -929,7 +929,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_da
       curl_easy_setopt(thread->ehandle, CURLOPT_CAINFO, ca_bundle_path);
     }
 
-    saldl_free(exe_dir);
+    SALDL_FREE(exe_dir);
   }
 #endif
 
@@ -1021,7 +1021,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_da
     else {
       char *default_agent = saldl_user_agent();
       curl_easy_setopt(thread->ehandle, CURLOPT_USERAGENT, default_agent);
-      saldl_free(default_agent);
+      SALDL_FREE(default_agent);
     }
   }
 

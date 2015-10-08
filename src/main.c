@@ -336,7 +336,7 @@ int main(int argc,char **argv) {
 
   /* Parse opts */
   int ret_parse = parse_opts(&params, full_argc, full_argv);
-  saldl_free(full_argv);
+  SALDL_FREE(full_argv);
 
   if (ret_parse) {
     /* We want --version to work, no matter what */

@@ -34,23 +34,23 @@ static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   /* Make valgrind happy */
-  saldl_free(info_ptr->redirect_url);
-  saldl_free(info_ptr->content_type);
-  saldl_free(info_ptr->threads);
-  saldl_free(info_ptr->chunks);
+  SALDL_FREE(info_ptr->redirect_url);
+  SALDL_FREE(info_ptr->content_type);
+  SALDL_FREE(info_ptr->threads);
+  SALDL_FREE(info_ptr->chunks);
 
-  saldl_free(params_ptr->url);
-  saldl_free(params_ptr->root_dir);
-  saldl_free(params_ptr->filename);
-  saldl_free(params_ptr->attachment_filename);
-  saldl_free(params_ptr->referer);
-  saldl_free(params_ptr->cookie_file);
-  saldl_free(params_ptr->inline_cookies);
-  saldl_free(params_ptr->post);
-  saldl_free(params_ptr->raw_post);
-  saldl_free(params_ptr->user_agent);
-  saldl_free(params_ptr->proxy);
-  saldl_free(params_ptr->tunnel_proxy);
+  SALDL_FREE(params_ptr->url);
+  SALDL_FREE(params_ptr->root_dir);
+  SALDL_FREE(params_ptr->filename);
+  SALDL_FREE(params_ptr->attachment_filename);
+  SALDL_FREE(params_ptr->referer);
+  SALDL_FREE(params_ptr->cookie_file);
+  SALDL_FREE(params_ptr->inline_cookies);
+  SALDL_FREE(params_ptr->post);
+  SALDL_FREE(params_ptr->raw_post);
+  SALDL_FREE(params_ptr->user_agent);
+  SALDL_FREE(params_ptr->proxy);
+  SALDL_FREE(params_ptr->tunnel_proxy);
 }
 
 int saldl(saldl_params *params_ptr) {

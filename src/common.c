@@ -506,7 +506,7 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   if ( tmp_dirname[0] != '.' ) {
     snprintf(dir_name,PATH_MAX,"%s/", tmp_dirname);
   }
-  saldl_free(pre_trunc_copy);
+  SALDL_FREE(pre_trunc_copy);
 
   ext_str = ext_str_empty = saldl_strdup("");
   if (keep_ext) {
@@ -520,7 +520,7 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   tmp_basename[ strlen(tmp_basename) - ext_len ] = '\0';
   base_name = saldl_strdup(tmp_basename);
   snprintf(base_name,NAME_MAX-EXT_LEN-ext_len,"%s", tmp_basename);
-  saldl_free(pre_trunc_copy);
+  SALDL_FREE(pre_trunc_copy);
 
   snprintf(trunc_name,
            PATH_MAX - EXT_LEN - u_num_digits(SIZE_MAX) - (dir_name[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),
@@ -528,8 +528,8 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
            dir_name,
            base_name,
            ext_str);
-  saldl_free(base_name);
-  saldl_free(ext_str_empty);
+  SALDL_FREE(base_name);
+  SALDL_FREE(ext_str_empty);
   return trunc_name;
 }
 
