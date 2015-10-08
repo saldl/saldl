@@ -575,7 +575,8 @@ void get_info(info_s *info_ptr) {
   set_params(&tmp, info_ptr);
 
   if (!params_ptr->no_timeouts) {
-    curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l); /* Resolving the host for the 1st time takes a long time sometimes */
+    /* Resolving the host for the 1st time takes a long time sometimes */
+    curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l);
   }
 
   curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERFUNCTION, header_function);
@@ -1015,7 +1016,7 @@ void set_params(thread_s *thread, info_s *info_ptr) {
 
   if (!params_ptr->no_timeouts) {
     curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_LIMIT,512l); /* Abort if dl rate goes below .5K/s for > 15 seconds */
-    curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_TIME,15l);
+    curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_TIME,10l);
   }
 
   if (params_ptr->tls_no_verify) {
