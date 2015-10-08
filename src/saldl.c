@@ -34,12 +34,12 @@ static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   /* Make valgrind happy */
-  SALDL_FREE(info_ptr->redirect_url);
+  SALDL_FREE(info_ptr->curr_url);
   SALDL_FREE(info_ptr->content_type);
   SALDL_FREE(info_ptr->threads);
   SALDL_FREE(info_ptr->chunks);
 
-  SALDL_FREE(params_ptr->url);
+  SALDL_FREE(params_ptr->start_url);
   SALDL_FREE(params_ptr->root_dir);
   SALDL_FREE(params_ptr->filename);
   SALDL_FREE(params_ptr->attachment_filename);
@@ -75,7 +75,8 @@ int saldl(saldl_params *params_ptr) {
   SALDL_ASSERT(!evthread_use_pthreads());
 
   /* get/set initial info */
-  check_url(params_ptr->url);
+  info.curr_url = saldl_strdup(params_ptr->start_url);
+  check_url(info.curr_url);
   get_info(&info);
   set_info(&info);
   check_remote_file_size(&info);

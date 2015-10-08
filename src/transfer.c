@@ -106,12 +106,12 @@ static void headers_info(info_s *info_ptr) {
   if (h->location) {
     debug_msg(FN, "Location: %s", h->location);
 
-    if (info_ptr->redirect_url) {
-      debug_msg(FN, "Clearing Location: %s", info_ptr->redirect_url);
-      SALDL_FREE(info_ptr->redirect_url);
+    if (info_ptr->curr_url) {
+      debug_msg(FN, "curr_url was %s", info_ptr->curr_url);
+      SALDL_FREE(info_ptr->curr_url);
     }
 
-    info_ptr->redirect_url = saldl_strdup(h->location);
+    info_ptr->curr_url = saldl_strdup(h->location);
   }
 
   if (h->content_range) {
@@ -353,8 +353,9 @@ static off_t remote_info_simple_file_size(CURL *handle) {
   return size;
 }
 
-static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_ptr) {
+static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
   CURLcode ret;
+  saldl_params *params_ptr = info_ptr->params;
 
   short semi_fatal_retries = 0;
   bool semi_fatal_error = false;
@@ -394,7 +395,7 @@ static int request_remote_info_with_ranges(thread_s *tmp, saldl_params *params_p
   if (content_length == expected_length) {
 
     /* Special handling for FTP */
-    if (strstr(params_ptr->url, "ftp") == params_ptr->url) {
+    if (strstr(info_ptr->curr_url, "ftp") == info_ptr->curr_url) {
       /*
        * Despite the fact that range support is working. Making
        * concurrent connections to FTP servers seems problematic.
@@ -436,7 +437,7 @@ static void set_names(info_s* info_ptr) {
     if (params_ptr->attachment_filename) {
       prev_unescaped = saldl_strdup(params_ptr->attachment_filename);
     } else {
-      prev_unescaped = saldl_strdup(params_ptr->url);
+      prev_unescaped = saldl_strdup(params_ptr->start_url);
     }
 
     /* unescape name/url */
@@ -538,17 +539,19 @@ static void set_names(info_s* info_ptr) {
 }
 
 static void print_info(info_s *info_ptr) {
-  main_msg("URL", info_ptr->params->url);
+  saldl_params *params_ptr = info_ptr->params;
 
-  if (info_ptr->redirect_url) {
-    main_msg("Redirected", info_ptr->redirect_url);
+  main_msg("URL", params_ptr->start_url);
+
+  if (strcmp(params_ptr->start_url, info_ptr->curr_url)) {
+    main_msg("Redirected", info_ptr->curr_url);
   }
 
   if (info_ptr->content_type) {
     main_msg("Content-Type", info_ptr->content_type);
   }
 
-  main_msg("Saving To", info_ptr->params->filename);
+  main_msg("Saving To", params_ptr->filename);
 
   if (info_ptr->file_size > 0) {
     off_t file_size = info_ptr->file_size;
@@ -569,7 +572,7 @@ void get_info(info_s *info_ptr) {
 
   /* remote part starts here */
   tmp.ehandle = curl_easy_init();
-  set_params(&tmp, params_ptr, info_ptr->curl_info);
+  set_params(&tmp, info_ptr);
 
   if (!params_ptr->no_timeouts) {
     curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l); /* Resolving the host for the 1st time takes a long time sometimes */
@@ -592,7 +595,7 @@ void get_info(info_s *info_ptr) {
    * We also make a 2nd check if filesize was not set. This
    * could happen with non-HTTP protocols like FTP.
    */
-  int ret_ranges = request_remote_info_with_ranges(&tmp, params_ptr);
+  int ret_ranges = request_remote_info_with_ranges(&tmp, info_ptr);
   headers_info(info_ptr);
 
   if (ret_ranges || !info_ptr->file_size) {
@@ -919,7 +922,9 @@ void set_progress_params(thread_s *thread, info_s *info_ptr) {
   }
 }
 
-void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_data *curl_info) {
+void set_params(thread_s *thread, info_s *info_ptr) {
+  saldl_params *params_ptr = info_ptr->params;
+
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
 #ifdef HAVE_GETMODULEFILENAME
@@ -942,13 +947,10 @@ void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_da
 
 #if LIBCURL_VERSION_MINOR >= 45
   /* CURLOPT_DEFAULT_PROTOCOL was introduced in libcurl 7.45.0 */
-  if (curl_info->version_num >= 0x072d00) { // >= 7.45
+  if (info_ptr->curl_info->version_num >= 0x072d00) { // >= 7.45
     /* If protocol unknown, assume https */
     curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
   }
-#else
-  /* Silence unused-variable warning */
-  (void)curl_info;
 #endif
 
   if (!params_ptr->no_http2) {
@@ -996,7 +998,7 @@ void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_da
     set_inline_cookies(thread->ehandle, params_ptr->inline_cookies);
   }
 
-  curl_easy_setopt(thread->ehandle, CURLOPT_URL, params_ptr->url);
+  curl_easy_setopt(thread->ehandle, CURLOPT_URL, info_ptr->curr_url);
 
   curl_easy_setopt(thread->ehandle,CURLOPT_NOSIGNAL,1l); /* Try to avoid threading related segfaults */
   curl_easy_setopt(thread->ehandle,CURLOPT_FAILONERROR,1l); /* Fail on 4xx errors */

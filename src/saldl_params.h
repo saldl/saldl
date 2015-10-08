@@ -33,7 +33,7 @@ typedef struct {
   bool libcurl_verbosity;
   double status_refresh_interval;
   bool no_status;
-  char* url;
+  char* start_url;
   char* root_dir;
   char* filename;
   char* attachment_filename;

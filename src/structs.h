@@ -161,6 +161,7 @@ typedef struct {
 
 /* info_s: mother of all structs */
 typedef struct {
+  char *curr_url;
   saldl_params *params;
   curl_version_info_data *curl_info;
   file_s storage_info;
@@ -175,7 +176,6 @@ typedef struct {
   size_t chunk_count;
   size_t initial_merged_count;
   bool extra_resume_set;
-  char *redirect_url;
   char *content_type;
   long redirects_count;
   FILE* file;
