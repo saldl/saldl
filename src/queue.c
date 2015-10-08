@@ -108,7 +108,7 @@ void prep_next(info_s *info_ptr, thread_s *thread, chunk_s *chunk, int init) {
   }
 
   set_progress_params(thread, info_ptr);
-  set_write_opts(thread->ehandle, thread->chunk->storage, !params_ptr->mem_bufs || params_ptr->single_mode);
+  set_write_opts(thread->ehandle, thread->chunk->storage, params_ptr, false);
 
   /* Don't set ranges for single mode unless we are resuming.
    * To avoid setting range for naive servers reporting 0 size */

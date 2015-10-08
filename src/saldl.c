@@ -83,7 +83,7 @@ int saldl(saldl_params *params_ptr) {
   /* initialize chunks early for extra_resume() */
   chunks_init(&info);
 
-  if (params_ptr->resume) {
+  if (params_ptr->resume && !params_ptr->read_only) {
     check_resume(&info);
   }
 
@@ -97,24 +97,29 @@ int saldl(saldl_params *params_ptr) {
     return 0;
   }
 
-  if (params_ptr->resume) {
-    if ( !(info.file = fopen(info.part_filename,"rb+")) ) {
-      fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
+  if (!params_ptr->read_only) {
+    if (params_ptr->resume) {
+      if ( !(info.file = fopen(info.part_filename,"rb+")) ) {
+        fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
+      }
+    }
+    else {
+      if ( !params_ptr->force  && !access(info.part_filename,F_OK)) {
+        fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.", info.part_filename);
+      }
+      if ( !(info.file = fopen(info.part_filename,"wb")) ) {
+        fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
+      }
     }
   }
-  else {
-    if ( !params_ptr->force  && !access(info.part_filename,F_OK)) {
-      fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.", info.part_filename);
-    }
-    if ( !(info.file = fopen(info.part_filename,"wb")) ) {
-      fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
-    }
-  }
+
   set_modes(&info); /* Keep it between opening file and ctrl_file */
 
-  info.ctrl_file = fopen(info.ctrl_filename,"wb+");
-  if (!info.ctrl_file) {
-    fatal(FN, "Failed to open '%s' for read/write : %s", info.ctrl_filename, strerror(errno) );
+  if (!params_ptr->read_only) {
+    info.ctrl_file = fopen(info.ctrl_filename,"wb+");
+    if (!info.ctrl_file) {
+      fatal(FN, "Failed to open '%s' for read/write : %s", info.ctrl_filename, strerror(errno) );
+    }
   }
 
   /* Check if download was interrupted after all data was merged */
@@ -133,7 +138,11 @@ int saldl(saldl_params *params_ptr) {
 
   /* Create event pthreads */
   saldl_pthread_create(&info.trigger_events_pth, NULL, events_trigger_thread, &info);
-  saldl_pthread_create(&info.sync_ctrl_pth, NULL, sync_ctrl, &info);
+
+  if (!params_ptr->read_only) {
+    saldl_pthread_create(&info.sync_ctrl_pth, NULL, sync_ctrl, &info);
+  }
+
   if (info.chunk_count != 1) {
     saldl_pthread_create(&info.status_display_pth, NULL, status_display, &info);
     saldl_pthread_create(&info.queue_next_pth, NULL, queue_next_thread, &info);
@@ -149,7 +158,9 @@ int saldl(saldl_params *params_ptr) {
   } while (params_ptr->single_mode ? info.chunks[0].progress != PRG_FINISHED : info.global_progress.complete_size != info.file_size);
 
   /* Join event pthreads */
-  join_event_pth(&info.ev_ctrl ,&info.sync_ctrl_pth);
+  if (!params_ptr->read_only) {
+    join_event_pth(&info.ev_ctrl ,&info.sync_ctrl_pth);
+  }
 
   if (info.chunk_count !=1) {
     join_event_pth(&info.ev_status, &info.status_display_pth);
@@ -164,7 +175,7 @@ int saldl(saldl_params *params_ptr) {
 saldl_all_data_merged:
 
   /* Remove tmp_dirname */
-  if ( !params_ptr->mem_bufs && !params_ptr->single_mode ) {
+  if (!params_ptr->read_only && !params_ptr->mem_bufs && !params_ptr->single_mode) {
     if ( rmdir(info.tmp_dirname) ) {
       err_msg(FN, "Failed to delete %s: %s", info.tmp_dirname, strerror(errno) );
     }
@@ -173,7 +184,8 @@ saldl_all_data_merged:
   /*** Final Steps ***/
 
   /* One last check  */
-  if (info.file_size && (!info.content_encoded || params_ptr->no_decompress) && !params_ptr->no_remote_info) {
+  if (info.file_size && !params_ptr->read_only && !params_ptr->no_remote_info &&
+      (!info.content_encoded || params_ptr->no_decompress)) {
     off_t saved_file_size = saldl_fsizeo(info.part_filename, info.file);
     if (saved_file_size != info.file_size) {
       pre_fatal(FN, "Unexpected saved file size (%ju!=%ju).", saved_file_size, info.file_size);
@@ -186,14 +198,16 @@ saldl_all_data_merged:
     debug_msg(FN, "Strict check for finished file size skipped.");
   }
 
-  saldl_fclose(info.part_filename, info.file);
-  if (rename(info.part_filename, params_ptr->filename) ) {
-    err_msg(FN, "Failed to rename now-complete %s to %s: %s", info.part_filename, params_ptr->filename, strerror(errno));
-  }
+  if (!params_ptr->read_only) {
+    saldl_fclose(info.part_filename, info.file);
+    if (rename(info.part_filename, params_ptr->filename) ) {
+      err_msg(FN, "Failed to rename now-complete %s to %s: %s", info.part_filename, params_ptr->filename, strerror(errno));
+    }
 
-  saldl_fclose(info.ctrl_filename, info.ctrl_file);
-  if ( remove(info.ctrl_filename) ) {
-    err_msg(FN, "Failed to remove %s: %s", info.ctrl_filename, strerror(errno));
+    saldl_fclose(info.ctrl_filename, info.ctrl_file);
+    if ( remove(info.ctrl_filename) ) {
+      err_msg(FN, "Failed to remove %s: %s", info.ctrl_filename, strerror(errno));
+    }
   }
 
   /* cleanups */

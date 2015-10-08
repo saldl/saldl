@@ -32,7 +32,7 @@ static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
 
   for (size_t counter = 0 ; counter < info_ptr->chunk_count ; counter++) {
     if (chunks[counter].progress == PRG_FINISHED) {
-      info_ptr->merge_finished(info_ptr, &chunks[counter]);
+      info_ptr->merge_finished(&chunks[counter], info_ptr);
     }
   }
 
@@ -70,7 +70,7 @@ int merge_finished_single() {
   return 0;
 }
 
-int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
+int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
   size_t size = chunk->size;
   off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
@@ -105,7 +105,7 @@ int merge_finished_tmpf(info_s *info_ptr, chunk_s *chunk) {
   return 0;
 }
 
-int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
+int merge_finished_mem(chunk_s *chunk, info_s *info_ptr) {
   size_t size = chunk->size;
   off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
@@ -119,6 +119,11 @@ int merge_finished_mem(info_s *info_ptr, chunk_s *chunk) {
 
   set_chunk_merged(chunk);
 
+  return 0;
+}
+
+int merge_finished_null(chunk_s *chunk) {
+  set_chunk_merged(chunk);
   return 0;
 }
 

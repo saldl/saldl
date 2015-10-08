@@ -72,6 +72,7 @@ typedef struct {
   int auto_size;
   bool whole_file;
   bool mem_bufs;
+  bool read_only;
 } saldl_params;
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

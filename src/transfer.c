@@ -265,15 +265,22 @@ static size_t file_write_function(void  *ptr, size_t  size, size_t nmemb, void *
   return realsize;
 }
 
-static size_t  mem_write_function(  void  *ptr,  size_t  size, size_t nmemb, void *data) {
-  size_t realsize = size * nmemb;
-  mem_s *mem = data;
+static size_t null_write_function(void  *ptr,  size_t  size, size_t nmemb, void *data) {
+  (void)ptr;
 
-  if (!mem) {
+  if (data) {
     /* Remember: This why getting info with GET works, this causes error 26 */
     return 0;
   }
 
+  return size*nmemb;
+}
+
+static size_t  mem_write_function(void  *ptr,  size_t  size, size_t nmemb, void *data) {
+  size_t realsize = size * nmemb;
+  mem_s *mem = data;
+
+  SALDL_ASSERT(mem);
   SALDL_ASSERT(mem->memory); // Preallocation failed
   SALDL_ASSERT(mem->size <= mem->allocated_size);
 
@@ -576,7 +583,7 @@ void get_info(info_s *info_ptr) {
     curl_easy_setopt(tmp.ehandle,CURLOPT_NOBODY,1l);
   }
 
-  set_write_opts(tmp.ehandle, NULL, 0);
+  set_write_opts(tmp.ehandle, NULL, params_ptr, true);
 
   /*
    * Check remote info with range support in one request.
@@ -1055,13 +1062,21 @@ void set_params(thread_s *thread, saldl_params *params_ptr, curl_version_info_da
   }
 }
 
-void set_write_opts(CURL* handle, void* storage, int file_storage) {
-  if (file_storage) {
-    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, file_write_function);
-    curl_easy_setopt(handle, CURLOPT_WRITEDATA, storage);
-  } else {
-    curl_easy_setopt(handle,CURLOPT_WRITEDATA,storage);
+void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool no_body) {
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, storage);
+
+  if (params_ptr->read_only || !storage) {
+    curl_easy_setopt(handle,CURLOPT_WRITEFUNCTION, null_write_function);
+    if (no_body) {
+      /* We are only getting info */
+      curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)1); // setting to not NULL
+    }
+  }
+  else if (params_ptr->mem_bufs) {
     curl_easy_setopt(handle,CURLOPT_WRITEFUNCTION,mem_write_function);
+  }
+  else {
+    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, file_write_function);
   }
 }
 
@@ -1088,6 +1103,12 @@ void set_modes(info_s *info_ptr) {
 
   saldl_params *params_ptr = info_ptr->params;
   file_s *storage_info_ptr = &info_ptr->storage_info;
+
+  if (params_ptr->read_only) {
+    info_ptr->prepare_storage = &prepare_storage_null;
+    info_ptr->merge_finished = &merge_finished_null;
+    return;
+  }
 
   if (! access(info_ptr->tmp_dirname, F_OK) ) {
     if (params_ptr->mem_bufs || params_ptr->single_mode) {
@@ -1136,6 +1157,8 @@ void set_reset_storage(info_s *info_ptr) {
     reset_storage = &reset_storage_single;
   } else if (params_ptr->mem_bufs) {
     reset_storage = &reset_storage_mem;
+  } else if (params_ptr->read_only) {
+    reset_storage = &reset_storage_null;
   } else {
     reset_storage = &reset_storage_tmpf ;
   }
@@ -1202,11 +1225,17 @@ void reset_storage_mem(thread_s *thread) {
   buf->size = 0;
 }
 
+void reset_storage_null() {
+}
+
 void prepare_storage_mem(chunk_s *chunk) {
   mem_s *buf = saldl_calloc (1, sizeof(mem_s));
   buf->memory = saldl_calloc(chunk->size, sizeof(char));
   buf->allocated_size = chunk->size;
   chunk->storage = buf;
+}
+
+void prepare_storage_null() {
 }
 
 void saldl_perform(thread_s *thread) {

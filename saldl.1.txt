@@ -84,12 +84,16 @@ General
 ~~~~~~~~
 
 *-d, --dry-run*::
-  do not download, only display information.
+  Do not download, only display information.
 
 *-m, --memory-buffers*::
   Use memory buffers instead of temp files for downloading chunks. +
   See <<temp-files_vs_mem-bufs,Temporary Files vs. Memory Buffers>>
   for details.
+
+*--read-only*::
+  Don't create files or write anything to disk.
+  This should be only used to test network performance.
 
 [[ui-opts]]
 UI Options
