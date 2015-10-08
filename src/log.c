@@ -179,7 +179,7 @@ void def_err_msg(const char *name, const char *format, ...) {
   va_end(args);
 }
 
-void main_info_msg(const char *name, const char *format, ...) {
+void main_msg(const char *name, const char *format, ...) {
   va_list args;
   if (format) {
     va_start(args, format);

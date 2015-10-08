@@ -531,21 +531,21 @@ static void set_names(info_s* info_ptr) {
 }
 
 static void print_info(info_s *info_ptr) {
-  main_info_msg("URL", info_ptr->params->url);
+  main_msg("URL", info_ptr->params->url);
 
   if (info_ptr->redirect_url) {
-    main_info_msg("Redirected", info_ptr->redirect_url);
+    main_msg("Redirected", info_ptr->redirect_url);
   }
 
   if (info_ptr->content_type) {
-    main_info_msg("Content-Type", info_ptr->content_type);
+    main_msg("Content-Type", info_ptr->content_type);
   }
 
-  main_info_msg("Saving To", info_ptr->params->filename);
+  main_msg("Saving To", info_ptr->params->filename);
 
   if (info_ptr->file_size > 0) {
     off_t file_size = info_ptr->file_size;
-    main_info_msg("File Size", "%.2f%s", human_size(file_size), human_size_suffix(file_size));
+    main_msg("File Size", "%.2f%s", human_size(file_size), human_size_suffix(file_size));
   }
 }
 
@@ -701,11 +701,11 @@ void print_chunk_info(info_s *info_ptr) {
 
     size_t chunk_size = info_ptr->params->chunk_size;
     if (info_ptr->rem_size && !info_ptr->params->single_mode) {
-      main_info_msg("Chunks", "%zu*%.2f%s + 1*%.2f%s", info_ptr->chunk_count-1,
+      main_msg("Chunks", "%zu*%.2f%s + 1*%.2f%s", info_ptr->chunk_count-1,
           human_size(chunk_size), human_size_suffix(chunk_size),
           human_size(info_ptr->rem_size), human_size_suffix(info_ptr->rem_size));
     } else {
-      main_info_msg("Chunks", "%zu*%.2f%s", info_ptr->chunk_count,
+      main_msg("Chunks", "%zu*%.2f%s", info_ptr->chunk_count,
           human_size(chunk_size), human_size_suffix(chunk_size));
     }
   }
@@ -843,7 +843,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
         }
 
         saldl_fputs_count(lines+!!offset, up, stderr, "stderr");
-        main_info_msg("Single mode progress", " ");
+        main_msg("Single mode progress", " ");
 
         status_msg("Progress", " \t%.2f%s / %.2f%s",
             human_size(dlnow + offset), human_size_suffix(dlnow + offset),

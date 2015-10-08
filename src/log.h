@@ -98,7 +98,7 @@ log_func def_debug_msg;
 log_func def_info_msg;
 log_func def_warn_msg;
 log_func def_err_msg;
-log_func main_info_msg;
+log_func main_msg;
 log_func status_msg;
 log_func pre_fatal;
 log_func  __attribute__((__noreturn__)) fatal_abort;

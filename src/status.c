@@ -119,7 +119,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
       colorset(chunks_status+(counter*c_char_size), '0' + info_ptr->chunks[counter].progress, 1);
     }
 
-    main_info_msg("Chunk progress", " ");
+    main_msg("Chunk progress", " ");
     status_msg("Merged", "          \t %zu / %zu (+%zu finished)",
         chsp->merged, info_ptr->chunk_count, chsp->finished);
     status_msg("Started", "         \t %zu / %zu (%zu empty)",
