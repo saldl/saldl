@@ -216,10 +216,11 @@ def check_flags(conf):
     # Load this before checking flags
     conf.load('compiler_c')
 
-    check_required_flags(conf)
-
+    # Set warning flags 1st so -Werror catches all warnings
     if not conf.options.DISABLE_COMPILER_WARNINGS:
         check_warning_cflags(conf)
+
+    check_required_flags(conf)
 
     if conf.options.ENABLE_DEBUG and conf.options.ENABLE_LTO:
         conf.fatal('Both --enable-debug and --enable-lto were passed.')
@@ -474,14 +475,20 @@ def check_pkg_deps(conf):
         if not v in conf.env:
             conf.env[v] = []
 
-    check_libcurl(conf)
+    # This order is important if we are providing flags ourselves
     check_libevent_pthreads(conf)
+    check_libcurl(conf)
 
     if conf.options.ENABLE_PROFILER:
         check_libprofiler(conf)
 
     # Deps with no pkg-config support
     conf.env.append_value('LIB', 'pthread')
+
+    # Force static linking with MinGW builds
+    if conf.env['DEST_OS'] == 'win32':
+        conf.env['SHLIB_MARKER'] = ['']
+
 
 @conf
 def check_libcurl(conf):

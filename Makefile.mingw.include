@@ -1,34 +1,34 @@
-SALDL_VERSION = `git describe --tags --long --dirty`
+SALDL_VERSION = $(subst -,.,$(shell git describe --tags --long --dirty))
 
-DEFINES =  -D_FILE_OFFSET_BITS=64 -D__USE_MINGW_ANSI_STDIO=1 -DHAVE__MKDIR -DHAVE_GETMODULEFILENAME -DHAVE_GETCONSOLESCREENBUFFERINFO -DHAVE_GETTIMEOFDAY -DCURL_STATICLIB -DNGHTTP2_STATICLIB -DSALDL_VERSION=\"$(SALDL_VERSION)\"
+CFLAGS = -O2 -D__USE_MINGW_ANSI_STDIO=1
+LDFLAGS = -Wl,-O1,--sort-common
 
-COMMON_CFLAGS = -pipe -std=c99 -pedantic -Wall -Wextra -Werror -Wmissing-format-attribute -O2
-COMMON_LDFLAGS = -Wl,-O1,--sort-common
+LIBCURL_CFLAGS = -DCURL_STATICLIB -DNGHTTP2_STATICLIB
+LIBCURL_LIBS = -lcurl -lnghttp2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32
 
-CRCS = common.c log.c utime.c exit.c events.c progress.c resume.c status.c ctrl.c merge.c queue.c transfer.c saldl.c main.c
-OBJS = $(patsubst %.c,${BLD_DIR}/%.o,${CRCS})
+LIBEVENT_PTHREADS_CFLAGS =
+LIBEVENT_PTHREADS_LIBS = -levent_pthreads -levent
 
-HEADER_NAMES = common.h log.h utime.h exit.h events.h progress.h resume.h status.h ctrl.h merge.h queue.h saldl.h saldl_params.h structs.h transfer.h vt100.h defaults.h
-HEADERS = $(patsubst %,src/%,${HEADER_NAMES})
+all: dist
 
-all: prep saldl
+waf: src clean
+	CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
+	   ./waf configure \
+	   --prefix='/' --bindir='/' --mandir='/' \
+	   --libcurl-cflags="${LIBCURL_CFLAGS}" \
+	   --libcurl-libs="${LIBCURL_LIBS}" \
+	   --libevent-pthreads-cflags="${LIBEVENT_PTHREADS_CFLAGS}" \
+	   --libevent-pthreads-libs="${LIBEVENT_PTHREADS_LIBS}"
 
-prep:
-	$(eval CFLAGS = ${COMMON_CFLAGS} ${MINGW_CFLAGS} ${CFLAGS})
-	$(eval LDFLAGS = ${COMMON_LDFLAGS} ${MINGW_LDFLAGS} ${LDFLAGS})
-	mkdir -p ${BLD_DIR}
+	./waf install --destdir=${BLD_DIR}
 
-${OBJS}: ${SRCS} $(HEADERS)
-	${CC} -c src/$(notdir ${@:.o=.c}) -o ${@} ${CFLAGS} ${DEFINES}
-
-saldl: $(OBJS)
-	${CC} -o ${BLD_DIR}/saldl-${exe_suffix}.exe ${OBJS} ${LDFLAGS} -static -levent_pthreads -levent -lcurl -lnghttp2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32
+dist: waf
+	mv -f ${BLD_DIR}/saldl.exe ${BLD_DIR}/saldl-${exe_suffix}.exe
 	${STRIP} ${BLD_DIR}/saldl-${exe_suffix}.exe
-
-dist: all
 	cp -f /etc/ca-certificates/extracted/ca-bundle.trust.crt ${BLD_DIR}/
-	zip saldl-${exe_suffix}-${SALDL_VERSION}.zip ${BLD_DIR}/{ca-bundle.trust.crt,saldl-${exe_suffix}.exe}
+	zip -r saldl-${exe_suffix}-${SALDL_VERSION}.zip ${BLD_DIR}
 	@echo "`tput setaf 1`Don't forget to update the online version of the manual."
 
 clean:
+	./waf distclean
 	-rm -rf ${BLD_DIR}/
