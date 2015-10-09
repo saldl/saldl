@@ -71,5 +71,5 @@ https://aur.archlinux.org/packages/saldl-git
 Experimental binaries are now available in
 the [releases](https://github.com/saldl/saldl/releases) page.
 
-**saldl** requires a terminal emulater with support for ANSI/VT100
+**saldl** requires a terminal emulator with support for ANSI/VT100
 escape sequences.
