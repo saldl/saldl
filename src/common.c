@@ -407,7 +407,6 @@ void saldl_fputs(const char *str, FILE *stream, const char *label) {
 }
 
 void saldl_fputs_count(uintmax_t count, const char* str, FILE* stream, const char *label) {
-  SALDL_ASSERT(count >= 1);
   SALDL_ASSERT(str);
   SALDL_ASSERT(stream);
   SALDL_ASSERT(label);
