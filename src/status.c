@@ -76,7 +76,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
   int cols = tty_width() >= 0 ? tty_width() : 0;
   *lines = status_ptr->lines = cols ? info_ptr->chunk_count / cols + !!(info_ptr->chunk_count % cols) + 8 + !!p->initial_complete_size : 0 ; /*  +n: number of extra status lines */
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_status->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_status->num_of_calls, str_EVENT_FD(fd) , what);
 
 
   /* We check if the merge loop is already de-initialized to not lose status of any merged chunks */
@@ -120,11 +120,11 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
     }
 
     main_msg("Chunk progress", " ");
-    status_msg("Merged", "          \t %zu / %zu (+%zu finished)",
+    status_msg("Merged", "          \t %"SAL_ZU" / %"SAL_ZU" (+%"SAL_ZU" finished)",
         chsp->merged, info_ptr->chunk_count, chsp->finished);
-    status_msg("Started", "         \t %zu / %zu (%zu empty)",
+    status_msg("Started", "         \t %"SAL_ZU" / %"SAL_ZU" (%"SAL_ZU" empty)",
         chsp->started, info_ptr->chunk_count, chsp->empty_started);
-    status_msg("Not started", "     \t %zu / %zu ((+%zu queued)",
+    status_msg("Not started", "     \t %"SAL_ZU" / %"SAL_ZU" ((+%"SAL_ZU" queued)",
         chsp->not_started, info_ptr->chunk_count, chsp->queued);
     status_msg("Size complete", "   \t %.2f%s / %.2f%s (%.2f%c)",
         human_size(p->complete_size), human_size_suffix(p->complete_size),

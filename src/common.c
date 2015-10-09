@@ -131,11 +131,11 @@ void saldl_fwrite_fflush(const void *read_buf, size_t size, size_t nmemb, FILE *
 
   if (ret != nmemb) {
     if (offset_info) {
-      fatal(FN, "Writing %zu bytes to '%s' failed at offset %jd: %s",
+      fatal(FN, "Writing %"SAL_ZU" bytes to '%s' failed at offset %"SAL_JD": %s",
           write_size, out_name, offset_info, strerror(errno));
     }
     else {
-      fatal(FN, "Writing %zu bytes to '%s' failed: %s",
+      fatal(FN, "Writing %"SAL_ZU" bytes to '%s' failed: %s",
           write_size, out_name, strerror(errno));
     }
   }
@@ -444,11 +444,11 @@ const char* human_size_suffix(double size) {
 }
 
 size_t s_num_digits(intmax_t num) {
-	return snprintf(NULL, 0, "%jd", num);
+	return snprintf(NULL, 0, "%"SAL_JD"", num);
 }
 
 size_t u_num_digits(uintmax_t num) {
-	return snprintf(NULL, 0, "%ju", num);
+	return snprintf(NULL, 0, "%"SAL_JU"", num);
 }
 
 size_t saldl_min(size_t a, size_t b) {
@@ -466,7 +466,7 @@ off_t saldl_max_o(off_t a, off_t b) {
 size_t saldl_max_z_umax(uintmax_t a, uintmax_t b) {
   uintmax_t ret = a > b ? a : b;
   if ((intmax_t)ret < 0 || ret > (uintmax_t)SIZE_MAX) {
-    fatal(FN, "Max value %jd is out of size_t range 0-%zu.", (intmax_t)ret, SIZE_MAX);
+    fatal(FN, "Max value %"SAL_JD" is out of size_t range 0-%"SAL_ZU".", (intmax_t)ret, SIZE_MAX);
   }
   return (size_t)ret;
 }
@@ -562,7 +562,7 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
   num = strtoumax(num_char, p, 10);
 
   if ((intmax_t)num < 0) {
-    fatal(FN, "Expected value >= 0, %s(%jd) was passed.", num_char, (intmax_t)num);
+    fatal(FN, "Expected value >= 0, %s(%"SAL_JD") was passed.", num_char, (intmax_t)num);
   }
 
   if ( *p == num_char || strlen(*p) > suff_len ) {
@@ -594,7 +594,7 @@ size_t parse_num_z(const char *num_char, size_t suff_len) {
   }
 
   if (num > SIZE_MAX) {
-    fatal(FN, "Value: %s(%ju) out of size_t range 0-%zu.", num_char, num, SIZE_MAX);
+    fatal(FN, "Value: %s(%"SAL_JU") out of size_t range 0-%"SAL_ZU".", num_char, num, SIZE_MAX);
   }
 
   return (size_t)num;
@@ -608,7 +608,7 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
   num = strtoimax(num_char, p, 10);
 
   if (num < 0) {
-    fatal(FN, "Expected value >= 0, %s(%jd) was passed.", num_char, num);
+    fatal(FN, "Expected value >= 0, %s(%"SAL_JD") was passed.", num_char, num);
   }
 
   if ( *p == num_char || strlen(*p) > suff_len ) {
@@ -640,7 +640,7 @@ off_t parse_num_o(const char *num_char, size_t suff_len) {
   }
 
   if (num > OFF_T_MAX) {
-    fatal(FN, "Value: %s(%jd) out of positive off_t range 0-%jd.", num_char, num, (intmax_t)OFF_T_MAX);
+    fatal(FN, "Value: %s(%"SAL_JD") out of positive off_t range 0-%"SAL_JD".", num_char, num, (intmax_t)OFF_T_MAX);
   }
 
   return (off_t)num;

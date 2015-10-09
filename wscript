@@ -244,6 +244,11 @@ def check_flags(conf):
 @conf
 def check_required_flags(conf):
     conf.check_cc(cflags = '-std=c99', uselib_store='SAL_REQUIRED', mandatory=False)
+
+    # Avoid -Werror=format with MinGW builds
+    if conf.env['DEST_OS'] != 'win32':
+        conf.check_cc(cflags = '-pedantic', uselib_store='SAL_REQUIRED', mandatory=False)
+
     conf.check_cc(cflags = '-fPIE', uselib_store='SAL_REQUIRED', mandatory=False)
     conf.check_cc(linkflags = '-pie', uselib_store='SAL_REQUIRED', mandatory=False)
 
@@ -296,7 +301,6 @@ def check_warning_cflags(conf):
         os_flags = 1
     else:
         warn_flags = [
-                ['-pedantic'],
                 ['-Wall'],
                 ['-Wextra'],
                 ['-Wmissing-format-attribute'],

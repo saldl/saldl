@@ -176,7 +176,7 @@ static void events_trigger_next_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
   event_s *ev_trigger = &info_ptr->ev_trigger;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_trigger->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_trigger->num_of_calls, str_EVENT_FD(fd) , what);
 
   if (info_ptr->events_queue_done) {
     events_deactivate(ev_trigger);

@@ -96,7 +96,7 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
   SALDL_ASSERT(chunk->range_end);
   SALDL_ASSERT( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
   chunk->curr_range_start = chunk->range_start + (off_t)chunk->size_complete;
-  snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%jd-%jd", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
+  snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
   curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
 }
 
@@ -120,7 +120,7 @@ static void headers_info(info_s *info_ptr) {
 
     if ( (tmp = strcasestr(h->content_range, "/")) ) {
       info_ptr->file_size = parse_num_o(tmp+1, 0);
-      debug_msg(FN, "file size from Content-Range: %ju", info_ptr->file_size);
+      debug_msg(FN, "file size from Content-Range: %"SAL_JU"", info_ptr->file_size);
     }
 
     SALDL_FREE(h->content_range);
@@ -343,7 +343,7 @@ static off_t remote_info_simple_file_size(CURL *handle) {
   curl_easy_getinfo(handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&d_size);
 
   size = (off_t)d_size;
-  debug_msg(FN, "filesize=%jd", size);
+  debug_msg(FN, "filesize=%"SAL_JD"", size);
 
   if ( size == -1 ) {
     debug_msg(FN, "Zeroing filesize, was -1.");
@@ -624,7 +624,7 @@ void check_remote_file_size(info_s *info_ptr) {
   }
 
   if (info_ptr->chunk_count > 1 && info_ptr->chunk_count < info_ptr->params->num_connections) {
-    info_msg(NULL, "File relatively small, use %zu connection(s)", info_ptr->chunk_count);
+    info_msg(NULL, "File relatively small, use %"SAL_ZU" connection(s)", info_ptr->chunk_count);
     info_ptr->params->num_connections = info_ptr->chunk_count;
   }
 }
@@ -633,7 +633,7 @@ static void whole_file(info_s *info_ptr) {
   if (0 < info_ptr->file_size) {
     info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)info_ptr->params->chunk_size , (uintmax_t)info_ptr->file_size  / info_ptr->params->num_connections);
     info_ptr->params->chunk_size = info_ptr->params->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
-    info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %zu.",
+    info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %"SAL_ZU".",
         human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
         human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
         info_ptr->params->num_connections);
@@ -657,12 +657,12 @@ static void auto_size_func(info_s *info_ptr, int auto_size) {
 
     if ( info_ptr->params->num_connections > (size_t)cols ) {
       info_ptr->params->num_connections = (size_t)cols; /* Limit active connections to 1 line */
-      info_msg(NULL, "no. of connections reduced to %zu based on tty width %d.", info_ptr->params->num_connections, cols);
+      info_msg(NULL, "no. of connections reduced to %"SAL_ZU" based on tty width %d.", info_ptr->params->num_connections, cols);
     }
 
     if ( ( info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_ptr->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
       info_ptr->params->chunk_size = (info_ptr->params->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
-      info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %zu, based on tty width %d and no. of lines requested %d.",
+      info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %"SAL_ZU", based on tty width %d and no. of lines requested %d.",
           human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
           info_ptr->params->num_connections, cols, auto_size);
     }
@@ -698,7 +698,7 @@ void set_info(info_s *info_ptr) {
 
   /* Chunk size should be at least 4k */
   if (info_ptr->params->chunk_size < 4096) {
-    warn_msg(FN, "Rounding up chunk_size from %zu to 4096(4k).", info_ptr->params->chunk_size);
+    warn_msg(FN, "Rounding up chunk_size from %"SAL_ZU" to 4096(4k).", info_ptr->params->chunk_size);
     info_ptr->params->chunk_size = 4096;
   }
 
@@ -712,11 +712,11 @@ void print_chunk_info(info_s *info_ptr) {
 
     size_t chunk_size = info_ptr->params->chunk_size;
     if (info_ptr->rem_size && !info_ptr->params->single_mode) {
-      main_msg("Chunks", "%zu*%.2f%s + 1*%.2f%s", info_ptr->chunk_count-1,
+      main_msg("Chunks", "%"SAL_ZU"*%.2f%s + 1*%.2f%s", info_ptr->chunk_count-1,
           human_size(chunk_size), human_size_suffix(chunk_size),
           human_size(info_ptr->rem_size), human_size_suffix(info_ptr->rem_size));
     } else {
-      main_msg("Chunks", "%zu*%.2f%s", info_ptr->chunk_count,
+      main_msg("Chunks", "%"SAL_ZU"*%.2f%s", info_ptr->chunk_count,
           human_size(chunk_size), human_size_suffix(chunk_size));
     }
   }
@@ -764,7 +764,7 @@ void global_progress_update(info_s *info_ptr, bool init) {
           not_started++;
           break;
         default:
-          fatal(FN, "Invalid progress value %d for chunk %zu", chunk.progress, idx);
+          fatal(FN, "Invalid progress value %d for chunk %"SAL_ZU"", chunk.progress, idx);
           break;
       }
     }
@@ -811,7 +811,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       info_ptr->redirects_count = curr_redirects_count;
 
       if (!info_ptr->file_size && dltotal) {
-        debug_msg(FN, "Setting file_size from dltotal=%ju.", dltotal);
+        debug_msg(FN, "Setting file_size from dltotal=%"SAL_JU".", dltotal);
         info_ptr->file_size = dltotal;
         info_ptr->file_size_from_dltotal = true;
       }
@@ -889,13 +889,13 @@ static int chunk_progress(void *void_chunk_ptr, curl_off_t dltotal, curl_off_t d
 
   /* Check bad server behavior, e.g. if dltotal becomes file_size mid-transfer. */
   if (dltotal && dltotal != (chunk->range_end - chunk->curr_range_start + 1) ) {
-    fatal(FN, "Transfer size(%jd) does not match requested range(%jd-%jd) in chunk %zu, this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end, chunk->idx);
+    fatal(FN, "Transfer size(%"SAL_JD") does not match requested range(%"SAL_JD"-%"SAL_JD") in chunk %"SAL_ZU", this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end, chunk->idx);
   }
 
   if (dlnow) { /* dltotal & dlnow can both be 0 initially */
     curl_off_t curr_chunk_size = chunk->range_end - chunk->curr_range_start + 1;
     if (dltotal != curr_chunk_size) {
-      fatal(FN, "Transfer size does not equal requested range: %jd!=%jd for chunk %zu, this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)curr_chunk_size, chunk->idx);
+      fatal(FN, "Transfer size does not equal requested range: %"SAL_JD"!=%"SAL_JD" for chunk %"SAL_ZU", this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)curr_chunk_size, chunk->idx);
     }
     rem = (size_t)(dltotal-dlnow);
   } else if (chunk->size_complete) { /* dltotal & dlnow can also both be 0 initially if a chunk download restarted */
@@ -1094,7 +1094,7 @@ void set_single_mode(info_s *info_ptr) {
 
   /* XXX: Should we try to support large files with single mode in 32b systems? */
   if ((uintmax_t)info_ptr->file_size > (uintmax_t)SIZE_MAX) {
-    fatal(FN, "Trying to set single chunk size to file_size %jd, but chunk size can't exceed %zu ", (intmax_t)info_ptr->file_size, SIZE_MAX);
+    fatal(FN, "Trying to set single chunk size to file_size %"SAL_JD", but chunk size can't exceed %"SAL_ZU" ", (intmax_t)info_ptr->file_size, SIZE_MAX);
   }
 
   info_ptr->params->chunk_size = (size_t)info_ptr->file_size;
@@ -1177,7 +1177,7 @@ void reset_storage_single(thread_s *thread) {
   off_t offset = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
   curl_easy_setopt(thread->ehandle, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)offset);
   saldl_fseeko(storage->name, storage->file, offset, SEEK_SET);
-  info_msg(FN, "restarting from offset %jd", (intmax_t)offset);
+  info_msg(FN, "restarting from offset %"SAL_JD"", (intmax_t)offset);
 }
 
 void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
@@ -1201,7 +1201,7 @@ void reset_storage_tmpf(thread_s *thread) {
   thread->chunk->size_complete = (size_t)size_complete;
 
   curl_set_ranges(thread->ehandle, thread->chunk);
-  info_msg(FN, "restarting chunk %s from offset %zu", storage->name, thread->chunk->size_complete);
+  info_msg(FN, "restarting chunk %s from offset %"SAL_ZU"", storage->name, thread->chunk->size_complete);
   saldl_fseeko(storage->name, storage->file, thread->chunk->size_complete, SEEK_SET);
   thread->chunk->size_complete = 0;
 }
@@ -1209,7 +1209,7 @@ void reset_storage_tmpf(thread_s *thread) {
 void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
   file_s *tmp_f = saldl_calloc (1, sizeof(file_s));
   tmp_f->name = saldl_calloc(PATH_MAX, sizeof(char));
-  snprintf(tmp_f->name, PATH_MAX, "%s/%zu", dir->name, chunk->idx);
+  snprintf(tmp_f->name, PATH_MAX, "%s/%"SAL_ZU"", dir->name, chunk->idx);
   if (chunk->size_complete) {
     if (! (tmp_f->file = fopen(tmp_f->name, "rb+"))) {
       fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
@@ -1277,18 +1277,18 @@ void saldl_perform(thread_s *thread) {
         if (thread->chunk->size) {
           if (!thread->chunk->size_complete) {
             /* This happens sometimes, especially when tunneling through proxies! Consider it non-fatal and retry */
-            info_msg(FN, "libcurl returned CURLE_OK for chunk %zu before getting any data , restarting (retry %zu, delay=%zu).", thread->chunk->idx, ++retries, delay);
+            info_msg(FN, "libcurl returned CURLE_OK for chunk %"SAL_ZU" before getting any data , restarting (retry %"SAL_ZU", delay=%"SAL_ZU").", thread->chunk->idx, ++retries, delay);
           }
           else {
             /* Trust libcurl here if single mode */
             if (thread->single) {
-              warn_msg(FN, "Returned CURLE_OK, but completed size(%zu) != requested size(%zu).",
+              warn_msg(FN, "Returned CURLE_OK, but completed size(%"SAL_ZU") != requested size(%"SAL_ZU").",
                   thread->chunk->size_complete, thread->chunk->size);
               warn_msg(FN, "We trust libcurl and assume that's okay if single mode.");
               goto saldl_perform_success;
             }
             else {
-              fatal(FN, "Returned CURLE_OK for chunk %zu, but completed size(%zu) != requested size(%zu).",
+              fatal(FN, "Returned CURLE_OK for chunk %"SAL_ZU", but completed size(%"SAL_ZU") != requested size(%"SAL_ZU").",
                   thread->chunk->idx ,thread->chunk->size_complete, thread->chunk->size);
             }
           }
@@ -1303,12 +1303,12 @@ void saldl_perform(thread_s *thread) {
         retries++;
         if (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
           warn_msg(FN, "libcurl returned semi-fatal (%d: %s) \
-              while downloading chunk %zu, retry %d/%d, delay=%zu.",
+              while downloading chunk %"SAL_ZU", retry %d/%d, delay=%"SAL_ZU".",
               ret, thread->err_buf, thread->chunk->idx,
               semi_fatal_retries, MAX_SEMI_FATAL_RETRIES, delay);
           goto semi_fatal_perform_retry;
         } else {
-          fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %zu, max semi-fatal retries %u exceeded.", ret, thread->err_buf, thread->chunk->idx, MAX_SEMI_FATAL_RETRIES);
+          fatal(NULL, "libcurl returned semi-fatal (%d: %s) while downloading chunk %"SAL_ZU", max semi-fatal retries %u exceeded.", ret, thread->err_buf, thread->chunk->idx, MAX_SEMI_FATAL_RETRIES);
         }
       case CURLE_OPERATION_TIMEDOUT:
       case CURLE_PARTIAL_FILE: /* single mode */
@@ -1320,12 +1320,12 @@ void saldl_perform(thread_s *thread) {
         if (ret == CURLE_HTTP_RETURNED_ERROR) {
           curl_easy_getinfo(thread->ehandle, CURLINFO_RESPONSE_CODE, &response);
           if (response < 500) {
-            fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %zu.", ret, thread->err_buf, thread->chunk->idx);
+            fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %"SAL_ZU".", ret, thread->err_buf, thread->chunk->idx);
           } else {
-            info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
+            info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %"SAL_ZU", restarting (retry %"SAL_ZU", delay=%"SAL_ZU").", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
           }
         } else {
-          info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %zu, restarting (retry %zu, delay=%zu).", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
+          info_msg(NULL, "libcurl returned (%d: %s) while downloading chunk %"SAL_ZU", restarting (retry %"SAL_ZU", delay=%"SAL_ZU").", ret, thread->err_buf, thread->chunk->idx, ++retries, delay);
         }
 semi_fatal_perform_retry:
         sleep(delay);
@@ -1333,7 +1333,7 @@ semi_fatal_perform_retry:
         delay=retries*3/2;
         break;
       default:
-        fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %zu.", ret, thread->err_buf, thread->chunk->idx);
+        fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %"SAL_ZU".", ret, thread->err_buf, thread->chunk->idx);
         break;
     }
   }

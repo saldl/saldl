@@ -189,7 +189,7 @@ saldl_all_data_merged:
       (!info.content_encoded || params_ptr->no_decompress)) {
     off_t saved_file_size = saldl_fsizeo(info.part_filename, info.file);
     if (saved_file_size != info.file_size) {
-      pre_fatal(FN, "Unexpected saved file size (%ju!=%ju).", saved_file_size, info.file_size);
+      pre_fatal(FN, "Unexpected saved file size (%"SAL_JU"!=%"SAL_JU").", saved_file_size, info.file_size);
       pre_fatal(FN, "This could happen if you're downloading from a dynamic site.");
       pre_fatal(FN, "If that's the case and the download is small, retry with --no-remote-info");
       fatal(FN, "If you think that's a bug in saldl, report it: https://github.com/saldl/saldl/issues");

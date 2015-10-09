@@ -72,7 +72,7 @@ static chunk_s* pick_next_last_first(info_s *info_ptr) {
 
   /* -1 for indices */
   start_idx = last_first ? info_ptr->chunk_count - last_first : 0;
-  debug_msg(FN, "start_idx=%zu, end_idx=%zu", start_idx, end_idx);
+  debug_msg(FN, "start_idx=%"SAL_ZU", end_idx=%"SAL_ZU"", start_idx, end_idx);
 
   /* Pick not-started chunk */
   return first_prg_with_range(info_ptr, PRG_NOT_STARTED, true, start_idx, end_idx);
@@ -134,7 +134,7 @@ static void queue_next_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
   event_s *ev_queue = &info_ptr->ev_queue;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_queue->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_queue->num_of_calls, str_EVENT_FD(fd) , what);
 
   if (info_ptr->session_status >= SESSION_QUEUE_INTERRUPTED || !exist_prg(info_ptr, PRG_NOT_STARTED, true) ) {
     events_deactivate(ev_queue);

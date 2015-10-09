@@ -82,10 +82,10 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
     ctrl->chunk_count = strlen(ctrl->chunks_progress_str);
 
     info_msg(FN, "ctrl file parsed:");
-    info_msg(FN, " file_size:  %jd", (intmax_t)ctrl->file_size);
-    info_msg(FN, " chunk_size: %zu", ctrl->chunk_size);
-    info_msg(FN, " rem_size: %zu", ctrl->rem_size);
-    info_msg(FN, " chunk_count: %zu", ctrl->chunk_count);
+    info_msg(FN, " file_size:  %"SAL_JD"", (intmax_t)ctrl->file_size);
+    info_msg(FN, " chunk_size: %"SAL_ZU"", ctrl->chunk_size);
+    info_msg(FN, " rem_size: %"SAL_ZU"", ctrl->rem_size);
+    info_msg(FN, " chunk_count: %"SAL_ZU"", ctrl->chunk_count);
     info_msg(FN, " chunks_progress_str: %s", ctrl->chunks_progress_str);
   }
   saldl_fclose(ctrl_filename, f_ctrl);
@@ -97,7 +97,7 @@ static void ctrl_update_cb(evutil_socket_t fd, short what, void *arg) {
   control_s *ctrl = &info_ptr->ctrl;
   event_s *ev_ctrl = &info_ptr->ev_ctrl;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_ctrl->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_ctrl->num_of_calls, str_EVENT_FD(fd) , what);
 
   /* .part file size will be used to infer progress made in single mode */
   if (info_ptr->params->single_mode) {
@@ -139,9 +139,9 @@ void* sync_ctrl(void *void_info_ptr) {
   char char_file_size[s_num_digits(OFF_T_MAX)];
   char char_chunk_size[u_num_digits(SIZE_MAX)];
   char char_rem_size[u_num_digits(SIZE_MAX)];
-  snprintf(char_file_size, s_num_digits(OFF_T_MAX), "%jd", (intmax_t)info_ptr->file_size);
-  snprintf(char_chunk_size, u_num_digits(SIZE_MAX), "%zu", info_ptr->params->chunk_size);
-  snprintf(char_rem_size, u_num_digits(SIZE_MAX), "%zu", info_ptr->rem_size);
+  snprintf(char_file_size, s_num_digits(OFF_T_MAX), "%"SAL_JD"", (intmax_t)info_ptr->file_size);
+  snprintf(char_chunk_size, u_num_digits(SIZE_MAX), "%"SAL_ZU"", info_ptr->params->chunk_size);
+  snprintf(char_rem_size, u_num_digits(SIZE_MAX), "%"SAL_ZU"", info_ptr->rem_size);
 
   /* Rewind ctrl_file */
   saldl_fseeko(info_ptr->ctrl_filename, info_ptr->ctrl_file, 0, SEEK_SET);

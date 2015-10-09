@@ -35,7 +35,7 @@ static void extra_resume(info_s *info_ptr, char* chunks_progress_str) {
         {
           set_chunk_merged(&info_ptr->chunks[idx]);
           info_ptr->initial_merged_count++;
-          debug_msg(FN, "chunk %zu was merged in a previous run.", idx);
+          debug_msg(FN, "chunk %"SAL_ZU" was merged in a previous run.", idx);
           break;
         }
       case CH_PRG_FINISHED:
@@ -45,24 +45,24 @@ static void extra_resume(info_s *info_ptr, char* chunks_progress_str) {
           size_t tmpf_size;
 
           if (info_ptr->params->mem_bufs) {
-            debug_msg(FN, "Can't use incomplete tmp file for chunk %zu with memory buffers.", idx);
+            debug_msg(FN, "Can't use incomplete tmp file for chunk %"SAL_ZU" with memory buffers.", idx);
             break;
           }
 
-          snprintf(idx_filename, PATH_MAX, "%s/%zu", info_ptr->tmp_dirname, idx);
+          snprintf(idx_filename, PATH_MAX, "%s/%"SAL_ZU"", info_ptr->tmp_dirname, idx);
           tmpf_size = fsize_sys(idx_filename);
 
           if (tmpf_size == (size_t)-1) {
             debug_msg(FN, "Can't stat %s, the file does not exist! This could be caused by using mem bufs or unsynced ctrl file.", idx_filename);
-            debug_msg(FN, "chunk %zu will be downloaded from scratch.", idx);
+            debug_msg(FN, "chunk %"SAL_ZU" will be downloaded from scratch.", idx);
             break;
           }
           if (tmpf_size > info_ptr->chunks[idx].size) {
-            fatal(FN, "%s size exceeds chunk_size!! (size=%zu, chunk_size=%zu)", idx_filename, tmpf_size, info_ptr->chunks[idx].size);
+            fatal(FN, "%s size exceeds chunk_size!! (size=%"SAL_ZU", chunk_size=%"SAL_ZU")", idx_filename, tmpf_size, info_ptr->chunks[idx].size);
           }
 
           info_ptr->chunks[idx].size_complete = saldl_max(4096, tmpf_size) - 4096 ; /* -4096 in case last bits are corrupted */
-          debug_msg(FN, "chunk %zu was incomplete or unmerged in a previous run (Progress: %zu/%zu).", idx, info_ptr->chunks[idx].size_complete, info_ptr->chunks[idx].size);
+          debug_msg(FN, "chunk %"SAL_ZU" was incomplete or unmerged in a previous run (Progress: %"SAL_ZU"/%"SAL_ZU").", idx, info_ptr->chunks[idx].size_complete, info_ptr->chunks[idx].size);
           break;
         }
       case CH_PRG_QUEUED:
@@ -90,7 +90,7 @@ static off_t resume_was_single(info_s *info_ptr) {
     /* -4096 in case last bits are corrupted */
     done_size  = saldl_max_o(4096, saldl_fsizeo(info_ptr->part_filename, f_part)) - 4096;
     info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->params->chunk_size);
-    info_msg(FN, " done_size:  %jd (based on the size of %s)", (intmax_t)done_size, info_ptr->part_filename);
+    info_msg(FN, " done_size:  %"SAL_JD" (based on the size of %s)", (intmax_t)done_size, info_ptr->part_filename);
     saldl_fclose(info_ptr->part_filename, f_part);
   }
 
@@ -114,7 +114,7 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
   }
 
   SALDL_ASSERT(done_size <= info_ptr->file_size);
-  info_msg(FN, " done_size:  %jd", (intmax_t)done_size);
+  info_msg(FN, " done_size:  %"SAL_JD"", (intmax_t)done_size);
 
   for (size_t idx=0; idx<info_ptr->initial_merged_count; idx++) {
     set_chunk_merged(&info_ptr->chunks[idx]);
@@ -139,7 +139,7 @@ int check_resume(info_s *info_ptr) {
 
   if (info_ptr->file_size != ctrl.file_size) {
     if (ctrl.file_size) {
-      fatal(FN, "Server filesize(%jd) does not match control filesize(%jd).", (intmax_t)info_ptr->file_size, (intmax_t)ctrl.file_size);
+      fatal(FN, "Server filesize(%"SAL_JD") does not match control filesize(%"SAL_JD").", (intmax_t)info_ptr->file_size, (intmax_t)ctrl.file_size);
     } else {
       warn_msg(FN, "Control filesize is zero, assuming it's the same file.");
     }
@@ -166,7 +166,7 @@ int check_resume(info_s *info_ptr) {
     info_ptr->chunks[0].size_complete = done_size;
     local_info_msg(FN, "Resuming using single mode from offset: %.2f%s", human_size(done_size), human_size_suffix(done_size));
   } else {
-    local_info_msg(FN, "Resuming from offset: %zu*%.2f%s (%.2f%s)",
+    local_info_msg(FN, "Resuming from offset: %"SAL_ZU"*%.2f%s (%.2f%s)",
         info_ptr->initial_merged_count, human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
         human_size((off_t)info_ptr->params->chunk_size*info_ptr->initial_merged_count), human_size_suffix((off_t)info_ptr->params->chunk_size*info_ptr->initial_merged_count));
   }
@@ -182,7 +182,7 @@ int check_resume(info_s *info_ptr) {
   info_ptr->params->num_connections = saldl_min(orig_num_connections, rem_chunks);
 
   if (info_ptr->params->num_connections  != orig_num_connections ) {
-    local_info_msg(FN, "Remaining data after resume relatively small, use %zu connection(s)...", info_ptr->params->num_connections);
+    local_info_msg(FN, "Remaining data after resume relatively small, use %"SAL_ZU" connection(s)...", info_ptr->params->num_connections);
   }
 
   ctrl_cleanup_info(&ctrl);

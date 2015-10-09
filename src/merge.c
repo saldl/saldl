@@ -24,7 +24,7 @@ static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
   event_s *ev_merge = &info_ptr->ev_merge;
   chunk_s *chunks = info_ptr->chunks;
 
-  debug_event_msg(FN, "callback no. %ju for triggered event %s, with what %d", ++ev_merge->num_of_calls, str_EVENT_FD(fd) , what);
+  debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_merge->num_of_calls, str_EVENT_FD(fd) , what);
 
   if (!exist_prg(info_ptr, PRG_MERGED, false) || info_ptr->session_status == SESSION_INTERRUPTED) {
     events_deactivate(ev_merge);
@@ -85,7 +85,7 @@ int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
   tmp_buf = saldl_calloc(size, sizeof(char));
 
   if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
-    fatal(FN, "Reading from tmp file %s at offset %jd failed, chunk_size=%zu, fread() returned %zu.", tmp_f->name, (intmax_t)offset, size, f_ret);
+    fatal(FN, "Reading from tmp file %s at offset %"SAL_JD" failed, chunk_size=%"SAL_ZU", fread() returned %"SAL_ZU".", tmp_f->name, (intmax_t)offset, size, f_ret);
   }
 
   saldl_fwrite_fflush(tmp_buf, 1, size, info_ptr->file, info_ptr->part_filename, offset);

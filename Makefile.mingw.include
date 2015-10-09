@@ -1,6 +1,6 @@
 SALDL_VERSION = $(subst -,.,$(shell git describe --tags --long --dirty))
 
-CFLAGS = -O2 -D__USE_MINGW_ANSI_STDIO=1
+CFLAGS = -O2 -D__USE_MINGW_ANSI_STDIO=0
 LDFLAGS = -Wl,-O1,--sort-common
 
 LIBCURL_CFLAGS = -DCURL_STATICLIB -DNGHTTP2_STATICLIB

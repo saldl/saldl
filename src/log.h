@@ -41,10 +41,22 @@
 #define MAX_VERBOSITY 7
 #define MAX_NO_COLOR 2
 
-#ifdef __MINGW32__
-#define SALDL_PRINTF_FORMAT __MINGW_PRINTF_FORMAT
-#else
 #define SALDL_PRINTF_FORMAT printf
+
+#ifdef __MINGW32__
+#define SAL_JD "I64d"
+#define SAL_JU "I64u"
+
+#ifdef _WIN64
+#define SAL_ZU "I64u"
+#else
+#define SAL_ZU "I32u"
+#endif
+
+#else /* #ifdef __MINGW32__ */
+#define SAL_JD "jd"
+#define SAL_JU "ju"
+#define SAL_ZU "zu"
 #endif
 
 #define STR(s) #s
