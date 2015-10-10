@@ -34,7 +34,15 @@ int tty_width() {
     return -3;
   }
 
-#ifdef HAVE_GETCONSOLESCREENBUFFERINFO
+#ifdef HAVE_IOCTL
+  struct winsize w_size;
+
+  if ( ioctl(fileno(stderr), TIOCGWINSZ, &w_size) ) {
+    return -1;
+  }
+
+  return w_size.ws_col;
+#elif HAVE_GETCONSOLESCREENBUFFERINFO
   HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO INFO;
 
@@ -47,14 +55,6 @@ int tty_width() {
   }
 
   return (int)INFO.dwSize.X - 1;  // -1 give us correct behavior in ansicon
-#elif HAVE_IOCTL
-  struct winsize w_size;
-
-  if ( ioctl(fileno(stderr), TIOCGWINSZ, &w_size) ) {
-    return -1;
-  }
-
-  return w_size.ws_col;
 #else
 #error Neither ioctl() nor GetConsoleScreenBufferInfo() is available!
 #endif
