@@ -66,10 +66,16 @@ saldl is available in the AUR:
 
 https://aur.archlinux.org/packages/saldl-git
 
-### MinGW/Windows
+### Windows
+
+#### MSYS2
+
+[PKGBUILD](MSYS2/PKGBUILD)
+
+#### MinGW-w64
 
 Experimental binaries are now available in
 the [releases](https://github.com/saldl/saldl/releases) page.
 
 **saldl** requires a terminal emulator with support for ANSI/VT100
-escape sequences.
+escape sequences (e.g. ConEmu).
