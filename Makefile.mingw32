@@ -1,6 +1,7 @@
 # Name suffix
-exe_suffix = win32
-BLD_DIR = saldl-${exe_suffix}
+os_name = win32
+DEST_DIR = saldl-${os_name}
+BLD_DIR = saldl-${os_name}-build
 
 # mingw-w64 binaries
 CC = i686-w64-mingw32-gcc

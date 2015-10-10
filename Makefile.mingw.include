@@ -13,22 +13,22 @@ all: dist
 
 waf: src clean
 	CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
-	   ./waf configure \
+	   ./waf configure -o ${BLD_DIR} \
 	   --prefix='/' --bindir='/' --mandir='/' \
 	   --libcurl-cflags="${LIBCURL_CFLAGS}" \
 	   --libcurl-libs="${LIBCURL_LIBS}" \
 	   --libevent-pthreads-cflags="${LIBEVENT_PTHREADS_CFLAGS}" \
 	   --libevent-pthreads-libs="${LIBEVENT_PTHREADS_LIBS}"
 
-	./waf install --destdir=${BLD_DIR}
+	./waf install --destdir=${DEST_DIR}
 
 dist: waf
-	mv -f ${BLD_DIR}/saldl.exe ${BLD_DIR}/saldl-${exe_suffix}.exe
-	${STRIP} ${BLD_DIR}/saldl-${exe_suffix}.exe
-	cp -f /etc/ca-certificates/extracted/ca-bundle.trust.crt ${BLD_DIR}/
-	zip -r saldl-${exe_suffix}-${SALDL_VERSION}.zip ${BLD_DIR}
+	mv -f ${DEST_DIR}/saldl.exe ${DEST_DIR}/saldl-${os_name}.exe
+	${STRIP} ${DEST_DIR}/saldl-${os_name}.exe
+	cp -f /etc/ca-certificates/extracted/ca-bundle.trust.crt ${DEST_DIR}/
+	zip -r saldl-${os_name}-${SALDL_VERSION}.zip ${DEST_DIR}
 	@echo "`tput setaf 1`Don't forget to update the online version of the manual."
 
 clean:
-	./waf distclean
-	-rm -rf ${BLD_DIR}/
+	-rm -rf ${DEST_DIR}
+	-rm -rf ${BLD_DIR}
