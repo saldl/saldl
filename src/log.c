@@ -151,7 +151,8 @@ void set_verbosity(size_t *verbosity, bool *libcurl_verbosity) {
 __attribute__(( format(SALDL_PRINTF_FORMAT,3,0) ))
   static void log_stderr(const char *type, const char *name, const char *format, va_list args) {
     fprintf(stderr, "%s%s%s", ret_char, erase_before, erase_screen_after);
-    if (type) fprintf(stderr, type);
+    /* saldl_fputs() is defined in common.c, so we can't use it here */
+    if (type) SALDL_ASSERT(EOF != fputs(type, stderr));
     if (name) fprintf(stderr,"%s%s:%s ", bold, name, end);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
