@@ -243,6 +243,7 @@ def check_flags(conf):
 
 @conf
 def check_required_flags(conf):
+    # -std=c99 disables many POSIX functions in MSYS2 like fileno()
     conf.check_cc(cflags = '-std=gnu99', uselib_store='SAL_REQUIRED', mandatory=False)
 
     # Avoid -Werror=format with MinGW builds
