@@ -928,7 +928,7 @@ void set_params(thread_s *thread, info_s *info_ptr) {
 
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
-#ifdef HAVE_GETMODULEFILENAME
+#if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
   /* Set CA bundle if the file exists */
   char ca_bundle_path[PATH_MAX];
   char *exe_dir = windows_exe_path();

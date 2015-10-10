@@ -37,7 +37,7 @@
 #endif
 #define PCT(x1, x2) ((x1))*100.0/((x2))
 
-#ifdef HAVE_GETMODULEFILENAME
+#if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
 char* windows_exe_path();
 #endif
 

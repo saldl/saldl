@@ -24,15 +24,23 @@
 #ifdef HAVE__ISATTY
 #include <io.h>
 #define SAL_ISATTY _isatty
-#define SAL_FILENO _fileno
-#else
+#elif HAVE_ISATTY
 #define SAL_ISATTY isatty
-#define SAL_FILENO fileno
+#else
+#error Neither _isatty() nor isatty() available.
 #endif
 
-#ifdef HAVE_IOCTL
+#ifdef HAVE__FILENO
+#define SAL_FILENO _fileno
+#elif HAVE_FILENO
+#define SAL_FILENO fileno
+#else
+#error Neither _fileno() nor fileno() available.
+#endif
+
+#if defined(HAVE_IOCTL)
 #include <sys/ioctl.h>
-#elif HAVE_GETCONSOLESCREENBUFFERINFO
+#elif !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETCONSOLESCREENBUFFERINFO)
 #include <windows.h>
 #else
 #error Neither ioctl() nor GetConsoleScreenBufferInfo() is available!
@@ -43,15 +51,15 @@ int tty_width() {
     return -3;
   }
 
-#ifdef HAVE_IOCTL
+#if defined(HAVE_IOCTL)
   struct winsize w_size;
 
-  if ( ioctl(fileno(stderr), TIOCGWINSZ, &w_size) ) {
+  if ( ioctl(SAL_FILENO(stderr), TIOCGWINSZ, &w_size) ) {
     return -1;
   }
 
   return w_size.ws_col;
-#elif HAVE_GETCONSOLESCREENBUFFERINFO
+#elif !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETCONSOLESCREENBUFFERINFO)
   HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO INFO;
 

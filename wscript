@@ -243,7 +243,7 @@ def check_flags(conf):
 
 @conf
 def check_required_flags(conf):
-    conf.check_cc(cflags = '-std=c99', uselib_store='SAL_REQUIRED', mandatory=False)
+    conf.check_cc(cflags = '-std=gnu99', uselib_store='SAL_REQUIRED', mandatory=False)
 
     # Avoid -Werror=format with MinGW builds
     if conf.env['DEST_OS'] != 'win32':
@@ -274,19 +274,32 @@ def check_timer_support(conf):
 
     if not ('HAVE_CLOCK_MONOTONIC_RAW=1' in conf.env['DEFINES'] or 'HAVE_GETTIMEOFDAY=1' in conf.env['DEFINES']):
         conf.fatal('Neither clock_gettime() with CLOCK_MONOTONIC_RAW nor gettimeofday() is available!')
+
+
 @conf
 def check_function_tty_width(conf):
+    conf.check_cc(function_name='_fileno', header_name="stdio.h", mandatory=False)
+    conf.check_cc(function_name='fileno', header_name="stdio.h", mandatory=False)
+
+    if not ('HAVE__FILENO=1' in conf.env['DEFINES'] or 'HAVE_FILENO=1' in conf.env['DEFINES']):
+        conf.fatal('Neither _fileno() nor fileno() available!')
+
     conf.check_cc(function_name='_isatty', header_name="io.h", mandatory=False)
-    conf.check_cc(function_name='GetConsoleScreenBufferInfo', header_name="windows.h", mandatory=False)
+    conf.check_cc(function_name='isatty', header_name="unistd.h", mandatory=False)
+
+    if not ('HAVE__ISATTY=1' in conf.env['DEFINES'] or 'HAVE_ISATTY=1' in conf.env['DEFINES']):
+        conf.fatal('Neither _isatty() nor isatty() available!')
+
     conf.check_cc(function_name='ioctl', header_name="sys/ioctl.h", mandatory=False)
+    conf.check_cc(function_name='GetConsoleScreenBufferInfo', header_name="windows.h", mandatory=False)
 
     if not ('HAVE_IOCTL=1' in conf.env['DEFINES'] or 'HAVE_GETCONSOLESCREENBUFFERINFO=1' in conf.env['DEFINES']):
-        conf.fatal('Neither ioctl() nor GetConsoleScreenBufferInfo() is available!')
+        conf.fatal('Neither ioctl() nor GetConsoleScreenBufferInfo() available!')
 
 @conf
 def check_function_mkdir(conf):
-    conf.check_cc(function_name='mkdir', header_name="sys/stat.h", mandatory=False)
     conf.check_cc(function_name='_mkdir', header_name="direct.h", mandatory=False)
+    conf.check_cc(function_name='mkdir', header_name="sys/stat.h", mandatory=False)
 
     if not ('HAVE_MKDIR=1' in conf.env['DEFINES'] or 'HAVE__MKDIR=1' in conf.env['DEFINES']):
         conf.fatal('Neither mkdir() nor _mkdir() is available!')

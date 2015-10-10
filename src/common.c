@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if defined(HAVE_GETMODULEFILENAME) || defined(HAVE__MKDIR)
+#if !defined(__CYGWIN__) && !defined(__MSYS__) && (defined(HAVE_GETMODULEFILENAME) || defined(HAVE__MKDIR))
 #include <winsock2.h>
 #include <windows.h>
 #define NAME_MAX MAX_PATH
@@ -35,7 +35,7 @@
 #define EXT_LEN 9
 
 
-#ifdef HAVE_GETMODULEFILENAME
+#if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
 char* windows_exe_path() {
   char path[PATH_MAX];
   char *sep_pos;
