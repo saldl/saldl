@@ -1,0 +1,36 @@
+# For MSYS2
+# Maintainer: Mohammad AlSaleh <CE.Mohammad.AlSaleh@gmail.com>
+
+pkgbase=saldl-git
+pkgname=("$pkgbase")
+pkgver=v26.16.gceb8e8b
+pkgrel=1
+url="https://saldl.github.io"
+pkgdesc="A CLI downloader optimized for speed and early preview, based on libcurl."
+arch=('i686' 'x86_64')
+license=('AGPL')
+depends=('libcurl' 'libevent')
+makedepends=('libcurl-devel' 'libevent-devel' 'python3' 'git' 'asciidoc')
+source=($pkgbase::git://github.com/saldl/saldl.git)
+md5sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgbase"
+  saldl_ver="$(git describe --tags --long --dirty)"
+  echo ${saldl_ver//-/.}
+}
+
+build() {
+  cd "$srcdir/$pkgbase"
+
+  CC=/usr/bin/gcc \
+  PKGCONFIG=/usr/bin/pkg-config \
+  python3 waf configure --prefix="/usr"
+
+  python3 waf build
+}
+
+package_saldl-git() {
+  cd "$srcdir/$pkgname"
+  python3 waf install --destdir="$pkgdir"
+}
