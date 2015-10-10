@@ -276,6 +276,7 @@ def check_timer_support(conf):
         conf.fatal('Neither clock_gettime() with CLOCK_MONOTONIC_RAW nor gettimeofday() is available!')
 @conf
 def check_function_tty_width(conf):
+    conf.check_cc(function_name='_isatty', header_name="io.h", mandatory=False)
     conf.check_cc(function_name='GetConsoleScreenBufferInfo', header_name="windows.h", mandatory=False)
     conf.check_cc(function_name='ioctl', header_name="sys/ioctl.h", mandatory=False)
 

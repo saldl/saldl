@@ -21,6 +21,15 @@
 #include "log.h"
 #include "exit.h"
 
+#ifdef HAVE__ISATTY
+#include <io.h>
+#define SAL_ISATTY _isatty
+#define SAL_FILENO _fileno
+#else
+#define SAL_ISATTY isatty
+#define SAL_FILENO fileno
+#endif
+
 #ifdef HAVE_IOCTL
 #include <sys/ioctl.h>
 #elif HAVE_GETCONSOLESCREENBUFFERINFO
@@ -30,7 +39,7 @@
 #endif
 
 int tty_width() {
-  if (! isatty(fileno(stderr)) ) {
+  if (! SAL_ISATTY(SAL_FILENO(stderr)) ) {
     return -3;
   }
 
