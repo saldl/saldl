@@ -13,11 +13,17 @@ are also available as *options*.
 
 ## Documentation
 
-Detailed documentation is available in the form of a [manual page](https://saldl.github.io/saldl.1.html).
+Detailed documentation is available in the form of
+a [manual page](https://saldl.github.io/saldl.1.html).
 
-### Contact
+## Contact
 
 [Users Chat & Questions](https://github.com/saldl/saldl/issues/4)
+
+## FlashGot integration
+
+ Check out the `README` and the scripts in the [flashgot](flashgot/)
+ directory.
 
 ## Screenshot
 
@@ -29,57 +35,60 @@ Detailed documentation is available in the form of a [manual page](https://saldl
 
 ![saldl screenshot](https://raw.githubusercontent.com/saldl/misc/master/saldl.png)
 
-## flashgot integration
-
- Check out the `README` and the scripts in the [flashgot](flashgot/) directory.
-
 ## Dependencies
 
-* [libcurl](https://github.com/bagder/curl) >= 7.42
-* [libevent + libevent_pthreads](https://github.com/libevent/libevent) >= 2.0.20
+ * **Runtime Dependencies**
 
-## Build Dependencies
+  * [libcurl](https://github.com/bagder/curl) >= 7.42
+  * [libevent + libevent_pthreads](https://github.com/libevent/libevent) >= 2.0.20
 
-* GCC or Clang
-* python (for waf)
+ * **Build Dependencies**
 
-### Optional build dependencies
+  * GCC or Clang
+  * python (for waf)
 
-* git (to get the current version).
-* asciidoc (to build the manual).
+ * **Optional Build Dependencies**
+
+  * git (to get the current version).
+  * asciidoc (to build the manual).
 
 ## Build
 
 ### POSIX
 
-Run `./waf --help` first and check out the available options.
+ * **General**
 
-A typical example would be:
+  Run `./waf --help` first and check out the available options.
 
-```
-./waf configure --prefix=/usr
+  A typical example would be:
 
-./waf
+  ```
+  ./waf configure --prefix=/usr
 
-./waf install --destdir=${pkgdir}
-```
+  ./waf
 
-#### Arch Linux
+  ./waf install --destdir=${pkgdir}
+  ```
 
-saldl is available in the AUR:
+ * **Arch Linux**
 
-https://aur.archlinux.org/packages/saldl-git
+  **saldl** is available in the [AUR](https://aur.archlinux.org/packages/saldl-git).
 
 ### Windows
 
-#### MSYS2
+ * **MSYS2/Cygwin**
 
-[PKGBUILD](MSYS2/PKGBUILD)
+  A [PKGBUILD](MSYS2/PKGBUILD) for MSYS2.
 
-#### MinGW-w64
+  **Note**: Building against the MSYS2 runtime (or Cygwin's) is
+            necessary for **saldl** to work correctly in
+            [mintty](https://github.com/mintty/mintty).
 
-Experimental binaries are now available in
-the [releases](https://github.com/saldl/saldl/releases) page.
+ * **MinGW-w64/Native**
 
-**saldl** requires a terminal emulator with support for ANSI/VT100
-escape sequences (e.g. ConEmu).
+  Experimental binaries are now available in
+  the [releases](https://github.com/saldl/saldl/releases) page.
+
+  **saldl** requires a terminal emulator with support for ANSI/VT100
+  escape sequences (e.g. [ConEmu](https://github.com/Maximus5/ConEmu)
+  or [ansicon](https://github.com/adoxa/ansicon)).
