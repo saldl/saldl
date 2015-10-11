@@ -1075,6 +1075,9 @@ void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool 
       curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)1); // setting to not NULL
     }
   }
+  else if (params_ptr->single_mode) {
+    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, file_write_function);
+  }
   else if (params_ptr->mem_bufs) {
     curl_easy_setopt(handle,CURLOPT_WRITEFUNCTION,mem_write_function);
   }
