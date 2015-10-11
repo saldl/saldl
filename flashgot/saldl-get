@@ -1,0 +1,8 @@
+#!/bin/sh
+
+TERM_EMU=konsole
+SALDL_NO_EXIT=saldl-no-exit
+
+echo $@ >> /tmp/saldl-get_${USER}_log
+
+$TERM_EMU -e $SALDL_NO_EXIT "$@"

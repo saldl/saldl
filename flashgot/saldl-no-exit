@@ -1,0 +1,32 @@
+#!/bin/zsh
+
+SALDL_BIN=saldl
+
+ret_if_q() {
+  while [[ $q != q  ]]; do
+    echo press q then Return/Enter to exit.
+    read q
+  done
+}
+
+# Allow (z) to use quotess for splitting, see below
+args="${@//;;;/'''}"
+
+# flashgot adds a space between the end of each placeholder and
+# the following char. This may or may not be fixed in the future.
+args="${args// ''' /''' }"
+
+# Quotes still exist and we want to strip them, but after we get an array
+quoted_array_args=${(z)args}
+
+# Strip quotes from each array element
+array_args=()
+for arg in $quoted_array_args; do
+  array_args+=(${arg//\'\'\'/})
+done
+
+# The array of args is ready, pass it to saldl
+echo -e "Passing to $SALDL_BIN: ${array_args[@]}\n"
+$SALDL_BIN ${array_args[@]}
+
+ret_if_q

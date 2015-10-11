@@ -29,6 +29,10 @@ Detailed documentation is available in the form of a [manual page](https://saldl
 
 ![saldl screenshot](https://raw.githubusercontent.com/saldl/misc/master/saldl.png)
 
+## flashgot integration
+
+ Check out the `README` and the scripts in the [flashgot](flashgot/) directory.
+
 ## Dependencies
 
 * [libcurl](https://github.com/bagder/curl) >= 7.42

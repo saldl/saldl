@@ -1,0 +1,6 @@
+#!/bin/sh
+
+SALDL_NO_EXIT=saldl-no-exit
+
+args_str="$@"
+tmux -S`mktemp` new-session -- "${SALDL_NO_EXIT} ${args_str}"
