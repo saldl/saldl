@@ -9,8 +9,8 @@ url="https://saldl.github.io"
 pkgdesc="A CLI downloader optimized for speed and early preview, based on libcurl."
 arch=('i686' 'x86_64')
 license=('AGPL')
-depends=('libcurl' 'libevent')
-makedepends=('libcurl-devel' 'libevent-devel' 'python3' 'git' 'asciidoc')
+depends=('msys2-runtime' 'libcurl' 'libevent')
+makedepends=('msys2-runtime-devel' 'libcurl-devel' 'libevent-devel' 'python3' 'git' 'asciidoc')
 source=($pkgbase::git://github.com/saldl/saldl.git)
 md5sums=('SKIP')
 
