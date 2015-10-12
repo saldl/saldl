@@ -1109,11 +1109,13 @@ void set_modes(info_s *info_ptr) {
 
   saldl_params *params_ptr = info_ptr->params;
   file_s *storage_info_ptr = &info_ptr->storage_info;
+  void(*reset_storage)();
 
   if (params_ptr->read_only) {
     info_ptr->prepare_storage = &prepare_storage_null;
     info_ptr->merge_finished = &merge_finished_null;
-    return;
+    reset_storage = &reset_storage_null;
+    goto threads_reset_storage;
   }
 
   if (! access(info_ptr->tmp_dirname, F_OK) ) {
@@ -1125,18 +1127,20 @@ void set_modes(info_s *info_ptr) {
   }
 
   if ( params_ptr->single_mode ) { /* Write to .part file directly, no mem or file buffers */
-    info_msg(NULL, "single mode, writing to %s directly.", info_ptr->part_filename);
+    info_msg(FN, "single mode, writing to %s directly.", info_ptr->part_filename);
     storage_info_ptr->name = info_ptr->part_filename;
     storage_info_ptr->file = info_ptr->file;
     info_ptr->prepare_storage = &prepare_storage_single;
     info_ptr->merge_finished = &merge_finished_single;
-    return;
+    reset_storage = &reset_storage_single;
+    goto threads_reset_storage;
   }
 
   if (params_ptr->mem_bufs) {
     info_ptr->prepare_storage = &prepare_storage_mem;
     info_ptr->merge_finished = &merge_finished_mem;
-    return;
+    reset_storage = &reset_storage_mem;
+    goto threads_reset_storage;
   }
 
   if ( saldl_mkdir(info_ptr->tmp_dirname, S_IRWXU) ) { /* mkdir with 700 perms */
@@ -1150,29 +1154,12 @@ void set_modes(info_s *info_ptr) {
   storage_info_ptr->name = info_ptr->tmp_dirname;
   info_ptr->prepare_storage = &prepare_storage_tmpf;
   info_ptr->merge_finished = &merge_finished_tmpf;
-}
+  reset_storage = &reset_storage_tmpf;
 
-void set_reset_storage(info_s *info_ptr) {
-  saldl_params *params_ptr = info_ptr->params;
-  thread_s *threads = info_ptr->threads;
-
-  size_t num = info_ptr->params->num_connections;
-  void(*reset_storage)();
-
-  if (params_ptr->single_mode) {
-    reset_storage = &reset_storage_single;
-  } else if (params_ptr->mem_bufs) {
-    reset_storage = &reset_storage_mem;
-  } else if (params_ptr->read_only) {
-    reset_storage = &reset_storage_null;
-  } else {
-    reset_storage = &reset_storage_tmpf ;
+threads_reset_storage:
+  for (size_t counter = 0; counter < params_ptr->num_connections; counter++) {
+    info_ptr->threads[counter].reset_storage = reset_storage;
   }
-
-  for (size_t counter = 0; counter < num; counter++) {
-    threads[counter].reset_storage = reset_storage;
-  }
-
 }
 
 void reset_storage_single(thread_s *thread) {

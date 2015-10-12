@@ -41,7 +41,6 @@ void set_progress_params(thread_s*, info_s*);
 void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool no_body);
 void set_single_mode(info_s*);
 void set_modes(info_s*);
-void set_reset_storage(info_s*);
 void prepare_storage_single(chunk_s*, file_s*);
 void prepare_storage_tmpf(chunk_s*, file_s*);
 void prepare_storage_mem(chunk_s*);

@@ -114,6 +114,9 @@ int saldl(saldl_params *params_ptr) {
     }
   }
 
+  /* threads */
+  info.threads = saldl_calloc(params_ptr->num_connections, sizeof(thread_s));
+
   set_modes(&info); /* Keep it between opening file and ctrl_file */
 
   if (!params_ptr->read_only) {
@@ -127,10 +130,6 @@ int saldl(saldl_params *params_ptr) {
   if (info.already_finished) {
     goto saldl_all_data_merged;
   }
-
-  /* threads */
-  info.threads = saldl_calloc(params_ptr->num_connections, sizeof(thread_s));
-  set_reset_storage(&info);
 
   /* 1st iteration */
   for (size_t counter = 0; counter < params_ptr->num_connections; counter++) {
