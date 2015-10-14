@@ -179,6 +179,9 @@ Filename Options
 *-D 'dirname', --root-dir='dirname'*::
   Prepend filename with this path.
 
+*-g, --filename-from-redirect*::
+  Get filename from redirected URL instead of the original URL.
+
 *-G, --keep-GET-attrs*::
   keep GET attributes at the end of a filename.
   (This option has no effect if *-o*/*--output-filename* is used)

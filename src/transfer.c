@@ -433,10 +433,14 @@ static void set_names(info_s* info_ptr) {
     /* curl_easy_unescape() does not require an initialized handle */
     CURL *handle = NULL;
 
-    /* Get initial filename (=url if no attachment name) */
+    /* Get initial filename */
     if (params_ptr->attachment_filename) {
       prev_unescaped = saldl_strdup(params_ptr->attachment_filename);
-    } else {
+    }
+    else if (params_ptr->filename_from_redirect) {
+      prev_unescaped = saldl_strdup(info_ptr->curr_url);
+    }
+    else {
       prev_unescaped = saldl_strdup(params_ptr->start_url);
     }
 

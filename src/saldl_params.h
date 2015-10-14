@@ -65,6 +65,7 @@ typedef struct {
   bool single_mode;
   bool no_path;
   bool keep_GET_attrs;
+  bool filename_from_redirect;
   bool auto_trunc;
   bool smart_trunc;
   bool resume;

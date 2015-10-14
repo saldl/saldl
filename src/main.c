@@ -94,6 +94,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"single", no_argument, 0, 'S'},
     {"no-path", no_argument, 0, 'n'},
     {"keep-GET-attrs", no_argument, 0, 'G'},
+    {"filename-from-redirect", no_argument, 0, 'g'},
     {"dry-run", no_argument, 0, 'd'},
     {"root-dir", required_argument, 0, 'D'},
     {"output-filename", required_argument, 0, 'o'},
@@ -120,7 +121,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGdD:o:tTrfa:wmVvCi:K:k:p:P:e:Eu:UZz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:p:P:e:Eu:UZz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -234,6 +235,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
       case 'n':
         params_ptr->no_path = true;
+        break;
+      case 'g':
+        params_ptr->filename_from_redirect = true;
         break;
       case 'G':
         params_ptr->keep_GET_attrs = true;
