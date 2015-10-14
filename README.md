@@ -9,7 +9,7 @@ them in-order with multiple concurrent connections. Classic modes
 are also available as *options*.
 
 **saldl**'s behavior can be customized with command-line **options**.
-44+ options are already available.
+46+ options are already available.
 
 ## Documentation
 
