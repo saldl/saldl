@@ -466,7 +466,8 @@ static void set_names(info_s* info_ptr) {
       char *pre_filename = saldl_strdup(params_ptr->filename);
       char *q = strrchr(params_ptr->filename, '?');
 
-      if (q) {
+      /* Only strip if we're not going to end up with an empty filename */
+      if (q && q != params_ptr->filename && *(q-1) != '/') {
         if (strchr(q, '=')) {
           q[0] = '\0';
         }
