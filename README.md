@@ -74,6 +74,24 @@ a [manual page](https://saldl.github.io/saldl.1.html).
 
   **saldl** is available in the [AUR](https://aur.archlinux.org/packages/saldl-git).
 
+ * **Mac OSX**
+
+  **saldl** can be installed with [Homebrew](http://brew.sh).
+
+  For the latest release, run:
+
+      brew install https://github.com/saldl/saldl/raw/master/OSX/saldl.rb
+
+  For the latest GIT head, run:
+
+      brew install --HEAD https://github.com/saldl/saldl/raw/master/OSX/saldl.rb
+
+  **Note**: saldl will not auto-update as we are loading the formula from a URL.
+            [Homebrew frowns on authors submitting their own work]
+            (https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Acceptable-Formulae.md#niche-or-self-submitted-stuff).
+            As I'm not supposed to do it, anyone should feel free to submit
+            this formula themselves.
+
 ### Windows
 
  * **MSYS2/Cygwin**
