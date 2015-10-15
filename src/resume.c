@@ -123,19 +123,16 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
   return done_size;
 }
 
-int check_resume(info_s *info_ptr) {
+void check_resume(info_s *info_ptr) {
   ctrl_info_s ctrl;
-  int ret = ctrl_get_info(info_ptr->ctrl_filename, &ctrl);
-  if (ret) {
-    info_ptr->params->resume = false;
-    return 1;
-  }
 
   if (access(info_ptr->part_filename,F_OK)) {
     info_msg(FN, "Nothing to resume: %s does not exist.", info_ptr->part_filename);
     info_ptr->params->resume = false;
-    return 2;
+    return;
   }
+
+  ctrl_get_info(info_ptr->ctrl_filename, &ctrl);
 
   if (info_ptr->file_size != ctrl.file_size) {
     if (ctrl.file_size) {
@@ -189,8 +186,6 @@ int check_resume(info_s *info_ptr) {
 
   /* Set initial values in global_progress */
   global_progress_update(info_ptr, true);
-
-  return 0;
 }
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

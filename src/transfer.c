@@ -1110,8 +1110,24 @@ void set_single_mode(info_s *info_ptr) {
   info_ptr->rem_size = 0;
 }
 
-static void check_tmp_dir(info_s *info_ptr) {
+void check_files_and_dirs(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
+
+  if (!params_ptr->read_only) {
+    if (params_ptr->resume) {
+      if ( !(info_ptr->file = fopen(info_ptr->part_filename,"rb+")) ) {
+        fatal(FN, "Failed to open %s for writing: %s", info_ptr->part_filename, strerror(errno));
+      }
+    }
+    else {
+      if ( !params_ptr->force  && !access(info_ptr->part_filename,F_OK)) {
+        fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.", info_ptr->part_filename);
+      }
+      if ( !(info_ptr->file = fopen(info_ptr->part_filename,"wb")) ) {
+        fatal(FN, "Failed to open %s for writing: %s", info_ptr->part_filename, strerror(errno));
+      }
+    }
+  }
 
   /* if tmp dir exists */
   if (! access(info_ptr->tmp_dirname, F_OK) ) {
@@ -1131,6 +1147,19 @@ static void check_tmp_dir(info_s *info_ptr) {
     /* mkdir with 700 perms */
     if ( saldl_mkdir(info_ptr->tmp_dirname, S_IRWXU) ) {
       fatal(FN, "Failed to create %s: %s", info_ptr->tmp_dirname, strerror(errno) );
+    }
+  }
+
+  /* ctrl */
+  if (!params_ptr->read_only) {
+    if (!params_ptr->resume && !params_ptr->force && !access(info_ptr->ctrl_filename, F_OK)) {
+      fatal(FN, "Resume disabled and %s exists.", info_ptr->ctrl_filename);
+    }
+
+    info_ptr->ctrl_file = fopen(info_ptr->ctrl_filename,"wb+");
+
+    if (!info_ptr->ctrl_file) {
+      fatal(FN, "Failed to open '%s' for read/write : %s", info_ptr->ctrl_filename, strerror(errno) );
     }
   }
 }
@@ -1170,8 +1199,6 @@ void set_modes(info_s *info_ptr) {
   for (size_t counter = 0; counter < params_ptr->num_connections; counter++) {
     info_ptr->threads[counter].reset_storage = reset_storage;
   }
-
-  check_tmp_dir(info_ptr);
 }
 
 void reset_storage_single(thread_s *thread) {

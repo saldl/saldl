@@ -98,38 +98,16 @@ int saldl(saldl_params *params_ptr) {
     return 0;
   }
 
-  if (!params_ptr->read_only) {
-    if (params_ptr->resume) {
-      if ( !(info.file = fopen(info.part_filename,"rb+")) ) {
-        fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
-      }
-    }
-    else {
-      if ( !params_ptr->force  && !access(info.part_filename,F_OK)) {
-        fatal(FN, "%s exists, enable 'resume' or 'force' to overwrite.", info.part_filename);
-      }
-      if ( !(info.file = fopen(info.part_filename,"wb")) ) {
-        fatal(FN, "Failed to open %s for writing: %s", info.part_filename, strerror(errno));
-      }
-    }
-  }
-
-  /* threads */
-  info.threads = saldl_calloc(params_ptr->num_connections, sizeof(thread_s));
-
-  set_modes(&info); /* Keep it between opening file and ctrl_file */
-
-  if (!params_ptr->read_only) {
-    info.ctrl_file = fopen(info.ctrl_filename,"wb+");
-    if (!info.ctrl_file) {
-      fatal(FN, "Failed to open '%s' for read/write : %s", info.ctrl_filename, strerror(errno) );
-    }
-  }
+  check_files_and_dirs(&info);
 
   /* Check if download was interrupted after all data was merged */
   if (info.already_finished) {
     goto saldl_all_data_merged;
   }
+
+  /* threads, needed by set_modes() */
+  info.threads = saldl_calloc(params_ptr->num_connections, sizeof(thread_s));
+  set_modes(&info);
 
   /* 1st iteration */
   for (size_t counter = 0; counter < params_ptr->num_connections; counter++) {

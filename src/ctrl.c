@@ -24,14 +24,17 @@ void ctrl_cleanup_info(ctrl_info_s *ctrl) {
   SALDL_FREE(ctrl->chunks_progress_str);
 }
 
-int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
+void ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
 
   if (access(ctrl_filename,F_OK)) {
-    warn_msg(FN, "%s does not exist.", ctrl_filename);
-    return 1;
+    /* We are here because we passed --resume, a ctrl file is a must */
+    fatal(FN, "%s does not exist.", ctrl_filename);
   }
 
   FILE *f_ctrl = fopen(ctrl_filename, "rb");
+  if (!f_ctrl) {
+    fatal(FN, "Opening %s failed, even though it exists.", ctrl_filename);
+  }
 
   off_t ctrl_fsize = saldl_fsizeo(ctrl_filename, f_ctrl);
   SALDL_ASSERT((uintmax_t)ctrl_fsize <= SIZE_MAX);
@@ -89,7 +92,6 @@ int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
     info_msg(FN, " chunks_progress_str: %s", ctrl->chunks_progress_str);
   }
   saldl_fclose(ctrl_filename, f_ctrl);
-  return 0;
 }
 
 static void ctrl_update_cb(evutil_socket_t fd, short what, void *arg) {

@@ -33,7 +33,7 @@ typedef struct {
 
 
 void ctrl_cleanup_info(ctrl_info_s *ctrl);
-int ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl);
+void ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl);
 void* sync_ctrl(void *void_info_ptr);
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

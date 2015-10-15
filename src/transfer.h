@@ -40,6 +40,7 @@ void set_params(thread_s *thread, info_s *info_ptr);
 void set_progress_params(thread_s*, info_s*);
 void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool no_body);
 void set_single_mode(info_s*);
+void check_files_and_dirs(info_s *info_ptr);
 void set_modes(info_s*);
 void prepare_storage_single(chunk_s*, file_s*);
 void prepare_storage_tmpf(chunk_s*, file_s*);
