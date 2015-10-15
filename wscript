@@ -31,6 +31,15 @@ def options(opt):
     bld_gr = opt.get_option_group('Build and installation options')
     conf_gr = opt.get_option_group('Configuration options')
 
+    def_saldl_version = None # Use git describe
+    conf_gr.add_option(
+            '--saldl-version',
+            dest = 'SALDL_VERSION',
+            default = def_saldl_version,
+            action= "store",
+            help = "Set version manually, passing nothing or empty string falls back to git describe. (default: %s)." % def_saldl_version
+            )
+
     def_a2x = 'a2x'
     conf_gr.add_option(
             '--a2x',
@@ -161,15 +170,21 @@ def options(opt):
 @conf
 def get_saldl_version(conf):
 
-    conf.start_msg('Get saldl version from GIT')
-
-    try:
-        git_ver_cmd = ['git', 'describe', '--tags', '--long', '--dirty']
-        saldl_version = conf.cmd_and_log(git_ver_cmd).rstrip().replace('-', '.')
+    if conf.options.SALDL_VERSION and len(conf.options.SALDL_VERSION):
+        conf.start_msg('Get saldl version from configure option:')
+        saldl_version = conf.options.SALDL_VERSION
         conf.end_msg(saldl_version)
         conf.env.append_value('DEFINES', 'SALDL_VERSION="%s"' % saldl_version)
-    except:
-        conf.end_msg('(failed)')
+    else:
+        conf.start_msg('Get saldl version from GIT')
+
+        try:
+            git_ver_cmd = ['git', 'describe', '--tags', '--long', '--dirty']
+            saldl_version = conf.cmd_and_log(git_ver_cmd).rstrip().replace('-', '.')
+            conf.end_msg(saldl_version)
+            conf.env.append_value('DEFINES', 'SALDL_VERSION="%s"' % saldl_version)
+        except:
+            conf.end_msg('(failed)')
 
 
 @conf
