@@ -210,7 +210,6 @@ def prep_man(conf):
 def set_defines(conf):
     conf.env.append_value('DEFINES', '_FILE_OFFSET_BITS=64')
     conf.env.append_value('DEFINES', '_GNU_SOURCE')
-    conf.env.append_value('DEFINES', '_XOPEN_SOURCE=801')
 
 
 @conf
