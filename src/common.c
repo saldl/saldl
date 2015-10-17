@@ -34,6 +34,14 @@
 /* .part.sal , .ctrl.sal len is 9 */
 #define EXT_LEN 9
 
+void curl_set_ranges(CURL *handle, chunk_s *chunk) {
+  char range_str[2 * s_num_digits(OFF_T_MAX) + 1];
+  SALDL_ASSERT(chunk->range_end);
+  SALDL_ASSERT( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
+  chunk->curr_range_start = chunk->range_start + (off_t)chunk->size_complete;
+  snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
+  curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
+}
 
 #if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
 char* windows_exe_path() {

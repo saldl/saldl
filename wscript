@@ -601,6 +601,7 @@ def build(bld):
             source = [
                 'src/progress.c',
                 'src/events.c',
+                'src/write_modes.c',
                 'src/queue.c',
                 'src/merge.c',
                 'src/status.c',

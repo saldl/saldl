@@ -91,15 +91,6 @@ void chunks_init(info_s *info_ptr) {
 
 }
 
-void curl_set_ranges(CURL *handle, chunk_s *chunk) {
-  char range_str[2 * s_num_digits(OFF_T_MAX) + 1];
-  SALDL_ASSERT(chunk->range_end);
-  SALDL_ASSERT( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
-  chunk->curr_range_start = chunk->range_start + (off_t)chunk->size_complete;
-  snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
-  curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
-}
-
 static void headers_info(info_s *info_ptr) {
   headers_s *h = &info_ptr->headers;
 
@@ -249,45 +240,6 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
 
   SALDL_FREE(header);
   return size * nmemb;
-}
-
-static size_t file_write_function(void  *ptr, size_t  size, size_t nmemb, void *data) {
-  size_t realsize = size * nmemb;
-  file_s *tmp_f = data;
-
-  if (!tmp_f) {
-    /* Remember: This why getting info with GET works, this causes error 26 */
-    return 0;
-  }
-
-  saldl_fwrite_fflush(ptr, size, nmemb, tmp_f->file, tmp_f->name, 0);
-
-  return realsize;
-}
-
-static size_t null_write_function(void  *ptr,  size_t  size, size_t nmemb, void *data) {
-  (void)ptr;
-
-  if (data) {
-    /* Remember: This why getting info with GET works, this causes error 26 */
-    return 0;
-  }
-
-  return size*nmemb;
-}
-
-static size_t  mem_write_function(void  *ptr,  size_t  size, size_t nmemb, void *data) {
-  size_t realsize = size * nmemb;
-  mem_s *mem = data;
-
-  SALDL_ASSERT(mem);
-  SALDL_ASSERT(mem->memory); // Preallocation failed
-  SALDL_ASSERT(mem->size <= mem->allocated_size);
-
-  memmove(&(mem->memory[mem->size]), ptr, realsize);
-  mem->size += realsize;
-
-  return realsize;
 }
 
 static long num_redirects(CURL *handle) {
@@ -1070,27 +1022,6 @@ void set_params(thread_s *thread, info_s *info_ptr) {
   }
 }
 
-void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool no_body) {
-  curl_easy_setopt(handle, CURLOPT_WRITEDATA, storage);
-
-  if (params_ptr->read_only || !storage) {
-    curl_easy_setopt(handle,CURLOPT_WRITEFUNCTION, null_write_function);
-    if (no_body) {
-      /* We are only getting info */
-      curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)1); // setting to not NULL
-    }
-  }
-  else if (params_ptr->single_mode) {
-    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, file_write_function);
-  }
-  else if (params_ptr->mem_bufs) {
-    curl_easy_setopt(handle,CURLOPT_WRITEFUNCTION,mem_write_function);
-  }
-  else {
-    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, file_write_function);
-  }
-}
-
 void set_single_mode(info_s *info_ptr) {
 
   saldl_params *params_ptr = info_ptr->params;
@@ -1162,112 +1093,6 @@ void check_files_and_dirs(info_s *info_ptr) {
       fatal(FN, "Failed to open '%s' for read/write : %s", info_ptr->ctrl_filename, strerror(errno) );
     }
   }
-}
-
-void set_modes(info_s *info_ptr) {
-
-  saldl_params *params_ptr = info_ptr->params;
-  file_s *storage_info_ptr = &info_ptr->storage_info;
-  void(*reset_storage)();
-
-  if (params_ptr->read_only) {
-    info_ptr->prepare_storage = &prepare_storage_null;
-    info_ptr->merge_finished = &merge_finished_null;
-    reset_storage = &reset_storage_null;
-  }
-  else if ( params_ptr->single_mode ) {
-    info_msg(FN, "single mode, writing to %s directly.", info_ptr->part_filename);
-    storage_info_ptr->name = info_ptr->part_filename;
-    storage_info_ptr->file = info_ptr->file;
-    info_ptr->prepare_storage = &prepare_storage_single;
-    info_ptr->merge_finished = &merge_finished_single;
-    reset_storage = &reset_storage_single;
-  }
-  else if (params_ptr->mem_bufs) {
-    info_ptr->prepare_storage = &prepare_storage_mem;
-    info_ptr->merge_finished = &merge_finished_mem;
-    reset_storage = &reset_storage_mem;
-  }
-  else {
-    storage_info_ptr->name = info_ptr->tmp_dirname;
-    info_ptr->prepare_storage = &prepare_storage_tmpf;
-    info_ptr->merge_finished = &merge_finished_tmpf;
-    reset_storage = &reset_storage_tmpf;
-  }
-
-  /* set *reset_storage() in thread struct instances */
-  for (size_t counter = 0; counter < params_ptr->num_connections; counter++) {
-    info_ptr->threads[counter].reset_storage = reset_storage;
-  }
-}
-
-void reset_storage_single(thread_s *thread) {
-  file_s *storage = thread->chunk->storage;
-  off_t offset = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
-  curl_easy_setopt(thread->ehandle, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)offset);
-  saldl_fseeko(storage->name, storage->file, offset, SEEK_SET);
-  info_msg(FN, "restarting from offset %"SAL_JD"", (intmax_t)offset);
-}
-
-void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
-  SALDL_ASSERT(part_file->file);
-  if (chunk->size_complete) {
-    saldl_fseeko(part_file->name, part_file->file, chunk->size_complete, SEEK_SET);
-  }
-  chunk->storage = part_file;
-}
-
-void reset_storage_tmpf(thread_s *thread) {
-  SALDL_ASSERT(thread);
-  SALDL_ASSERT(thread->chunk);
-  SALDL_ASSERT(thread->chunk->storage);
-
-  file_s *storage = thread->chunk->storage;
-  saldl_fflush(storage->name, storage->file);
-
-  off_t size_complete = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
-  SALDL_ASSERT((uintmax_t)size_complete <= SIZE_MAX);
-  thread->chunk->size_complete = (size_t)size_complete;
-
-  curl_set_ranges(thread->ehandle, thread->chunk);
-  info_msg(FN, "restarting chunk %s from offset %"SAL_ZU"", storage->name, thread->chunk->size_complete);
-  saldl_fseeko(storage->name, storage->file, thread->chunk->size_complete, SEEK_SET);
-  thread->chunk->size_complete = 0;
-}
-
-void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
-  file_s *tmp_f = saldl_calloc (1, sizeof(file_s));
-  tmp_f->name = saldl_calloc(PATH_MAX, sizeof(char));
-  snprintf(tmp_f->name, PATH_MAX, "%s/%"SAL_ZU"", dir->name, chunk->idx);
-  if (chunk->size_complete) {
-    if (! (tmp_f->file = fopen(tmp_f->name, "rb+"))) {
-      fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
-    }
-    saldl_fseeko(tmp_f->name, tmp_f->file, chunk->size_complete, SEEK_SET);
-  } else {
-    if (! (tmp_f->file = fopen(tmp_f->name, "wb+"))) {
-      fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
-    }
-  }
-  chunk->storage = tmp_f;
-}
-
-void reset_storage_mem(thread_s *thread) {
-  mem_s *buf = thread->chunk->storage;
-  buf->size = 0;
-}
-
-void reset_storage_null() {
-}
-
-void prepare_storage_mem(chunk_s *chunk) {
-  mem_s *buf = saldl_calloc (1, sizeof(mem_s));
-  buf->memory = saldl_calloc(chunk->size, sizeof(char));
-  buf->allocated_size = chunk->size;
-  chunk->storage = buf;
-}
-
-void prepare_storage_null() {
 }
 
 void saldl_perform(thread_s *thread) {

@@ -23,12 +23,11 @@
 #error redefining SALDL_UTILS_H
 #endif
 
-#include "common.h"
+#include "write_modes.h"
 #include "merge.h"
 
 char* saldl_user_agent();
 void chunks_init(info_s*);
-void curl_set_ranges(CURL*, chunk_s*);
 void check_remote_file_size(info_s*);
 void get_info(info_s*);
 void set_info(info_s*);
@@ -38,18 +37,8 @@ void global_progress_init(info_s*);
 void global_progress_update(info_s *info_ptr, bool init);
 void set_params(thread_s *thread, info_s *info_ptr);
 void set_progress_params(thread_s*, info_s*);
-void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool no_body);
 void set_single_mode(info_s*);
 void check_files_and_dirs(info_s *info_ptr);
-void set_modes(info_s*);
-void prepare_storage_single(chunk_s*, file_s*);
-void prepare_storage_tmpf(chunk_s*, file_s*);
-void prepare_storage_mem(chunk_s*);
-void prepare_storage_null();
-void reset_storage_single(thread_s*);
-void reset_storage_tmpf(thread_s*);
-void reset_storage_mem(thread_s*);
-void reset_storage_null();
 void saldl_perform(thread_s*);
 void* thread_func(void*);
 void curl_cleanup(info_s*);

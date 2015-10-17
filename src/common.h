@@ -37,6 +37,8 @@
 #endif
 #define PCT(x1, x2) ((x1))*100.0/((x2))
 
+void curl_set_ranges(CURL *handle, chunk_s *chunk);
+
 #if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
 char* windows_exe_path();
 #endif
