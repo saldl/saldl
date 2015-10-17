@@ -1065,8 +1065,7 @@ void check_files_and_dirs(info_s *info_ptr) {
     if (params_ptr->mem_bufs || params_ptr->single_mode) {
       warn_msg(FN, "%s seems to be left over. You have to delete the dir manually.", info_ptr->tmp_dirname);
     }
-
-    if (!info_ptr->extra_resume_set) {
+    else if (!info_ptr->extra_resume_set) {
       fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete the dir manually.", info_ptr->tmp_dirname);
     }
   }
