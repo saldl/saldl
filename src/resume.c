@@ -112,14 +112,6 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
     done_size = ctrl->chunk_size * (off_t)merged_cont;
     info_ptr->initial_merged_count = (size_t)(done_size / info_ptr->params->chunk_size);
   }
-
-  SALDL_ASSERT(done_size <= info_ptr->file_size);
-  info_msg(FN, " done_size:  %"SAL_JD"", (intmax_t)done_size);
-
-  for (size_t idx=0; idx<info_ptr->initial_merged_count; idx++) {
-    set_chunk_merged(&info_ptr->chunks[idx]);
-  }
-
   return done_size;
 }
 
@@ -148,6 +140,14 @@ void check_resume(info_s *info_ptr) {
   } else {
     done_size = resume_was_default(info_ptr, &ctrl);
   }
+
+  SALDL_ASSERT(done_size <= info_ptr->file_size);
+  info_msg(FN, " done_size:  %"SAL_JD"", (intmax_t)done_size);
+
+  for (size_t idx=0; idx<info_ptr->initial_merged_count; idx++) {
+    set_chunk_merged(&info_ptr->chunks[idx]);
+  }
+
 
   /* We will use this to silence all remaining info_msg calls
    * in this function if already_finished */
