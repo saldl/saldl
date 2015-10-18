@@ -444,10 +444,6 @@ def check_link_flags(conf):
                 ['-Wl,--hash-style=gnu']
         ]
 
-    if conf.options.ENABLE_PROFILER:
-        # libprofiler won't be linked if --as-needed is enabled
-        linkflags.remove(['-Wl,--as-needed'])
-
     for l in linkflags:
         conf.check_cc(linkflags = l, uselib_store='SAL', mandatory=False)
 
@@ -514,6 +510,9 @@ def check_pkg_deps(conf):
 
     if conf.options.ENABLE_PROFILER:
         check_libprofiler(conf)
+        # libprofiler won't be linked if --as-needed is enabled
+        conf.env.append_value('LDFLAGS', '--Wl,--no-as-needed')
+        conf.env.append_value('LINKFLAGS', '--Wl,--no-as-needed')
 
     # Deps with no pkg-config support
     conf.env.append_value('LIB', 'pthread')
