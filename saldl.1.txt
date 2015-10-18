@@ -270,6 +270,27 @@ Custom Request Options
 The following settings should not be generally used, but might help in rare
 cases:
 
+*--custom-headers='header(s)'*::
+  Add one or more custom headers to the request. Or suppress an auto one.
+  Those headers would be sent to the remote server. If you need to send them
+  to the proxy, use *--proxy-custom-headers*. +
+  +
+  If only one header is passed. It must not end with '\r\n'. libcurl will
+  add this for us. Multiple headers must be separated by '\r\n'. And the last
+  on must also not end with an '\r\n'. +
+
+  *Three Header formats are acceptable:* :::
+   1- Header with info ::::
+    'Name: info'
+   2- Header without info ::::
+    'Name;'
+   3- Suppress default header ::::
+    'Name:'
+
+*--proxy-custom-headers='header(s)'*::
+  Works like *--custom-headers*. But the headers are passed to the proxy
+  instead of the remote server.
+
 *-H, --use-HEAD*::
   Use 'HEAD' instead of 'GET' to retrieve download information from
   servers.

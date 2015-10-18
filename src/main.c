@@ -112,12 +112,16 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_SKIP_TLS_VERIFICATION   CHAR_MAX+4
 #define SAL_OPT_VERBOSE_LIBCURL         CHAR_MAX+5
 #define SAL_OPT_READ_ONLY               CHAR_MAX+6
+#define SAL_OPT_CUSTOM_HEADERS          CHAR_MAX+7
+#define SAL_OPT_PROXY_CUSTOM_HEADERS    CHAR_MAX+8
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
     {"no-status", no_argument, 0, SAL_OPT_NO_STATUS},
     {"verbose-libcurl", no_argument, 0, SAL_OPT_VERBOSE_LIBCURL},
     {"skip-TLS-verification", no_argument, 0, SAL_OPT_SKIP_TLS_VERIFICATION},
     {"assume-range-support", no_argument, 0, SAL_OPT_ASSUME_RANGE_SUPPORT},
     {"read-only", no_argument, 0, SAL_OPT_READ_ONLY},
+    {"custom-headers", required_argument, 0, SAL_OPT_CUSTOM_HEADERS},
+    {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
     {0, 0, 0, 0}
   };
 
@@ -296,6 +300,14 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_VERBOSE_LIBCURL:
         params_ptr->libcurl_verbosity = true;
+        break;
+
+      case SAL_OPT_CUSTOM_HEADERS:
+        params_ptr->custom_headers = saldl_custom_headers_append(params_ptr->custom_headers, optarg);
+        break;
+
+      case SAL_OPT_PROXY_CUSTOM_HEADERS:
+        params_ptr->proxy_custom_headers = saldl_custom_headers_append(params_ptr->proxy_custom_headers, optarg);
         break;
 
       default:

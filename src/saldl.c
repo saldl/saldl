@@ -39,6 +39,9 @@ static void saldl_free_all(info_s *info_ptr) {
   SALDL_FREE(info_ptr->threads);
   SALDL_FREE(info_ptr->chunks);
 
+  saldl_custom_headers_free_all(params_ptr->custom_headers);
+  saldl_custom_headers_free_all(params_ptr->proxy_custom_headers);
+
   SALDL_FREE(params_ptr->start_url);
   SALDL_FREE(params_ptr->root_dir);
   SALDL_FREE(params_ptr->filename);

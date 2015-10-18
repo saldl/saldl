@@ -48,6 +48,8 @@ typedef struct {
   char *inline_cookies;
   char *post;
   char *raw_post;
+  char **custom_headers; /* NULL-terminated */
+  char **proxy_custom_headers; /* NULL-terminated */
   bool no_http2;
   bool no_compress;
   bool no_decompress;

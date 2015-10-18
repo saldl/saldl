@@ -110,6 +110,89 @@ char* saldl_strdup(const char *str) {
   return dup;
 }
 
+static size_t saldl_custom_headers_count(char **headers) {
+  size_t count = 0;
+  SALDL_ASSERT(headers);
+
+  while (headers[count]) {
+    count++;
+  }
+  return count;
+}
+
+void saldl_custom_headers_free_all(char **headers) {
+  size_t idx = 0;
+
+  if (!headers) {
+    return;
+  }
+
+  while (headers[idx]) {
+    SALDL_FREE(headers[idx]);
+    idx++;
+  }
+
+  /* Free the array itself */
+  SALDL_FREE(headers);
+}
+
+char** saldl_custom_headers_append(char **headers, char *headers_to_append) {
+  if (!headers) {
+    headers = saldl_calloc(1, sizeof(char*));
+  }
+
+  SALDL_ASSERT(headers_to_append);
+  char *curr, *next, *tmp;
+  next = headers_to_append;
+
+  if ( (tmp = strrchr(headers_to_append, '\r')) ) {
+    if (tmp[1] == '\n' && tmp[2] == '\0') {
+      fatal(FN, "Only or last header must not end with \\r\\n");
+    }
+  }
+
+  while (*next != '\0') {
+    curr = next;
+    if ( (tmp = strstr(curr, "\r\n")) ) {
+      next = tmp + strlen("\r\n");
+      *tmp = '\0';
+      debug_msg(FN, "Stripped \\r\\n for you at the end of %s", curr);
+    }
+    else {
+      /* make *next == '\0' */
+      next = curr + strlen(curr);
+      SALDL_ASSERT(*next == '\0');
+    }
+
+    /* Check curr format before appending */
+    if (!strstr(curr, ":") && !strstr(curr, ";")) {
+      pre_fatal(FN, "%s is not a valid header format.", curr);
+      pre_fatal(FN, "There are 3 valid formats for custom headers:");
+      pre_fatal(FN, " 1- Header with info:");
+      pre_fatal(FN, "  header_name: info");
+      pre_fatal(FN, " 2- Header without info:");
+      pre_fatal(FN, "  header_name;");
+      pre_fatal(FN, " 3- Suppress non-custom header:");
+      pre_fatal(FN, "  header_name:");
+      pre_fatal(FN, "Multiple headers should be separated by \\r\\n");
+      fatal    (FN, "The only or the last header must not end with \\r\\n");
+    }
+
+    /* if curr is valid, append it to headers */
+    size_t curr_headers_size = saldl_custom_headers_count(headers) + 1; // +1 for NULL termination
+    SALDL_ASSERT(headers);
+    SALDL_ASSERT(curr_headers_size >= 1);
+    headers = saldl_realloc(headers, (curr_headers_size+1) * sizeof(char*));
+
+    debug_msg(FN, "Appending custom header: '%s'", curr);
+    headers[curr_headers_size - 1] = saldl_strdup(curr);
+    headers[curr_headers_size] = NULL;
+  }
+
+
+  return headers;
+}
+
 void saldl_fflush(const char *label, FILE *f) {
   int ret;
   SALDL_ASSERT(label);

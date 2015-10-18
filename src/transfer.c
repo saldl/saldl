@@ -563,6 +563,7 @@ void get_info(info_s *info_ptr) {
     info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle);
   }
 
+  curl_slist_free_all(tmp.header_list);
   curl_easy_cleanup(tmp.ehandle);
   /* remote part ends here */
 
@@ -924,26 +925,49 @@ void set_params(thread_s *thread, info_s *info_ptr) {
    */
   curl_easy_setopt(thread->ehandle, CURLOPT_TCP_NODELAY, 1l);
 
+  /* Add server custom headers.
+   * They will be added to the request after appending raw_post headers if set. */
+  if (params_ptr->custom_headers) {
+    size_t idx = 0;
+    while(params_ptr->custom_headers[idx]) {
+      thread->header_list = curl_slist_append(thread->header_list, params_ptr->custom_headers[idx]);
+      idx++;
+    }
+  }
+
+  /* Add proxy custom headers */
+
+  if (params_ptr->proxy_custom_headers) {
+    size_t idx = 0;
+    while(params_ptr->proxy_custom_headers[idx]) {
+      thread->proxy_header_list = curl_slist_append(thread->proxy_header_list, params_ptr->proxy_custom_headers[idx]);
+      idx++;
+    }
+  }
+
+  /* Add proxy custom_headers to the request */
+  curl_easy_setopt(thread->ehandle, CURLOPT_PROXYHEADER, thread->proxy_header_list);
+
   /* Send post fields if provided */
 
   /* If both raw_post & post are set, post is ignored */
   if (params_ptr->raw_post) {
-    struct curl_slist *custom_headers = NULL;
     curl_easy_setopt(thread->ehandle, CURLOPT_POST, 1L);
 
     /* Disable headers set by CURLOPT_POST */
-    custom_headers = curl_slist_append(custom_headers, "Content-Type:");
-    custom_headers = curl_slist_append(custom_headers, "Content-Length:");
+    thread->header_list = curl_slist_append(thread->header_list, "Content-Type:");
+    thread->header_list = curl_slist_append(thread->header_list, "Content-Length:");
 
     /* Append raw_post as-is to custom_headers */
-    custom_headers = curl_slist_append(custom_headers, params_ptr->raw_post);
-
-    /* Add custom_headers to the request */
-    curl_easy_setopt(thread->ehandle, CURLOPT_HTTPHEADER, custom_headers);
+    thread->header_list = curl_slist_append(thread->header_list, params_ptr->raw_post);
   } else if (params_ptr->post) {
     debug_msg(FN, "POST fields: %s", params_ptr->post);
     curl_easy_setopt(thread->ehandle,CURLOPT_POSTFIELDS, params_ptr->post);
   }
+
+  /* Add custom_headers to the request without passing them to the proxy */
+  curl_easy_setopt(thread->ehandle, CURLOPT_HEADEROPT, CURLHEADER_SEPARATE);
+  curl_easy_setopt(thread->ehandle, CURLOPT_HTTPHEADER, thread->header_list);
 
   if (params_ptr->cookie_file) {
     curl_easy_setopt(thread->ehandle, CURLOPT_COOKIEFILE, params_ptr->cookie_file);
@@ -1210,6 +1234,7 @@ void* thread_func(void* threadS) {
 void curl_cleanup(info_s *info_ptr) {
 
   for (size_t counter = 0; counter < info_ptr->params->num_connections; counter++) {
+    curl_slist_free_all(info_ptr->threads[counter].header_list);
     curl_easy_cleanup(info_ptr->threads[counter].ehandle);
   }
 

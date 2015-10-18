@@ -104,6 +104,8 @@ typedef struct {
 /* thread_s: fields needed for each thread/connection */
 typedef struct {
   CURL* ehandle;
+  struct curl_slist *header_list;
+  struct curl_slist *proxy_header_list;
   char err_buf[CURL_ERROR_SIZE];
   void (*reset_storage)();
   chunk_s *chunk;
