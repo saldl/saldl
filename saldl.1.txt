@@ -275,6 +275,8 @@ cases:
   Those headers would be sent to the remote server. If you need to send them
   to the proxy, use *--proxy-custom-headers*. +
   +
+  This option can be passed multiple times.
+  +
   If only one header is passed. It must not end with '\r\n'. libcurl will
   add this for us. Multiple headers must be separated by '\r\n'. And the last
   on must also not end with an '\r\n'. +
