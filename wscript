@@ -511,8 +511,8 @@ def check_pkg_deps(conf):
     if conf.options.ENABLE_PROFILER:
         check_libprofiler(conf)
         # libprofiler won't be linked if --as-needed is enabled
-        conf.env.append_value('LDFLAGS', '--Wl,--no-as-needed')
-        conf.env.append_value('LINKFLAGS', '--Wl,--no-as-needed')
+        conf.env.append_value('LDFLAGS', '-Wl,--no-as-needed')
+        conf.env.append_value('LINKFLAGS', '-Wl,--no-as-needed')
 
     # Deps with no pkg-config support
     conf.env.append_value('LIB', 'pthread')
