@@ -64,7 +64,8 @@ void events_init(event_s *ev_this, event_callback_fn cb, void *cb_data, enum EVE
   }
 
   /* setup event base and the event itself */
-  SALDL_ASSERT(ev_this->ev_b = event_base_new());
+  ev_this->ev_b = event_base_new();
+  SALDL_ASSERT(ev_this->ev_b);
   ev_this->vFD = vFD;
   ev_this->ev = event_new(ev_this->ev_b, vFD, EV_WRITE|EV_PERSIST, cb, cb_data);
 
