@@ -38,7 +38,6 @@ void ctrl_get_info(char *ctrl_filename, ctrl_info_s *ctrl) {
 
   off_t ctrl_fsize = saldl_fsizeo(ctrl_filename, f_ctrl);
   SALDL_ASSERT((uintmax_t)ctrl_fsize <= SIZE_MAX);
-  SALDL_ASSERT(ctrl_fsize <= INT_MAX);
 
   if (!ctrl_fsize) {
     fatal(FN, "ctrl file is empty.");
