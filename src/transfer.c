@@ -746,7 +746,10 @@ void global_progress_update(info_s *info_ptr, bool init) {
 static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
 
   uintmax_t lines = 5;
+
   info_s *info_ptr = (info_s *)void_info_ptr;
+  SALDL_ASSERT(info_ptr);
+
   saldl_params *params_ptr = info_ptr->params;
 
   double params_refresh = params_ptr->status_refresh_interval;
@@ -755,83 +758,81 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
   SALDL_ASSERT(!ulnow || info_ptr->params->post || info_ptr->params->raw_post);
   SALDL_ASSERT(!ultotal || info_ptr->params->post || info_ptr->params->raw_post);
 
-  if (info_ptr) {
-    progress_s *p = &info_ptr->global_progress;
-    if (p->initialized) {
-      long curr_redirects_count = num_redirects(info_ptr->threads[0].ehandle);
+  progress_s *p = &info_ptr->global_progress;
+  if (p->initialized) {
+    long curr_redirects_count = num_redirects(info_ptr->threads[0].ehandle);
 
-      if (info_ptr->file_size_from_dltotal && curr_redirects_count != info_ptr->redirects_count) {
-        debug_msg(FN, "Resetting file_size from dltotal, redirect count changed from %ld to %ld.",
-            info_ptr->redirects_count, curr_redirects_count);
-        info_ptr->file_size = 0;
+    if (info_ptr->file_size_from_dltotal && curr_redirects_count != info_ptr->redirects_count) {
+      debug_msg(FN, "Resetting file_size from dltotal, redirect count changed from %ld to %ld.",
+          info_ptr->redirects_count, curr_redirects_count);
+      info_ptr->file_size = 0;
+    }
+
+    info_ptr->redirects_count = curr_redirects_count;
+
+    if (!info_ptr->file_size && dltotal) {
+      debug_msg(FN, "Setting file_size from dltotal=%"SAL_JU".", dltotal);
+      info_ptr->file_size = dltotal;
+      info_ptr->file_size_from_dltotal = true;
+    }
+
+    curl_off_t offset = dltotal && info_ptr->file_size > dltotal ? (curl_off_t)info_ptr->file_size - dltotal : 0;
+    info_ptr->chunks[0].size_complete = (size_t)(offset + dlnow);
+
+    /* Return early if no_status, but after setting size_complete */
+    if (info_ptr->params->no_status) {
+      return 0;
+    }
+
+    if (p->initialized == 1) {
+      p->initialized++;
+      saldl_fputs_count(lines+1, "\n", stderr, "stderr"); // +1 in case offset becomes non-zero
+    }
+
+    p->curr = saldl_utime();
+    p->dur = p->curr - p->start;
+    p->curr_dur = p->curr - p->prev;
+
+
+    /* Update every refresh_interval, and when the download finishes.
+     * Always update when file_size is unknown(dltotal==0), as
+     * the download might finish anytime.
+     * */
+    if (p->curr_dur >= refresh_interval || !dltotal  || dlnow == dltotal) {
+      if (p->curr_dur >= refresh_interval) {
+        off_t curr_done = saldl_max_o(dlnow + offset - p->dlprev, 0); // Don't go -ve on reconnects
+        p->curr_rate =  curr_done / p->curr_dur;
+        p->curr_rem = p->curr_rate && dltotal ? (dltotal - dlnow) / p->curr_rate : INT64_MAX;
+
+        p->prev = p->curr;
+        p->dlprev = dlnow + offset;
       }
 
-      info_ptr->redirects_count = curr_redirects_count;
-
-      if (!info_ptr->file_size && dltotal) {
-        debug_msg(FN, "Setting file_size from dltotal=%"SAL_JU".", dltotal);
-        info_ptr->file_size = dltotal;
-        info_ptr->file_size_from_dltotal = true;
+      if (p->dur >= SALDL_STATUS_INITIAL_INTERVAL) {
+        p->rate = dlnow / p->dur;
+        p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : INT64_MAX;
       }
 
-      curl_off_t offset = dltotal && info_ptr->file_size > dltotal ? (curl_off_t)info_ptr->file_size - dltotal : 0;
-      info_ptr->chunks[0].size_complete = (size_t)(offset + dlnow);
+      saldl_fputs_count(lines+!!offset, up, stderr, "stderr");
+      main_msg("Single mode progress", " ");
 
-      /* Return early if no_status, but after setting size_complete */
-      if (info_ptr->params->no_status) {
-        return 0;
+      status_msg("Progress", " \t%.2f%s / %.2f%s",
+          human_size(dlnow + offset), human_size_suffix(dlnow + offset),
+          human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size));
+
+      if (offset) {
+        status_msg(NULL, "        \t%.2f%s / %.2f%s (Offset: %.2f%s)",
+            human_size(dlnow), human_size_suffix(dlnow),
+            human_size(dltotal), human_size_suffix(dltotal),
+            human_size(offset), human_size_suffix(offset));
       }
 
-      if (p->initialized == 1) {
-        p->initialized++;
-        saldl_fputs_count(lines+1, "\n", stderr, "stderr"); // +1 in case offset becomes non-zero
-      }
+      status_msg("Rate", "     \t%.2f%s/s : %.2f%s/s",
+          human_size(p->rate), human_size_suffix(p->rate),
+          human_size(p->curr_rate), human_size_suffix(p->curr_rate));
 
-      p->curr = saldl_utime();
-      p->dur = p->curr - p->start;
-      p->curr_dur = p->curr - p->prev;
-
-
-      /* Update every refresh_interval, and when the download finishes.
-       * Always update when file_size is unknown(dltotal==0), as
-       * the download might finish anytime.
-       * */
-      if (p->curr_dur >= refresh_interval || !dltotal  || dlnow == dltotal) {
-        if (p->curr_dur >= refresh_interval) {
-          off_t curr_done = saldl_max_o(dlnow + offset - p->dlprev, 0); // Don't go -ve on reconnects
-          p->curr_rate =  curr_done / p->curr_dur;
-          p->curr_rem = p->curr_rate && dltotal ? (dltotal - dlnow) / p->curr_rate : INT64_MAX;
-
-          p->prev = p->curr;
-          p->dlprev = dlnow + offset;
-        }
-
-        if (p->dur >= SALDL_STATUS_INITIAL_INTERVAL) {
-          p->rate = dlnow / p->dur;
-          p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : INT64_MAX;
-        }
-
-        saldl_fputs_count(lines+!!offset, up, stderr, "stderr");
-        main_msg("Single mode progress", " ");
-
-        status_msg("Progress", " \t%.2f%s / %.2f%s",
-            human_size(dlnow + offset), human_size_suffix(dlnow + offset),
-            human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size));
-
-        if (offset) {
-          status_msg(NULL, "        \t%.2f%s / %.2f%s (Offset: %.2f%s)",
-              human_size(dlnow), human_size_suffix(dlnow),
-              human_size(dltotal), human_size_suffix(dltotal),
-              human_size(offset), human_size_suffix(offset));
-        }
-
-        status_msg("Rate", "     \t%.2f%s/s : %.2f%s/s",
-            human_size(p->rate), human_size_suffix(p->rate),
-            human_size(p->curr_rate), human_size_suffix(p->curr_rate));
-
-        status_msg("Remaining", "\t%.1fs : %.1fs", p->rem, p->curr_rem);
-        status_msg("Duration", " \t%.1fs", p->dur);
-      }
+      status_msg("Remaining", "\t%.1fs : %.1fs", p->rem, p->curr_rem);
+      status_msg("Duration", " \t%.1fs", p->dur);
     }
   }
   return 0;
