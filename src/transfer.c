@@ -508,7 +508,8 @@ static void print_info(info_s *info_ptr) {
     main_msg("Content-Type", info_ptr->content_type);
   }
 
-  main_msg("Saving To", params_ptr->filename);
+  main_msg("Saving To", "%s%s%s%s", params_ptr->filename,
+      error_color, params_ptr->read_only ? " [read-only]" : "", end);
 
   if (info_ptr->file_size > 0) {
     off_t file_size = info_ptr->file_size;
