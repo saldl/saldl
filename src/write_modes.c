@@ -22,35 +22,47 @@
 
 /* Default (tmp files) mode */
 static void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
+  SALDL_ASSERT(chunk);
+  SALDL_ASSERT(dir);
+  SALDL_ASSERT(dir->name);
+
   file_s *tmp_f = saldl_calloc (1, sizeof(file_s));
   tmp_f->name = saldl_calloc(PATH_MAX, sizeof(char));
   snprintf(tmp_f->name, PATH_MAX, "%s/%"SAL_ZU"", dir->name, chunk->idx);
+
   if (chunk->size_complete) {
     if (! (tmp_f->file = fopen(tmp_f->name, "rb+"))) {
       fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
     }
     saldl_fseeko(tmp_f->name, tmp_f->file, chunk->size_complete, SEEK_SET);
-  } else {
+  }
+  else {
     if (! (tmp_f->file = fopen(tmp_f->name, "wb+"))) {
       fatal(FN, "Failed to open %s for read/write: %s", tmp_f->name, strerror(errno));
     }
   }
+
   chunk->storage = tmp_f;
 }
 
 static void reset_storage_tmpf(thread_s *thread) {
   SALDL_ASSERT(thread);
   SALDL_ASSERT(thread->chunk);
-  SALDL_ASSERT(thread->chunk->storage);
 
   file_s *storage = thread->chunk->storage;
+  SALDL_ASSERT(storage);
+  SALDL_ASSERT(storage->name);
+  SALDL_ASSERT(storage->file);
+
   saldl_fflush(storage->name, storage->file);
 
   off_t size_complete = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
   SALDL_ASSERT((uintmax_t)size_complete <= SIZE_MAX);
   thread->chunk->size_complete = (size_t)size_complete;
 
+  SALDL_ASSERT(thread->ehandle);
   curl_set_ranges(thread->ehandle, thread->chunk);
+
   info_msg(FN, "restarting chunk %s from offset %"SAL_ZU"", storage->name, thread->chunk->size_complete);
   saldl_fseeko(storage->name, storage->file, thread->chunk->size_complete, SEEK_SET);
   thread->chunk->size_complete = 0;
@@ -60,33 +72,50 @@ static size_t file_write_function(void  *ptr, size_t  size, size_t nmemb, void *
   size_t realsize = size * nmemb;
   file_s *tmp_f = data;
 
+  SALDL_ASSERT(ptr);
+  SALDL_ASSERT(tmp_f);
+  SALDL_ASSERT(tmp_f->file);
+  SALDL_ASSERT(tmp_f->name);
+
   saldl_fwrite_fflush(ptr, size, nmemb, tmp_f->file, tmp_f->name, 0);
 
   return realsize;
 }
 
 static int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
-  size_t size = chunk->size;
-  off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
+  SALDL_ASSERT(chunk);
+  SALDL_ASSERT(info_ptr);
 
   file_s *tmp_f = chunk->storage;
-  char *tmp_buf = NULL;
-  size_t f_ret = 0;
+
+  SALDL_ASSERT(tmp_f);
+  SALDL_ASSERT(tmp_f->name);
+  SALDL_ASSERT(tmp_f->file);
+
+  SALDL_ASSERT(info_ptr->params);
+  SALDL_ASSERT(info_ptr->params->chunk_size);
+
+  off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
+
+  SALDL_ASSERT(info_ptr->file);
+  SALDL_ASSERT(info_ptr->part_filename);
 
   saldl_fseeko(tmp_f->name, tmp_f->file, 0, SEEK_SET);
   saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
-
   saldl_fflush(tmp_f->name, tmp_f->file);
-  tmp_buf = saldl_calloc(size, sizeof(char));
 
+  SALDL_ASSERT(chunk->size);
+
+  size_t size = chunk->size;
+  char *tmp_buf = saldl_calloc(size, sizeof(char));
+
+  size_t f_ret = 0;
   if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
     fatal(FN, "Reading from tmp file %s at offset %"SAL_JD" failed, chunk_size=%"SAL_ZU", fread() returned %"SAL_ZU".", tmp_f->name, (intmax_t)offset, size, f_ret);
   }
 
   saldl_fwrite_fflush(tmp_buf, 1, size, info_ptr->file, info_ptr->part_filename, offset);
-
   set_chunk_merged(chunk);
-
   saldl_fclose(tmp_f->name, tmp_f->file);
 
   if ( remove(tmp_f->name) ) {
@@ -102,6 +131,9 @@ static int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
 
 /* Memory (buffers) mode */
 static void prepare_storage_mem(chunk_s *chunk) {
+  SALDL_ASSERT(chunk);
+  SALDL_ASSERT(chunk->size);
+
   mem_s *buf = saldl_calloc (1, sizeof(mem_s));
   buf->memory = saldl_calloc(chunk->size, sizeof(char));
   buf->allocated_size = chunk->size;
@@ -110,16 +142,21 @@ static void prepare_storage_mem(chunk_s *chunk) {
 
 static void reset_storage_mem(thread_s *thread) {
   mem_s *buf = thread->chunk->storage;
+  SALDL_ASSERT(buf);
   buf->size = 0;
 }
 
 static size_t  mem_write_function(void  *ptr,  size_t  size, size_t nmemb, void *data) {
-  size_t realsize = size * nmemb;
   mem_s *mem = data;
 
   SALDL_ASSERT(mem);
   SALDL_ASSERT(mem->memory); // Preallocation failed
   SALDL_ASSERT(mem->size <= mem->allocated_size);
+
+  size_t realsize = size * nmemb;
+
+  SALDL_ASSERT(realsize);
+  SALDL_ASSERT(ptr);
 
   memmove(&(mem->memory[mem->size]), ptr, realsize);
   mem->size += realsize;
@@ -128,10 +165,17 @@ static size_t  mem_write_function(void  *ptr,  size_t  size, size_t nmemb, void 
 }
 
 static int merge_finished_mem(chunk_s *chunk, info_s *info_ptr) {
+  SALDL_ASSERT(chunk);
+  SALDL_ASSERT(info_ptr);
+
   size_t size = chunk->size;
   off_t offset = (off_t)chunk->idx * info_ptr->params->chunk_size;
 
   mem_s *buf = chunk->storage;
+
+  SALDL_ASSERT(size);
+  SALDL_ASSERT(info_ptr->params);
+  SALDL_ASSERT(info_ptr->params->chunk_size);
 
   saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
   saldl_fwrite_fflush(buf->memory, 1, size, info_ptr->file, info_ptr->part_filename, offset);
@@ -146,17 +190,33 @@ static int merge_finished_mem(chunk_s *chunk, info_s *info_ptr) {
 
 /* Single mode */
 static void prepare_storage_single(chunk_s *chunk, file_s *part_file) {
+  SALDL_ASSERT(chunk);
+  SALDL_ASSERT(part_file);
   SALDL_ASSERT(part_file->file);
+  SALDL_ASSERT(part_file->name);
+
   if (chunk->size_complete) {
     saldl_fseeko(part_file->name, part_file->file, chunk->size_complete, SEEK_SET);
   }
+
   chunk->storage = part_file;
 }
 
 static void reset_storage_single(thread_s *thread) {
+  SALDL_ASSERT(thread);
+  SALDL_ASSERT(thread->chunk);
+
   file_s *storage = thread->chunk->storage;
+
+  SALDL_ASSERT(storage);
+  SALDL_ASSERT(storage->name);
+  SALDL_ASSERT(storage->file);
+
   off_t offset = saldl_max_o(saldl_fsizeo(storage->name, storage->file), 4096) - 4096;
+
+  SALDL_ASSERT(thread->ehandle);
   curl_easy_setopt(thread->ehandle, CURLOPT_RESUME_FROM_LARGE, (curl_off_t)offset);
+
   saldl_fseeko(storage->name, storage->file, offset, SEEK_SET);
   info_msg(FN, "restarting from offset %"SAL_JD"", (intmax_t)offset);
 }
@@ -180,7 +240,7 @@ static size_t null_write_function(void  *ptr,  size_t  size, size_t nmemb, void 
   (void)ptr;
 
   if (data) {
-    /* Remember: This why getting info with GET works, this causes error 26 */
+    /* Remember: This is why getting info with GET works, this causes error 26 */
     return 0;
   }
 
@@ -195,6 +255,9 @@ static int merge_finished_null(chunk_s *chunk) {
 /* Setters */
 
 void set_modes(info_s *info_ptr) {
+  SALDL_ASSERT(info_ptr);
+  SALDL_ASSERT(info_ptr->params);
+
   saldl_params *params_ptr = info_ptr->params;
   file_s *storage_info_ptr = &info_ptr->storage_info;
   void(*reset_storage)();
@@ -231,6 +294,9 @@ void set_modes(info_s *info_ptr) {
 }
 
 void set_write_opts(CURL* handle, void* storage, saldl_params *params_ptr, bool no_body) {
+  SALDL_ASSERT(handle);
+  SALDL_ASSERT(params_ptr);
+
   curl_easy_setopt(handle, CURLOPT_WRITEDATA, storage);
 
   if (params_ptr->read_only || !storage) {
