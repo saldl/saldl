@@ -570,6 +570,10 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
         conf.check_cfg(package = pkg_name, args = check_args, atleast_version = min_ver)
         conf.check_cfg(package = pkg_name, variables = ['includedir', 'prefix'])
 
+        defines_var = 'DEFINES_' + pkg_name.upper()
+        if conf.env[defines_var]:
+            conf.env.DEFINES += conf.env[defines_var]
+
         includes_var = 'INCLUDES_' + pkg_name.upper()
         if conf.env[includes_var]:
             conf.env.INCLUDES += conf.env[includes_var]
