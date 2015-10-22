@@ -129,6 +129,15 @@ def options(opt):
             help = "Enable link optimization flags. (default: %s)" % def_enable_link_optimizations
             )
 
+    def_enable_static = False
+    conf_gr.add_option(
+            '--enable-static',
+            dest = 'ENABLE_STATIC',
+            default = def_enable_static,
+            action= "store_true",
+            help = "Enable static build. (default: %s)" % def_enable_static
+            )
+
     def_libcurl_cflags = None # Use pkg-config or env
     conf_gr.add_option(
             '--libcurl-cflags',
@@ -499,10 +508,23 @@ def check_pkg_deps(conf):
 
     print('Check dependencies:')
 
-    # Make sure LIB, INCLUDES, CFLAGS and LDFLAGS exist
-    for v in ['LIB', 'INCLUDES', 'CFLAGS' 'LDFLAGS']:
+    # Make sure INCLUDES, CFLAGS and LDFLAGS exist
+    for v in ['INCLUDES', 'CFLAGS' 'LDFLAGS']:
         if not v in conf.env:
             conf.env[v] = []
+
+    # Either LIB or STLIB should exist
+
+    if conf.options.ENABLE_STATIC:
+        conf.env['STLIB'] = []
+        # Deps with no pkg-config support
+        #conf.env.append_value('STLIB', 'pthread')
+        # Prevent waf from adding -Wl,-Bdynamic
+        conf.env['SHLIB_MARKER'] = None
+    else:
+        conf.env['LIB'] = []
+        # Deps with no pkg-config support
+        #conf.env.append_value('LIB', 'pthread')
 
     # This order is important if we are providing flags ourselves
     check_libevent_pthreads(conf)
@@ -513,14 +535,6 @@ def check_pkg_deps(conf):
         # libprofiler won't be linked if --as-needed is enabled
         conf.env.append_value('LDFLAGS', '-Wl,--no-as-needed')
         conf.env.append_value('LINKFLAGS', '-Wl,--no-as-needed')
-
-    # Deps with no pkg-config support
-    conf.env.append_value('LIB', 'pthread')
-
-    # Force static linking with MinGW builds
-    if conf.env['DEST_OS'] == 'win32':
-        conf.env['SHLIB_MARKER'] = ['']
-
 
 @conf
 def check_libcurl(conf):
@@ -567,6 +581,8 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
 
     else:
         conf.end_msg('pkg-config')
+        if conf.options.ENABLE_STATIC:
+            check_args += [ '--static' ]
         conf.check_cfg(package = pkg_name, args = check_args, atleast_version = min_ver)
         conf.check_cfg(package = pkg_name, variables = ['includedir', 'prefix'])
 
@@ -584,6 +600,12 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
         lib_var = 'LIB_' + pkg_name.upper()
         if conf.env[lib_var]:
             conf.env.LIB += conf.env[lib_var]
+
+        if conf.options.ENABLE_STATIC:
+            stlib_var = 'STLIB_' + pkg_name.upper()
+            if conf.env[stlib_var]:
+                conf.env.STLIB += conf.env[stlib_var]
+
 
 
 #------------------------------------------------------------------------------
