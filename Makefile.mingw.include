@@ -3,22 +3,14 @@ SALDL_VERSION = $(subst -,.,$(shell git describe --tags --long --dirty))
 CFLAGS = -O2 -D__USE_MINGW_ANSI_STDIO=0
 LDFLAGS = -Wl,-O1,--sort-common
 
-LIBCURL_CFLAGS = -DCURL_STATICLIB -DNGHTTP2_STATICLIB
-LIBCURL_LIBS = -lcurl -lnghttp2 -lssl -lcrypto -lz -lgdi32 -lwldap32 -lws2_32
-
-LIBEVENT_PTHREADS_CFLAGS =
-LIBEVENT_PTHREADS_LIBS = -levent_pthreads -levent
+# Until nghttp2 upstream is fixed
+CFLAGS += -DNGHTTP2_STATICLIB
 
 all: dist
 
 waf: src clean
-	CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
-	   ./waf configure -o ${BLD_DIR} \
-	   --prefix='/' --bindir='/' --mandir='/' \
-	   --libcurl-cflags="${LIBCURL_CFLAGS}" \
-	   --libcurl-libs="${LIBCURL_LIBS}" \
-	   --libevent-pthreads-cflags="${LIBEVENT_PTHREADS_CFLAGS}" \
-	   --libevent-pthreads-libs="${LIBEVENT_PTHREADS_LIBS}"
+	PKG_CONFIG_PATH="${PKG_CONFIG_PATH}" CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
+	./waf configure -o ${BLD_DIR} --enable-static --prefix='/' --bindir='/' --mandir='/'
 
 	./waf install --destdir=${DEST_DIR}
 

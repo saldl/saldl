@@ -6,5 +6,6 @@ BLD_DIR = saldl-${os_name}-build
 # mingw-w64 binaries
 CC = i686-w64-mingw32-gcc
 STRIP = i686-w64-mingw32-strip
+PKG_CONFIG_PATH=/usr/i686-w64-mingw32/lib/pkgconfig
 
 include Makefile.mingw.include
