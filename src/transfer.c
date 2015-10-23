@@ -498,8 +498,6 @@ static void set_names(info_s* info_ptr) {
 static void print_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
-  main_msg("URL", params_ptr->start_url);
-
   if (strcmp(params_ptr->start_url, info_ptr->curr_url)) {
     main_msg("Redirected", info_ptr->curr_url);
   }

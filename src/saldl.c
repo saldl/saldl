@@ -78,6 +78,7 @@ int saldl(saldl_params *params_ptr) {
   SALDL_ASSERT(!evthread_use_pthreads());
 
   /* get/set initial info */
+  main_msg("URL", params_ptr->start_url);
   info.curr_url = saldl_strdup(params_ptr->start_url);
   check_url(info.curr_url);
   get_info(&info);
