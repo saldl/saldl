@@ -518,13 +518,13 @@ def check_pkg_deps(conf):
     if conf.options.ENABLE_STATIC:
         conf.env['STLIB'] = []
         # Deps with no pkg-config support
-        #conf.env.append_value('STLIB', 'pthread')
+        conf.env.append_value('STLIB', 'pthread')
         # Prevent waf from adding -Wl,-Bdynamic
         conf.env['SHLIB_MARKER'] = None
     else:
         conf.env['LIB'] = []
         # Deps with no pkg-config support
-        #conf.env.append_value('LIB', 'pthread')
+        conf.env.append_value('LIB', 'pthread')
 
     # This order is important if we are providing flags ourselves
     check_libevent_pthreads(conf)
