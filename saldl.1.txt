@@ -412,10 +412,10 @@ directly to '<filename>.part.sal'
 EXIT STATUS
 -----------
 *0*::
-    Success
+    Success.
 
 *1*::
-   A 'fatal' error happened. A helpful message should explain the message.
+   A 'fatal' error happened. A helpful message should explain the error.
 
 WWW
 ----
