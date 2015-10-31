@@ -12,7 +12,7 @@ early preview.
 SYNOPSIS
 --------
 
-*{manname}* <<OPTIONS>> 'URL'
+*{manname}* <<OPTIONS,[OPTIONS]>> 'URL'
 
 
 DESCRIPTION
