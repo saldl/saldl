@@ -5,7 +5,8 @@ SALDL(1)
 NAME
 ----
 
-saldl - a CLI downloader with unique primed features based on libcurl.
+saldl - A lightweight well-featured CLI downloader optimized for speed and
+early preview.
 
 
 SYNOPSIS
