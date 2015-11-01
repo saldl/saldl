@@ -515,12 +515,14 @@ def check_pkg_deps(conf):
     # Either LIB or STLIB should exist
 
     if conf.options.ENABLE_STATIC:
+        conf.env['STLIBPATH'] = []
         conf.env['STLIB'] = []
         # Deps with no pkg-config support
         conf.env.append_value('STLIB', 'pthread')
         # Prevent waf from adding -Wl,-Bdynamic
         conf.env['SHLIB_MARKER'] = None
     else:
+        conf.env['LIBPATH'] = []
         conf.env['LIB'] = []
         # Deps with no pkg-config support
         conf.env.append_value('LIB', 'pthread')
@@ -596,11 +598,19 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
         if conf.env[pkg_name.upper() + '_includedir']:
             conf.env.INCLUDES += [ conf.env[pkg_name.upper() + '_includedir'] ]
 
+        libpath_var = 'LIBPATH_' + pkg_name.upper()
+        if conf.env[libpath_var]:
+            conf.env.LIBPATH += conf.env[libpath_var]
+
         lib_var = 'LIB_' + pkg_name.upper()
         if conf.env[lib_var]:
             conf.env.LIB += conf.env[lib_var]
 
         if conf.options.ENABLE_STATIC:
+            stlibpath_var = 'STLIBPATH_' + pkg_name.upper()
+            if conf.env[stlibpath_var]:
+                conf.env.STLIBPATH += conf.env[stlibpath_var]
+
             stlib_var = 'STLIB_' + pkg_name.upper()
             if conf.env[stlib_var]:
                 conf.env.STLIB += conf.env[stlib_var]
