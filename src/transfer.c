@@ -770,7 +770,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
     info_ptr->redirects_count = curr_redirects_count;
 
     if (!info_ptr->file_size && dltotal) {
-      debug_msg(FN, "Setting file_size from dltotal=%"SAL_JD".", dltotal);
+      debug_msg(FN, "Setting file_size from dltotal=%"SAL_JD".", (intmax_t)dltotal);
       info_ptr->file_size = dltotal;
       info_ptr->file_size_from_dltotal = true;
     }
