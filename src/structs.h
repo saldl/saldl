@@ -153,6 +153,7 @@ typedef struct {
   long pos;
 } control_s;
 
+/* headers_s: Variables used in header_function() & headers_info() */
 typedef struct {
   char *location;
   char *content_range;
@@ -204,5 +205,13 @@ typedef struct {
   bool already_finished;
   bool called_exit;
 } info_s;
+
+/* Static initializers.
+ * This is unnecessary, but avoids some compilers' warnings.
+ * Clang and old GCC versions found in the BSDs just don't get
+ * that {0} initialization is perfectly valid (and complete in a sense).
+ */
+static const thread_s DEF_THREAD_S;
+static const info_s DEF_INFO_S;
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

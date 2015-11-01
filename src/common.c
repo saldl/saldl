@@ -289,10 +289,8 @@ off_t saldl_fsizeo(const char *label, FILE *f) {
 
 off_t fsize_sys(char *fname) {
   int ret;
-  struct stat st = {0};
-
+  struct stat st;
   SALDL_ASSERT(fname);
-
   ret = stat(fname, &st);
   return ret ? ret : st.st_size;
 }

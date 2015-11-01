@@ -58,7 +58,7 @@ static void saldl_free_all(info_s *info_ptr) {
 
 int saldl(saldl_params *params_ptr) {
   /* Definitions */
-  info_s info = {0};
+  info_s info = DEF_INFO_S;
   info.params = params_ptr;
 
   /* Handle signals */

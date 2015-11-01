@@ -350,8 +350,7 @@ def check_warning_cflags(conf):
     # Disable stupid clang warnings
     if conf.env['CC_NAME'] == 'clang':
         clang_no_warn_flags = [
-                ['-Wno-newline-eof'], # Fails CLOCK_MONOTONIC_RAW test.
-                ['-Wno-missing-field-initializers'] # Fails {0} initializations.
+                ['-Wno-newline-eof'] # Fails CLOCK_MONOTONIC_RAW test.
         ]
 
         for no_w in clang_no_warn_flags:

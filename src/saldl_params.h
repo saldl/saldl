@@ -78,4 +78,11 @@ typedef struct {
   bool read_only;
 } saldl_params;
 
+/* Static initializer.
+ * This is unnecessary, but avoids some compilers' warnings.
+ * Clang and old GCC versions found in the BSDs just don't get
+ * that {0} initialization is perfectly valid (and complete in a sense).
+ */
+static const saldl_params DEF_SALDL_PARAMS;
+
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

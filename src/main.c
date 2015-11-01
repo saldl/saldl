@@ -326,7 +326,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
 int main(int argc,char **argv) {
   /* Initialize params */
-  saldl_params params = {0} ;
+  saldl_params params = DEF_SALDL_PARAMS;
 
   /* Set to defaults before parsing opts. Without this, any early call
    * to a log function [e.g. fatal()] would sigfault.

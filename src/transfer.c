@@ -517,7 +517,7 @@ static void print_info(info_s *info_ptr) {
 
 void get_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
-  thread_s tmp = {0};
+  thread_s tmp = DEF_THREAD_S;
 
   if (params_ptr->no_remote_info) {
     warn_msg(FN, "no_remote_info enforces both enabling single mode and disabling resume.");
