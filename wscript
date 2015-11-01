@@ -508,7 +508,7 @@ def check_pkg_deps(conf):
     print('Check dependencies:')
 
     # Make sure INCLUDES, CFLAGS and LDFLAGS exist
-    for v in ['INCLUDES', 'CFLAGS' 'LDFLAGS']:
+    for v in ['INCLUDES', 'CFLAGS', 'LDFLAGS']:
         if not v in conf.env:
             conf.env[v] = []
 
