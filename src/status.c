@@ -20,6 +20,22 @@
 #include "events.h"
 #include "utime.h"
 
+#define DEF_STATUS_LINES 8
+
+size_t num_of_lines(info_s *info_ptr, int cols) {
+  size_t lines = 0;
+
+  SALDL_ASSERT(info_ptr);
+
+  if (cols) {
+    lines = DEF_STATUS_LINES;
+    lines += !!info_ptr->global_progress.initial_complete_size; // Session
+    lines += info_ptr->chunk_count / cols + !!(info_ptr->chunk_count % cols); // chunks
+  }
+
+  return lines;
+}
+
 static inline void colorset(char *ptr, char val, size_t size) {
   while (size) {
     switch (val) {
@@ -69,12 +85,10 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
 
   size_t c_char_size = status_ptr->c_char_size;
   char *chunks_status = status_ptr->chunks_status;
-  size_t *lines = &status_ptr->lines;
 
-
-  /* Update lines in case tty width changes */
+  /* Update number of lines in case tty width changes */
   int cols = tty_width() >= 0 ? tty_width() : 0;
-  *lines = status_ptr->lines = cols ? info_ptr->chunk_count / cols + !!(info_ptr->chunk_count % cols) + 8 + !!p->initial_complete_size : 0 ; /*  +n: number of extra status lines */
+  status_ptr->lines = num_of_lines(info_ptr, cols);
 
   debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_status->num_of_calls, str_EVENT_FD(fd) , what);
 
@@ -144,7 +158,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
     status_msg("Duration", "        \t %.1fs", p->dur);
 
     fprintf(stderr,"%s%s%s\n", erase_screen_after, chunks_status, ret_char);
-    saldl_fputs_count(*lines, up, stderr, "stderr");
+    saldl_fputs_count(status_ptr->lines, up, stderr, "stderr");
   }
 }
 
@@ -160,8 +174,9 @@ void* status_display(void *void_info_ptr) {
   /* initialize status */
   size_t c_char_size = status_ptr->c_char_size = strlen(ok_color) +strlen(end) + 1;
   char *chunks_status = status_ptr->chunks_status = saldl_calloc(info_ptr->chunk_count*c_char_size + 1, sizeof(char)); /* Sometimes, an extra char is shown/read(valgrind) at the end without the extra bit, maybe due to lack of space for \0 */
+
   int cols = tty_width() >= 0 ? tty_width() : 0;
-  size_t lines = status_ptr->lines = cols ? info_ptr->chunk_count / cols + !!(info_ptr->chunk_count % cols) + 9 + !!info_ptr->global_progress.initial_complete_size : 0 ; /*  +n: number of extra status lines */
+  status_ptr->lines = num_of_lines(info_ptr, cols);
 
   /* initial chunks_status */
   colorset(chunks_status, '0', info_ptr->chunk_count);
@@ -181,7 +196,7 @@ void* status_display(void *void_info_ptr) {
 
   /* finalize and cleanup */
   if (!info_ptr->params->no_status) {
-    saldl_fputs_count(lines, "\n", stderr, "stderr");
+    saldl_fputs_count(status_ptr->lines, "\n", stderr, "stderr");
   }
 
   SALDL_FREE(chunks_status);
