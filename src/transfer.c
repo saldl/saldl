@@ -499,11 +499,11 @@ static void print_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   if (strcmp(params_ptr->start_url, info_ptr->curr_url)) {
-    main_msg("Redirected", info_ptr->curr_url);
+    main_msg("Redirected", "%s", info_ptr->curr_url);
   }
 
   if (info_ptr->content_type) {
-    main_msg("Content-Type", info_ptr->content_type);
+    main_msg("Content-Type", "%s", info_ptr->content_type);
   }
 
   main_msg("Saving To", "%s%s%s%s", params_ptr->filename,
