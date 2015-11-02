@@ -507,8 +507,8 @@ def check_pkg_deps(conf):
 
     print('Check dependencies:')
 
-    # Make sure INCLUDES, CFLAGS and LDFLAGS exist
-    for v in ['INCLUDES', 'CFLAGS', 'LDFLAGS']:
+    # Make sure INCLUDES, RPATH, CFLAGS and LDFLAGS exist
+    for v in ['INCLUDES', 'RPATH', 'CFLAGS', 'LDFLAGS']:
         if not v in conf.env:
             conf.env[v] = []
 
@@ -597,6 +597,12 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
 
         if conf.env[pkg_name.upper() + '_includedir']:
             conf.env.INCLUDES += [ conf.env[pkg_name.upper() + '_includedir'] ]
+
+        # NetBSD relies on RPATH instead of ldconfig
+        # This would only be set if -Wl,-R<dir> (or -Wl,-rpath<DIR>) is a part of Libs
+        rpath_var = 'RPATH_' + pkg_name.upper()
+        if conf.env[rpath_var]:
+            conf.env.RPATH += conf.env[rpath_var]
 
         libpath_var = 'LIBPATH_' + pkg_name.upper()
         if conf.env[libpath_var]:
