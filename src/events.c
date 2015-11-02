@@ -21,7 +21,16 @@
 
 void join_event_pth(event_s *ev_this, pthread_t *event_thread_id) {
   if (ev_this->event_status > EVENT_NULL) {
-    saldl_pthread_join_accept_einval(*event_thread_id, NULL);
+
+    pthread_t calling_thread_id = pthread_self();
+    if (calling_thread_id == *event_thread_id) {
+      warn_msg(FN, "%s thread tried to join itself, detaching instead.", str_EVENT_FD(ev_this->vFD));
+      pthread_detach(*event_thread_id);
+    }
+    else {
+      saldl_pthread_join_accept_einval(*event_thread_id, NULL);
+    }
+
     debug_event_msg(FN, "Setting %s status to EVENT_NULL.", str_EVENT_FD(ev_this->vFD));
     ev_this->event_status = EVENT_NULL;
   }
