@@ -1,9 +1,9 @@
 class Saldl < Formula
   desc "CLI downloader optimized for speed and early preview."
   homepage "https://saldl.github.io"
-  url "https://github.com/saldl/saldl/archive/v30.tar.gz"
-  version "30"
-  sha256 "54f0887ef32ceff1af46e30cf06202a2a9cead4a19d575d22feaad44f92d4d9e"
+  url "https://github.com/saldl/saldl/archive/v31.tar.gz"
+  version "31"
+  sha256 "146a980ae2109a391c7a8ab6a1c525458db9bf18f3f0477731c9b876630078b4"
 
   head do
     # git describe does not work with shallow clones
