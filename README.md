@@ -54,7 +54,7 @@ a [manual page](https://saldl.github.io/saldl.1.html).
 
 ## Build
 
-  **saldl** has been tested on GNU/Linux, Mac OSX, and Windows.
+  **saldl** has been tested on GNU/Linux, NetBSD, FreeBSD, OpenBSD, Mac OSX, and Windows.
 
   **saldl** should build and run successfully on all POSIX platforms.
   If anyone runs into any build failures, reporting them would be highly
