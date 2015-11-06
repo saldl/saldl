@@ -115,7 +115,6 @@ void set_color(size_t *no_color) {
   sprintf(warn_msg_prefix, "%s%s%s%s ", bold, warn_color, WARN_MSG_TXT, end);
   sprintf(error_msg_prefix, "%s%s%s%s ", bold, error_color, ERROR_MSG_TXT, end);
   sprintf(fatal_msg_prefix, "%s%s%s%s ", bold, fatal_color, FATAL_MSG_TXT, end);
-  sprintf(finish_msg, "%s%s%s%s%s ", erase_screen_after, bold, finish_color, FINISH_MSG_TXT, end);
 }
 
 void set_verbosity(size_t *verbosity, bool *libcurl_verbosity) {
@@ -249,6 +248,11 @@ void fatal(const char *name, const char *format, ...) {
     va_end(args);
   }
   exit(EXIT_FAILURE);
+}
+
+void finish_msg_and_exit(const char *msg) {
+  fprintf(stderr, "%s%s%s%s%s%s\n", erase_before, erase_screen_after, bold, finish_color, msg, end);
+  exit(EXIT_SUCCESS);
 }
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

@@ -27,6 +27,6 @@
 #include "ctrl.h"
 #include "status.h"
 
-int saldl(saldl_params*);
+void saldl(saldl_params*);
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

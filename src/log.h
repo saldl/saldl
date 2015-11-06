@@ -95,7 +95,6 @@ char info_msg_prefix[256];
 char warn_msg_prefix[256];
 char error_msg_prefix[256];
 char fatal_msg_prefix[256];
-char finish_msg[256];
 
 typedef void(log_func)(const char*, const char*, ...) __attribute__(( format(SALDL_PRINTF_FORMAT,2,3) ));
 
@@ -104,6 +103,8 @@ log_func *debug_msg;
 log_func *info_msg;
 log_func *warn_msg;
 log_func *err_msg;
+
+void finish_msg_and_exit(const char *msg);
 
 log_func def_debug_event_msg;
 log_func def_debug_msg;

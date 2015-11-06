@@ -56,7 +56,7 @@ static void saldl_free_all(info_s *info_ptr) {
   SALDL_FREE(params_ptr->tunnel_proxy);
 }
 
-int saldl(saldl_params *params_ptr) {
+void saldl(saldl_params *params_ptr) {
   /* Definitions */
   info_s info = DEF_INFO_S;
   info.params = params_ptr;
@@ -97,9 +97,8 @@ int saldl(saldl_params *params_ptr) {
 
   /* exit here if dry_run was set */
   if ( params_ptr->dry_run  ) {
-    info_msg(FN, "Dry-run done.");
     saldl_free_all(&info);
-    return 0;
+    finish_msg_and_exit("Dry-run done.");
   }
 
   check_files_and_dirs(&info);
@@ -196,8 +195,7 @@ saldl_all_data_merged:
   curl_cleanup(&info);
   saldl_free_all(&info);
 
-  fprintf(stderr, "%s\n", finish_msg);
-  return 0;
+  finish_msg_and_exit("Download Finished.");
 }
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */
