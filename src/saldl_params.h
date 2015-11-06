@@ -44,6 +44,8 @@ typedef struct {
   size_t connection_max_rate;
   bool auto_referer;
   char *referer;
+  char *date_expr;
+  char *since_file_mtime;
   char *cookie_file;
   char *inline_cookies;
   char *post;

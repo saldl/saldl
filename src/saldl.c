@@ -47,6 +47,8 @@ static void saldl_free_all(info_s *info_ptr) {
   SALDL_FREE(params_ptr->filename);
   SALDL_FREE(params_ptr->attachment_filename);
   SALDL_FREE(params_ptr->referer);
+  SALDL_FREE(params_ptr->date_expr);
+  SALDL_FREE(params_ptr->since_file_mtime);
   SALDL_FREE(params_ptr->cookie_file);
   SALDL_FREE(params_ptr->inline_cookies);
   SALDL_FREE(params_ptr->post);

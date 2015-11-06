@@ -230,6 +230,24 @@ Custom Request Options
 *-e 'referer', --referer='referer'*::
   set referer.
 
+*-M 'local-file', --since-file-mtime='local-file'*::
+  Sets the 'If-Modified-Since' header with the last modification time
+  of the passed local file.
+  +
+  This option has no effect if *-I*/*--no-remote-info* was passed.
+
+*-Y 'date-expression', --date-cond='date-expression'*::
+  Sets 'If-Modified-Since' header according to the date expression
+  passed. Consult *curl_getdate(3)* for details.
+  +
+  If the expression starts with '+++'-'+++', then 'If-Unmodified-Since' is
+  set.
+  +
+  This option overrides *-M*/*--since-file-mtime*.
+  +
+  This option has no effect if *-I*/*--no-remote-info* was passed.
+
+
 *-Z, --no-compress*::
   Don't request a compressed response. And skip decompression if
   compression was forced by the server.

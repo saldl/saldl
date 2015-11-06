@@ -26,6 +26,57 @@
 #include "gnulib_strcasestr.h" // gnulib implementation
 #endif
 
+static void set_date_cond(CURL *handle, char *time_str) {
+  time_t date;
+
+  SALDL_ASSERT(handle);
+  SALDL_ASSERT(time_str);
+
+  if (time_str[0] == '-') {
+    curl_easy_setopt(handle, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFUNMODSINCE);
+    time_str++;
+  }
+  else {
+    curl_easy_setopt(handle, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+  }
+
+  date = curl_getdate(time_str, NULL);
+  if (date == -1) {
+    fatal(FN, "\"%s\" is not a valid date string.", time_str);
+  }
+
+  curl_easy_setopt(handle, CURLOPT_TIMEVALUE, (long)date);
+
+}
+
+static void set_date_cond_from_file(CURL *handle, char *file_path) {
+  time_t date;
+
+  SALDL_ASSERT(handle);
+  SALDL_ASSERT(file_path);
+
+  date = saldl_file_mtime(file_path);
+
+  if (date < 0) {
+    warn_msg(FN, "Getting mtime of \"%s\" failed, %s.", file_path, strerror(errno));
+  }
+  else {
+    curl_easy_setopt(handle, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+    curl_easy_setopt(handle, CURLOPT_TIMEVALUE, (long)date);
+  }
+}
+
+static void exit_if_date_cond(CURL *handle) {
+  long cond_unmet;
+  SALDL_ASSERT(handle);
+
+  curl_easy_getinfo(handle, CURLINFO_CONDITION_UNMET, &cond_unmet);
+
+  if (cond_unmet) {
+    finish_msg_and_exit("Skipping download due to date condition.");
+  }
+}
+
 static void set_inline_cookies(CURL *handle, char *cookie_str) {
   char *copy_cookie_str = saldl_strdup(cookie_str);
   char *curr = copy_cookie_str, *next = NULL, *sep = NULL, *cookie = NULL;
@@ -259,6 +310,7 @@ static void request_remote_info_simple(thread_s *tmp) {
 
 semi_fatal_request_retry:
   ret = curl_easy_perform(tmp->ehandle);
+  exit_if_date_cond(tmp->ehandle);
   debug_msg(FN, "ret=%u", ret);
 
   switch (ret) {
@@ -330,6 +382,8 @@ static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
 
   while (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
     ret = curl_easy_perform(tmp->ehandle);
+    exit_if_date_cond(tmp->ehandle);
+
     semi_fatal_error = (ret == CURLE_SSL_CONNECT_ERROR || ret == CURLE_SEND_ERROR);
 
     if (!semi_fatal_error) {
@@ -530,8 +584,16 @@ void get_info(info_s *info_ptr) {
   tmp.ehandle = curl_easy_init();
   set_params(&tmp, info_ptr);
 
+  /* Set If-Modified-Since or If-Unmodified-Since here if requested */
+  if (params_ptr->date_expr) {
+    set_date_cond(tmp.ehandle, params_ptr->date_expr);
+  }
+  else if (params_ptr->since_file_mtime) {
+    set_date_cond_from_file(tmp.ehandle, params_ptr->since_file_mtime);
+  }
+
+  /* Resolving the host for the 1st time takes a long time sometimes */
   if (!params_ptr->no_timeouts) {
-    /* Resolving the host for the 1st time takes a long time sometimes */
     curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l);
   }
 

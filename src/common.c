@@ -295,6 +295,14 @@ off_t saldl_fsize_sys(char *file_path) {
   return ret ? ret : st.st_size;
 }
 
+time_t saldl_file_mtime(char *file_path) {
+  int ret;
+  struct stat st;
+  SALDL_ASSERT(file_path);
+  ret = stat(file_path, &st);
+  return ret ? (time_t)ret : st.st_mtime;
+}
+
 int saldl_mkdir(const char *path, mode_t mode) {
   SALDL_ASSERT(path);
 #ifdef HAVE__MKDIR

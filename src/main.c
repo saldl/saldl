@@ -78,6 +78,8 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"no-user-agent", no_argument, 0, 'U'},
     {"no-compress", no_argument, 0, 'Z'},
     {"no-decompress", no_argument, 0, 'z'},
+    {"--since-file-mtime", required_argument, 0, 'M'},
+    {"--date-cond", required_argument, 0, 'Y'},
     {"post", required_argument, 0, 'p'},
     {"raw-post", required_argument, 0, 'P'},
     {"inline-cookies", required_argument, 0, 'k'},
@@ -125,7 +127,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:p:P:e:Eu:UZz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:UZz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -194,6 +196,12 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
       case 'z':
         params_ptr->no_decompress= true;
+        break;
+      case 'M':
+        params_ptr->since_file_mtime = saldl_strdup(optarg);
+        break;
+      case 'Y':
+        params_ptr->date_expr = saldl_strdup(optarg);
         break;
       case 'p':
         params_ptr->post = saldl_strdup(optarg);

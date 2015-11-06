@@ -61,6 +61,7 @@ void saldl_fseeko(const char *label, FILE *f, off_t offset, int whence);
 off_t saldl_ftello(const char *label, FILE *f);
 off_t saldl_fsizeo(const char *label, FILE *f);
 off_t saldl_fsize_sys(char *file_path);
+time_t saldl_file_mtime(char *file_path);
 int saldl_mkdir(const char *path, mode_t mode);
 
 void saldl_pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);
