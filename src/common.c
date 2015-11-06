@@ -287,11 +287,11 @@ off_t saldl_fsizeo(const char *label, FILE *f) {
   return size;
 }
 
-off_t fsize_sys(char *fname) {
+off_t saldl_fsize_sys(char *file_path) {
   int ret;
   struct stat st;
-  SALDL_ASSERT(fname);
-  ret = stat(fname, &st);
+  SALDL_ASSERT(file_path);
+  ret = stat(file_path, &st);
   return ret ? ret : st.st_size;
 }
 
