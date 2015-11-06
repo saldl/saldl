@@ -70,6 +70,14 @@
     }\
   } while(0)
 
+/* predefined msg prefixes */
+#define DEBUG_EVENT_MSG_TXT "[debug-event]"
+#define DEBUG_MSG_TXT "[debug]"
+#define INFO_MSG_TXT "[info]"
+#define WARN_MSG_TXT "[warning]"
+#define ERROR_MSG_TXT "[error]"
+#define FATAL_MSG_TXT "[fatal]"
+
 const char* ret_char;
 
 const char *bold;

@@ -62,15 +62,6 @@
 #define FATAL_COLOR RED_BG WHITE_FG
 #define FINISH_COLOR GREEN_BG WHITE_FG
 
-/* predefined msg prefixes */
-#define DEBUG_EVENT_MSG_TXT "[debug-event]"
-#define DEBUG_MSG_TXT "[debug]"
-#define INFO_MSG_TXT "[info]"
-#define WARN_MSG_TXT "[warning]"
-#define ERROR_MSG_TXT "[error]"
-#define FATAL_MSG_TXT "[fatal]"
-#define FINISH_MSG_TXT "Download Finished"
-
 /* Other vt100 escape sequences */
 #define ERASE_AFTER "\033[0K"
 #define ERASE_SCREEN_BEFORE "\033[1J"
