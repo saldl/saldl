@@ -517,15 +517,11 @@ def check_pkg_deps(conf):
     if conf.options.ENABLE_STATIC:
         conf.env['STLIBPATH'] = []
         conf.env['STLIB'] = []
-        # Deps with no pkg-config support
-        conf.env.append_value('STLIB', 'pthread')
         # Prevent waf from adding -Wl,-Bdynamic
         conf.env['SHLIB_MARKER'] = None
     else:
         conf.env['LIBPATH'] = []
         conf.env['LIB'] = []
-        # Deps with no pkg-config support
-        conf.env.append_value('LIB', 'pthread')
 
     # This order is important if we are providing flags ourselves
     check_libevent_pthreads(conf)
@@ -536,6 +532,12 @@ def check_pkg_deps(conf):
         # libprofiler won't be linked if --as-needed is enabled
         conf.env.append_value('LDFLAGS', '-Wl,--no-as-needed')
         conf.env.append_value('LINKFLAGS', '-Wl,--no-as-needed')
+
+    # Add libpthread
+    if conf.options.ENABLE_STATIC:
+        conf.env.append_value('STLIB', 'pthread')
+    else:
+        conf.env.append_value('LIB', 'pthread')
 
 @conf
 def check_libcurl(conf):
