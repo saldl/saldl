@@ -300,7 +300,7 @@ static long num_redirects(CURL *handle) {
   return redirects;
 }
 
-static void request_remote_info_simple(thread_s *tmp) {
+static void request_remote_info_simple(thread_s *tmp, bool *no_http2) {
   long response;
   short semi_fatal_retries = 0;
   CURLcode ret;
@@ -311,11 +311,24 @@ static void request_remote_info_simple(thread_s *tmp) {
 semi_fatal_request_retry:
   ret = curl_easy_perform(tmp->ehandle);
   exit_if_date_cond(tmp->ehandle);
+
   debug_msg(FN, "ret=%u", ret);
+  curl_easy_getinfo(tmp->ehandle, CURLINFO_RESPONSE_CODE, &response);
+  debug_msg(FN, "response=%ld", response );
 
   switch (ret) {
     case CURLE_OK:
     case CURLE_WRITE_ERROR: /* Caused by *_write_function() returning 0 */
+      break;
+    case CURLE_HTTP_RETURNED_ERROR:
+      if (response == 400 && !(*no_http2)) {
+        /* Assume we got 400 because of the HTTP/2 upgrade request */
+        warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
+        /* Fall-back to HTTP/1.1 */
+        *no_http2 = true;
+        curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        goto semi_fatal_request_retry;
+      }
       break;
     case CURLE_SSL_CONNECT_ERROR:
     case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
@@ -335,9 +348,6 @@ semi_fatal_request_retry:
     default:
       fatal(FN, "libcurl returned (%d: %s) while trying to get remote info.", ret, tmp->err_buf);
   }
-
-  curl_easy_getinfo(tmp->ehandle, CURLINFO_RESPONSE_CODE, &response);
-  debug_msg(FN, "response=%ld", response );
 }
 
 static off_t remote_info_simple_file_size(CURL *handle) {
@@ -381,8 +391,20 @@ static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
   curl_easy_setopt(tmp->ehandle, CURLOPT_RANGE, "4096-8191");
 
   while (semi_fatal_retries <= MAX_SEMI_FATAL_RETRIES) {
+    long response;
+
     ret = curl_easy_perform(tmp->ehandle);
     exit_if_date_cond(tmp->ehandle);
+
+    curl_easy_getinfo(tmp->ehandle, CURLINFO_RESPONSE_CODE, &response);
+    if (ret == CURLE_HTTP_RETURNED_ERROR && response == 400 && !params_ptr->no_http2) {
+      /* Assume we got 400 because of the HTTP/2 upgrade request */
+      warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
+      /* Fall-back to HTTP/1.1 */
+      params_ptr->no_http2 = true;
+      curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+      continue;
+    }
 
     semi_fatal_error = (ret == CURLE_SSL_CONNECT_ERROR || ret == CURLE_SEND_ERROR);
 
@@ -624,7 +646,7 @@ void get_info(info_s *info_ptr) {
   headers_info(info_ptr);
 
   if (ret_ranges || !info_ptr->file_size) {
-    request_remote_info_simple(&tmp);
+    request_remote_info_simple(&tmp, &params_ptr->no_http2);
     headers_info(info_ptr);
     /* We didn't get file size from Content-Range, so get it from Content-Length */
     info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle);
