@@ -96,6 +96,7 @@ size_t saldl_min(size_t a, size_t b);
 size_t saldl_max(size_t a, size_t b);
 off_t saldl_max_o(off_t a, off_t b);
 size_t saldl_max_z_umax(uintmax_t a, uintmax_t b);
+char* saldl_getcwd(char *buf, size_t size);
 char* valid_filename(const char *pre_valid);
 char* trunc_filename(const char *pre_trunc, int keep_ext);
 size_t parse_num_d(const char *num_char);

@@ -568,6 +568,19 @@ size_t saldl_max_z_umax(uintmax_t a, uintmax_t b) {
   return (size_t)ret;
 }
 
+char* saldl_getcwd(char *buf, size_t size) {
+  char *ret = NULL;
+  SALDL_ASSERT(buf);
+  SALDL_ASSERT(size);
+
+  ret = getcwd(buf, size);
+  if (!ret) {
+    fatal(FN, "Failed getting current directory path: %s", strerror(errno));
+  }
+
+  return  ret;
+}
+
 char* valid_filename(const char *pre_valid) {
   char *corrected_name;
 

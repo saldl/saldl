@@ -543,7 +543,13 @@ static void set_names(info_s* info_ptr) {
   /* Set part/ctrl filenames, tmp dir */
   {
     char cwd[PATH_MAX];
-    snprintf(info_ptr->part_filename,PATH_MAX-(params_ptr->filename[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),"%s.part.sal",params_ptr->filename);
+    size_t pre_path_len = 0;
+
+    if (params_ptr->filename[0] != '/') {
+      pre_path_len = strlen(saldl_getcwd(cwd,PATH_MAX)) + 1;
+    }
+
+    snprintf(info_ptr->part_filename, PATH_MAX-pre_path_len, "%s.part.sal", params_ptr->filename);
     snprintf(info_ptr->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
     snprintf(info_ptr->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
   }
