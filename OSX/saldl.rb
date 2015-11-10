@@ -15,7 +15,7 @@ class Saldl < Formula
   depends_on "libevent"
 
   # curl >= 7.42 is required
-  depends_on "curl" if MacOS <= :mavericks
+  depends_on "curl" if MacOS.version <= :mavericks
 
   def install
     # a2x/asciidoc needs this to build the man page successfully
