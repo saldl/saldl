@@ -34,6 +34,7 @@ class Saldl < Formula
   end
 
   test do
-    system "saldl", "--version"
+    system "#{bin}/saldl", "http://brew.sh/index.html"
+    assert File.exist? "index.html"
   end
 end
