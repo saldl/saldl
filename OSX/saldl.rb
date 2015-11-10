@@ -20,8 +20,6 @@ class Saldl < Formula
     ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     args = [
-      "--libcurl-cflags=-I#{HOMEBREW_PREFIX}/opt/curl/include",
-      "--libcurl-libs=-L#{HOMEBREW_PREFIX}/opt/curl/lib -lcurl",
       "--prefix=#{prefix}"
     ]
 
