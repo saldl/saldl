@@ -28,6 +28,10 @@ class Saldl < Formula
     # head uses git describe to acquire a version
     args << "--saldl-version=v#{version}" unless build.head?
 
+    # pkg-config is not supported with system libcurl
+    args << "--libcurl-libs=-lcurl" if MacOS.version > :mavericks
+    args << "--libcurl-cflags=" if MacOS.version > :mavericks
+
     system "./waf", "configure", *args
     system "./waf", "build"
     system "./waf", "install"
