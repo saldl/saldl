@@ -23,6 +23,25 @@
 #error redefining SALDL_PROGRESS_H
 #endif
 
+/* Those defines are customizable */
+#define STATUS_CH_PRG_NOT_STARTED '0'
+#define STATUS_CH_PRG_QUEUED '1'
+#define STATUS_CH_PRG_STARTED '2'
+#define STATUS_CH_PRG_FINISHED '3'
+#define STATUS_CH_PRG_MERGED '4'
+#define STATUS_CH_PRG_UNDEF '7' // unused
+
+/* array for chunk progress chars, as displayed in status */
+/* This needs to map 1-1 with CH_CHUNK_PROGRESS enum below */
+static const char STATUS_CH_CHUNK_PROGRESS[] = {
+  STATUS_CH_PRG_NOT_STARTED,
+  STATUS_CH_PRG_QUEUED,
+  STATUS_CH_PRG_STARTED,
+  STATUS_CH_PRG_FINISHED,
+  STATUS_CH_PRG_MERGED,
+  STATUS_CH_PRG_UNDEF
+};
+
 /* enum for chunk progress */
 enum CHUNK_PROGRESS {
   PRG_NOT_STARTED = 0,
@@ -41,25 +60,6 @@ enum CH_CHUNK_PROGRESS {
   CH_PRG_FINISHED = '3', // but not merged
   CH_PRG_MERGED = '4',
   CH_PRG_UNDEF = '7'
-};
-
-/* Decouple displayed status progress chars from internal ones */
-#define STATUS_CH_PRG_NOT_STARTED '0'
-#define STATUS_CH_PRG_QUEUED '1'
-#define STATUS_CH_PRG_STARTED '2'
-#define STATUS_CH_PRG_FINISHED '3'
-#define STATUS_CH_PRG_MERGED '4'
-#define STATUS_CH_PRG_UNDEF '7' // unused
-
-/* array for chunk progress chars, as displayed in status */
-/* This needs to map 1-1 with CH_CHUNK_PROGRESS enum above */
-static const char STATUS_CH_CHUNK_PROGRESS[] = {
-  STATUS_CH_PRG_NOT_STARTED,
-  STATUS_CH_PRG_QUEUED,
-  STATUS_CH_PRG_STARTED,
-  STATUS_CH_PRG_FINISHED,
-  STATUS_CH_PRG_MERGED,
-  STATUS_CH_PRG_UNDEF
 };
 
 #include "structs.h"
