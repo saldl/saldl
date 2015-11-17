@@ -12,6 +12,9 @@ class Saldl < Formula
 
   depends_on "pkg-config" => :build
   depends_on "asciidoc" => :build
+  # Install DTDs locally for a faster and more reliable build result
+  depends_on "docbook-xsl" => :build
+
   depends_on "libevent"
 
   # Add option to use keg_only curl formula instead of the version provided by OSX
