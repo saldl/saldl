@@ -14,14 +14,11 @@ class Saldl < Formula
 
   depends_on "libevent"
 
-  # Add option to use keg_only curl formula instead of the version provided by OSX
-  if MacOS.version >= :yosemite
-    option "with-local-libcurl", "Use keg_only curl formula which provides more features and faster fixes"
-  end
-
-  if MacOS.version < :yosemite || build.with?("local-libcurl")
+  if MacOS.version <= :mavericks
     # curl >= 7.42 is required
     depends_on "curl"
+  else
+    depends_on "curl" => :optional
   end
 
   def install
