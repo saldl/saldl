@@ -53,7 +53,7 @@ typedef struct {
   char **custom_headers; /* NULL-terminated */
   char **proxy_custom_headers; /* NULL-terminated */
   bool no_http2;
-  bool no_compress;
+  bool compress;
   bool no_decompress;
   bool no_user_agent;
   char *user_agent;

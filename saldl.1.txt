@@ -248,18 +248,13 @@ Custom Request Options
   This option has no effect if *-I*/*--no-remote-info* was passed.
 
 
-*-Z, --no-compress*::
-  Don't request a compressed response. And skip decompression if
-  compression was forced by the server.
+*-z, --compress*::
+  Request a compressed response. Single mode would be forced if the server
+  supports compression. Unless *-Z*/*--no-decompress* was passed.
 
-*-z, --no-decompress*::
-  Explicitly disable decompression. Even if we requested (default)
-  and received compressed data.
-
-[NOTE]
-===============
-*-Z*/*--no-compress* implies *-z*/*--no-decompress*.
-===============
+*-Z, --no-decompress*::
+  Disable decompression, whether compression was requested or forced by
+  the server.
 
 *-K 'cookie-file', --cookie-file='cookie-file'*::
   File to read cookies from .

@@ -171,6 +171,13 @@ static void headers_info(info_s *info_ptr) {
   if (h->content_encoding) {
     debug_msg(FN, "Content-Encoding: %s", h->content_encoding);
     info_ptr->content_encoded = true;
+
+    if (!info_ptr->params->compress) {
+      info_msg(FN, "Compression forced by server.");
+      /* Pretend that we asked for compression to allow automatic decompression */
+      info_ptr->params->compress = true;
+    }
+
     SALDL_FREE(h->content_encoding);
   }
 
@@ -186,14 +193,10 @@ static void headers_info(info_s *info_ptr) {
     info_ptr->content_type = saldl_strdup(h->content_type);
 
     if (strcasestr(h->content_type, "gzip")) {
-      if (!info_ptr->params->no_compress) {
-        debug_msg(FN, "Skipping compression request, the content is already gzipped.");
-        info_ptr->params->no_compress = true;
+      if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
+        info_msg(FN, "Skipping decompression, the content is already gzipped.");
+        info_ptr->params->no_decompress = true;
       }
-
-      info_ptr->content_encoded = false;
-      /* XXX: no_decompress in case Content-Encoding was forced anyway */
-      info_ptr->params->no_decompress = true;
     }
 
     SALDL_FREE(h->content_type);
@@ -242,9 +245,17 @@ static void headers_info(info_s *info_ptr) {
   }
 
   if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
-      debug_msg(FN, "Content compressed and will be decompressed.");
-      debug_msg(FN, "Strict downloaded file size checking will be skipped.");
+    if (!info_ptr->params->single_mode) {
+      warn_msg(FN, "Content compressed and will be decompressed, forcing single mode.");
+      warn_msg(FN, "Single mode wouldn't be forced if the user requests no decompression.");
+      info_ptr->params->single_mode = true;
     }
+    else {
+      debug_msg(FN, "Content compressed and will be decompressed.");
+    }
+
+    debug_msg(FN, "Strict downloaded file size checking will be skipped.");
+  }
 
 }
 
@@ -1106,11 +1117,15 @@ void set_params(thread_s *thread, info_s *info_ptr) {
     }
   }
 
-  /* NOTE: no_compress could be set by the user, or by header_function() */
-  if (!params_ptr->no_compress) {
-    curl_easy_setopt(thread->ehandle, CURLOPT_ACCEPT_ENCODING, ""); /* "" sends all supported encodings */
+  if (params_ptr->compress) {
+    /* "" sends all supported encodings */
+    curl_easy_setopt(thread->ehandle, CURLOPT_ACCEPT_ENCODING, "");
 
-    /* We do this here as setting no_decompress with no_compress is meaningless */
+    /* We do this here as setting no_decompress without compress is meaningless.
+     * Check out CURLOPT_HTTP_CONTENT_DECODING man page for details.
+     * Note that no_decompress will always work because we pretend that we
+     * requested compression if compression was forced by the server.
+     */
     if (params_ptr->no_decompress) {
       curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_CONTENT_DECODING, 0l);
     }

@@ -76,8 +76,8 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"connection-max-rate", required_argument, 0, 'R'},
     {"user-agent", required_argument, 0, 'u'},
     {"no-user-agent", no_argument, 0, 'U'},
-    {"no-compress", no_argument, 0, 'Z'},
-    {"no-decompress", no_argument, 0, 'z'},
+    {"compress", no_argument, 0, 'z'},
+    {"no-decompress", no_argument, 0, 'Z'},
     {"--since-file-mtime", required_argument, 0, 'M'},
     {"--date-cond", required_argument, 0, 'Y'},
     {"post", required_argument, 0, 'p'},
@@ -191,10 +191,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
       case 'U':
         params_ptr->no_user_agent = true;
         break;
-      case 'Z':
-        params_ptr->no_compress= true;
-        break;
       case 'z':
+        params_ptr->compress= true;
+        break;
+      case 'Z':
         params_ptr->no_decompress= true;
         break;
       case 'M':
