@@ -52,6 +52,11 @@ a [manual page](https://saldl.github.io/saldl.1.html).
   * git (to get the current version).
   * asciidoc (to build the manual).
 
+  **Note**: `docbook-xsl` should be installed too if it's not already
+            a dependency of `asciidoc`. While this is theoritically not
+            necessary, falling back to getting XSL stylesheets directly
+            from SourceForge seems to be unreliable nowadays.
+
 ## Build
 
   **saldl** has been tested on GNU/Linux, NetBSD, FreeBSD, OpenBSD, Mac OSX, and Windows.
