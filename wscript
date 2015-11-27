@@ -233,6 +233,7 @@ def check_api(conf):
     conf.check_cc(function_name='strsignal', header_name="string.h", mandatory=False)
     conf.check_cc(function_name='sigaction', header_name="signal.h", mandatory=False)
     conf.check_cc(function_name='sigaddset', header_name="signal.h", mandatory=False)
+    conf.check_cc(function_name='mmap', header_name="sys/mman.h", mandatory=False)
 
 @conf
 def check_flags(conf):

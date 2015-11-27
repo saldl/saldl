@@ -20,6 +20,10 @@
 #include "write_modes.h"
 #include "merge.h" /* set_chunk_merged() */
 
+#ifdef HAVE_MMAP
+#include <sys/mman.h>
+#endif
+
 /* Default (tmp files) mode */
 static void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
   SALDL_ASSERT(chunk);
@@ -82,6 +86,41 @@ static size_t file_write_function(void  *ptr, size_t  size, size_t nmemb, void *
   return realsize;
 }
 
+static int tmpf_write_use_mmap(chunk_s *chunk, info_s *info_ptr, off_t offset) {
+  SALDL_ASSERT(chunk);
+  SALDL_ASSERT(info_ptr);
+#ifdef HAVE_MMAP
+  file_s *tmp_f = chunk->storage;
+
+  SALDL_ASSERT(tmp_f);
+  SALDL_ASSERT(tmp_f->file);
+
+
+  int chunk_fd = fileno(tmp_f->file);
+  SALDL_ASSERT(chunk_fd > 0);
+
+  SALDL_ASSERT(chunk->size);
+
+  void *tmp_buf = mmap(0, chunk->size, PROT_READ, MAP_SHARED, chunk_fd, 0);
+  if (tmp_buf == MAP_FAILED) {
+    warn_msg(FN, "mmap()ing chunk file %"SAL_ZU" failed, %s.", chunk->idx, strerror(errno));
+    warn_msg(FN, "Falling back to fread()/fwrite() .");
+    return -2;
+  }
+
+  saldl_fwrite_fflush(tmp_buf, 1, chunk->size, info_ptr->file, info_ptr->part_filename, offset);
+
+  if (munmap(tmp_buf, chunk->size)) {
+    warn_msg(FN, "munmap()ing chunk file %"SAL_ZU" failed.", chunk->idx);
+  }
+
+  return 0;
+#else
+  (void) offset;
+  return -1;
+#endif
+}
+
 static int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
   SALDL_ASSERT(chunk);
   SALDL_ASSERT(info_ptr);
@@ -106,15 +145,21 @@ static int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
 
   SALDL_ASSERT(chunk->size);
 
-  size_t size = chunk->size;
-  char *tmp_buf = saldl_calloc(size, sizeof(char));
 
-  size_t f_ret = 0;
-  if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
-    fatal(FN, "Reading from tmp file %s at offset %"SAL_JD" failed, chunk_size=%"SAL_ZU", fread() returned %"SAL_ZU".", tmp_f->name, (intmax_t)offset, size, f_ret);
+  if (info_ptr->params->no_mmap || tmpf_write_use_mmap(chunk, info_ptr, offset)) {
+    size_t size = chunk->size;
+    char *tmp_buf = saldl_calloc(size, sizeof(char));
+
+    size_t f_ret = 0;
+    if ( ( f_ret = fread(tmp_buf, 1, size, tmp_f->file) ) != size ) {
+      fatal(FN, "Reading from tmp file %s at offset %"SAL_JD" failed, chunk_size=%"SAL_ZU", fread() returned %"SAL_ZU".", tmp_f->name, (intmax_t)offset, size, f_ret);
+    }
+
+    saldl_fwrite_fflush(tmp_buf, 1, size, info_ptr->file, info_ptr->part_filename, offset);
+
+    SALDL_FREE(tmp_buf);
   }
 
-  saldl_fwrite_fflush(tmp_buf, 1, size, info_ptr->file, info_ptr->part_filename, offset);
   set_chunk_merged(chunk);
   saldl_fclose(tmp_f->name, tmp_f->file);
 
@@ -122,7 +167,6 @@ static int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
     fatal(FN, "Removing file %s failed: %s", tmp_f->name, strerror(errno));
   }
 
-  SALDL_FREE(tmp_buf);
   SALDL_FREE(tmp_f->name);
   SALDL_FREE(tmp_f);
 

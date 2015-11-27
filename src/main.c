@@ -116,11 +116,13 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_READ_ONLY               CHAR_MAX+6
 #define SAL_OPT_CUSTOM_HEADERS          CHAR_MAX+7
 #define SAL_OPT_PROXY_CUSTOM_HEADERS    CHAR_MAX+8
+#define SAL_OPT_NO_MMAP                 CHAR_MAX+9
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
     {"no-status", no_argument, 0, SAL_OPT_NO_STATUS},
     {"verbose-libcurl", no_argument, 0, SAL_OPT_VERBOSE_LIBCURL},
     {"skip-TLS-verification", no_argument, 0, SAL_OPT_SKIP_TLS_VERIFICATION},
     {"assume-range-support", no_argument, 0, SAL_OPT_ASSUME_RANGE_SUPPORT},
+    {"no-mmap", no_argument, 0, SAL_OPT_NO_MMAP},
     {"read-only", no_argument, 0, SAL_OPT_READ_ONLY},
     {"custom-headers", required_argument, 0, SAL_OPT_CUSTOM_HEADERS},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
@@ -296,6 +298,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_ASSUME_RANGE_SUPPORT:
         params_ptr->assume_range_support = true;
+        break;
+
+      case SAL_OPT_NO_MMAP:
+        params_ptr->no_mmap = true;
         break;
 
       case SAL_OPT_READ_ONLY:

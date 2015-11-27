@@ -50,10 +50,8 @@ Chunk Progress States
 *3*::
   Chunk downloaded, but still not merged. +
   +
-  This state should be transient. If it's not, your system might have
-  load problems. Otherwise, you might benefit from storing chunks in
-  memory buffers as detailed in
-  <<temp-files_vs_mem-bufs,*Temporary Files vs. Memory Buffers*>>.
+  This state should be transient. If it's not, your system probably has
+  load problems (CPU/IO/memory).
 
 *2*::
   Chunk download is in progress.
@@ -88,12 +86,18 @@ General
 
 *-m, --memory-buffers*::
   Use memory buffers instead of temp files for downloading chunks. +
-  See <<temp-files_vs_mem-bufs,Temporary Files vs. Memory Buffers>>
-  for details.
+  This mode increases memory overhead. And we lose sub-chunk resumability.
+  But it might help performance in some situations, especially when IO is
+  the bottleneck.
 
 *--read-only*::
   Don't create files or write anything to disk.
   This should be only used to test network performance.
+
+*--no-mmap* (default mode only)::
+  Read chunk files into buffers instead of using mmap(). +
+  This option hurts performance and should only be used for
+  debugging.
 
 [[ui-opts]]
 UI Options
@@ -388,38 +392,6 @@ the <<ui-opts,*--verbose-libcurl*>> option.
 
 *-VVVVVV*::
   Show debug messages from event loops.
-
-
-[[temp-files_vs_mem-bufs]]
-Temporary Files vs. Memory Buffers
------------------------------------
-
-By default, *{manname}* stores chunks in temporary files. Until they
-are fully downloaded. Then, *{manname}* merges those completed chunks
-in '<filename>.part.sal', and deletes the temporary files.
-
-This approach allows us to have sub-chunk resumability. And we avoid
-losing any already downloaded data in case of a failure or interruption.
-
-This works very well in most cases. But there exists scenarios
-where this approach is clearly suboptimal.
-
-Suppose you have one of those cheap NAND flash memory devices. Or you
-are using a network file-system. Or your network speed is so fast
-that your storage device can't keep up. In those cases, it is advisable
-to avoid any IO activity that is not absolutely necessary.
-
-To optimize for those scenarios, *{manname}* can use memory buffers
-(the option <<gen-opts,*-m/--memory-buffers*>>) instead of temporary
-files. But this comes at a cost of losing sub-chunk resumability and
-memory overhead. So, use this option wisely. You should definitely not use
-this option with <<ch-sz-conn,*-w/--whole-file*>>.
-
-[NOTE]
-============
-If <<ch-sz-conn,Single mode>> is enabled, downloaded data is written
-directly to '<filename>.part.sal'
-============
 
 
 EXIT STATUS

@@ -76,6 +76,7 @@ typedef struct {
   bool force;
   int auto_size;
   bool whole_file;
+  bool no_mmap;
   bool mem_bufs;
   bool read_only;
 } saldl_params;
