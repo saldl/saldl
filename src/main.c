@@ -74,6 +74,8 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"last-size-first" , required_argument, 0, 'L'},
     {"connections", required_argument, 0, 'c'},
     {"connection-max-rate", required_argument, 0, 'R'},
+    {"resolve-ipv6", no_argument, 0, '6'},
+    {"resolve-ipv4", no_argument, 0, '4'},
     {"user-agent", required_argument, 0, 'u'},
     {"no-user-agent", no_argument, 0, 'U'},
     {"compress", no_argument, 0, 'z'},
@@ -129,7 +131,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:UZz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:U64Zz";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -216,6 +218,12 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
       case 'K':
         params_ptr->cookie_file = saldl_strdup(optarg);
+        break;
+      case '6':
+        params_ptr->forced_ip_protocol = 6;
+        break;
+      case '4':
+        params_ptr->forced_ip_protocol = 4;
         break;
       case 'e':
         params_ptr->referer = saldl_strdup(optarg);

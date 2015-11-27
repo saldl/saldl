@@ -204,6 +204,17 @@ Filename Options
 Network Options
 ~~~~~~~~~~~~~~~~
 
+*-6, --resolve-ipv6*::
+  Only resolve to IPv6 addresses.
+
+*-4, --resolve-ipv4*::
+  Only resolve to IPv4 addresses.
+
+[NOTE]
+================
+If both *-6* and *-4* are passed, what's passed last will take precedence.
+================
+
 *-R 'bandwidth', --connection-max-rate='bandwidth'*::
   maximum rate per connection in bytes/s. <<unit-suf,*A unit suffix*>>
   can be used.
