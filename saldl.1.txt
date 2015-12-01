@@ -332,6 +332,9 @@ cases:
 *--no-http2*::
   Don't try HTTP/2 requests.
 
+*--no-tcp-keep-alive*::
+  Don't send TCP keep-alive probes.
+
 *--assume-range-support*::
   Don't use this. The wrong data will probably be downloaded.
 

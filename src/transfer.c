@@ -1034,6 +1034,13 @@ void set_params(thread_s *thread, info_s *info_ptr) {
    */
   curl_easy_setopt(thread->ehandle, CURLOPT_TCP_NODELAY, 1l);
 
+  /* Enable TCP keep-alive by default, and use a short interval (6s) between probes */
+  if (!params_ptr->no_tcp_keep_alive) {
+    curl_easy_setopt(thread->ehandle, CURLOPT_TCP_KEEPALIVE, 1l);
+    curl_easy_setopt(thread->ehandle, CURLOPT_TCP_KEEPIDLE, 6l);
+    curl_easy_setopt(thread->ehandle, CURLOPT_TCP_KEEPINTVL, 6l);
+  }
+
   /* Add server custom headers.
    * They will be added to the request after appending raw_post headers if set. */
   if (params_ptr->custom_headers) {

@@ -63,6 +63,7 @@ typedef struct {
   bool no_proxy;
   bool tls_no_verify;
   bool no_timeouts;
+  bool no_tcp_keep_alive;
   bool head;
   bool no_remote_info;
   bool no_attachment_detection;

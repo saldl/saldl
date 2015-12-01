@@ -119,7 +119,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_CUSTOM_HEADERS          CHAR_MAX+7
 #define SAL_OPT_PROXY_CUSTOM_HEADERS    CHAR_MAX+8
 #define SAL_OPT_NO_MMAP                 CHAR_MAX+9
+#define SAL_OPT_NO_TCP_KEEP_ALIVE       CHAR_MAX+10
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
+    {"no-tcp-keep-alive", no_argument, 0, SAL_OPT_NO_TCP_KEEP_ALIVE},
     {"no-status", no_argument, 0, SAL_OPT_NO_STATUS},
     {"verbose-libcurl", no_argument, 0, SAL_OPT_VERBOSE_LIBCURL},
     {"skip-TLS-verification", no_argument, 0, SAL_OPT_SKIP_TLS_VERIFICATION},
@@ -298,6 +300,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
       /* long only */
       case SAL_OPT_NO_HTTP2:
         params_ptr->no_http2 = true;
+        break;
+
+      case SAL_OPT_NO_TCP_KEEP_ALIVE:
+        params_ptr->no_tcp_keep_alive = true;
         break;
 
       case SAL_OPT_SKIP_TLS_VERIFICATION:
