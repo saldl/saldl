@@ -81,6 +81,7 @@ typedef struct {
   bool no_mmap;
   bool mem_bufs;
   bool read_only;
+  bool to_stdout;
 } saldl_params;
 
 /* Static initializer.

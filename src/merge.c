@@ -22,7 +22,6 @@
 static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
   event_s *ev_merge = &info_ptr->ev_merge;
-  chunk_s *chunks = info_ptr->chunks;
 
   debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_merge->num_of_calls, str_EVENT_FD(fd) , what);
 
@@ -30,9 +29,18 @@ static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
     events_deactivate(ev_merge);
   }
 
-  for (size_t counter = 0 ; counter < info_ptr->chunk_count ; counter++) {
-    if (chunks[counter].progress == PRG_FINISHED) {
-      info_ptr->merge_finished(&chunks[counter], info_ptr);
+  chunk_s *first_finished = NULL;
+  while ( (first_finished = first_prg(info_ptr, PRG_FINISHED, true)) ) {
+    /* Don't delay merging if:
+     * 1- We are not piping.
+     * 2- It's the first chunk
+     * 3- All previous chunks have been merged/sent to pipe.
+     */
+    if (!info_ptr->params->to_stdout ||
+        !first_finished->idx ||
+        !first_prg_with_range(info_ptr, PRG_MERGED, false, 0, first_finished->idx - 1)
+        ) {
+      info_ptr->merge_finished(first_finished, info_ptr);
     }
   }
 
@@ -46,8 +54,8 @@ void* merger_thread(void *void_info_ptr) {
   info_ptr->ev_merge.event_status = EVENT_THREAD_STARTED;
 
   /* event loop */
-  /* Use 3s max time-out, the default 0.5s is an overkill */
-  info_ptr->ev_merge.tv =  (struct timeval) { .tv_sec = 3, .tv_usec = 0 };
+  /* Use 2s max time-out, the default 0.5s is an overkill */
+  info_ptr->ev_merge.tv =  (struct timeval) { .tv_sec = 2, .tv_usec = 0 };
   events_init(&info_ptr->ev_merge, merge_finished_cb, info_ptr, EVENT_MERGE_FINISHED);
 
   if (exist_prg(info_ptr, PRG_MERGED, false) && info_ptr->session_status != SESSION_INTERRUPTED) {

@@ -120,6 +120,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_PROXY_CUSTOM_HEADERS    CHAR_MAX+8
 #define SAL_OPT_NO_MMAP                 CHAR_MAX+9
 #define SAL_OPT_NO_TCP_KEEP_ALIVE       CHAR_MAX+10
+#define SAL_OPT_STDOUT                  CHAR_MAX+11
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
     {"no-tcp-keep-alive", no_argument, 0, SAL_OPT_NO_TCP_KEEP_ALIVE},
     {"no-status", no_argument, 0, SAL_OPT_NO_STATUS},
@@ -127,6 +128,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"skip-TLS-verification", no_argument, 0, SAL_OPT_SKIP_TLS_VERIFICATION},
     {"assume-range-support", no_argument, 0, SAL_OPT_ASSUME_RANGE_SUPPORT},
     {"no-mmap", no_argument, 0, SAL_OPT_NO_MMAP},
+    {"stdout", no_argument, 0, SAL_OPT_STDOUT},
     {"read-only", no_argument, 0, SAL_OPT_READ_ONLY},
     {"custom-headers", required_argument, 0, SAL_OPT_CUSTOM_HEADERS},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
@@ -316,6 +318,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_NO_MMAP:
         params_ptr->no_mmap = true;
+        break;
+
+      case SAL_OPT_STDOUT:
+        params_ptr->to_stdout= true;
         break;
 
       case SAL_OPT_READ_ONLY:

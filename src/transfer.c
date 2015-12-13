@@ -466,6 +466,10 @@ static void set_names(info_s* info_ptr) {
 
   saldl_params *params_ptr = info_ptr->params;
 
+  if (params_ptr->to_stdout) {
+    params_ptr->filename = saldl_strdup("STDOUT");
+  }
+
   if (!params_ptr->filename) {
     char *prev_unescaped, *unescaped;
 
@@ -574,7 +578,11 @@ static void set_names(info_s* info_ptr) {
   }
 
   /* Set part/ctrl filenames, tmp dir */
-  {
+  if (params_ptr->to_stdout) {
+    strncpy(info_ptr->part_filename, "STDOUT", PATH_MAX);
+    strncpy(info_ptr->ctrl_filename, "NONE", PATH_MAX); /* Not used */
+  }
+  else {
     char cwd[PATH_MAX];
     size_t pre_path_len = 0;
 
@@ -584,8 +592,8 @@ static void set_names(info_s* info_ptr) {
 
     snprintf(info_ptr->part_filename, PATH_MAX-pre_path_len, "%s.part.sal", params_ptr->filename);
     snprintf(info_ptr->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
-    snprintf(info_ptr->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
   }
+  snprintf(info_ptr->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
 }
 
 static void print_info(info_s *info_ptr) {
@@ -599,8 +607,10 @@ static void print_info(info_s *info_ptr) {
     main_msg("Content-Type", "%s", info_ptr->content_type);
   }
 
-  main_msg("Saving To", "%s%s%s%s", params_ptr->filename,
-      error_color, params_ptr->read_only ? " [read-only]" : "", end);
+  const char *save_mode = "";
+  if (params_ptr->to_stdout) save_mode = " [stdout]";
+  if (params_ptr->read_only) save_mode = " [read-only]";
+  main_msg("Saving To", "%s%s%s%s", params_ptr->filename, error_color, save_mode, end);
 
   if (info_ptr->file_size > 0) {
     off_t file_size = info_ptr->file_size;
@@ -1188,7 +1198,15 @@ void set_single_mode(info_s *info_ptr) {
 void check_files_and_dirs(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
-  if (!params_ptr->read_only) {
+  if (params_ptr->read_only) {
+    return;
+  }
+
+  if (params_ptr->to_stdout) {
+    info_ptr->file = stdout;
+  }
+
+  if (!params_ptr->to_stdout) {
     if (params_ptr->resume) {
       if ( !(info_ptr->file = fopen(info_ptr->part_filename,"rb+")) ) {
         fatal(FN, "Failed to open %s for writing: %s", info_ptr->part_filename, strerror(errno));
@@ -1207,15 +1225,20 @@ void check_files_and_dirs(info_s *info_ptr) {
   /* if tmp dir exists */
   if (! access(info_ptr->tmp_dirname, F_OK) ) {
     if (params_ptr->mem_bufs || params_ptr->single_mode) {
-      warn_msg(FN, "%s seems to be left over. You have to delete the dir manually.", info_ptr->tmp_dirname);
+      warn_msg(FN, "%s seems to be left over. You have to delete this dir manually.", info_ptr->tmp_dirname);
     }
     else if (!info_ptr->extra_resume_set) {
-      fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete the dir manually.", info_ptr->tmp_dirname);
+      if (params_ptr->to_stdout) {
+      fatal(FN, "%s is left over from a previous run. You have to delete this dir manually.", info_ptr->tmp_dirname);
+      }
+      else {
+      fatal(FN, "%s is left over from a previous run with different chunk size. You have to use the same chunk size or delete this dir manually.", info_ptr->tmp_dirname);
+      }
     }
   }
   /* if dir does not exist */
-  else if (!params_ptr->read_only && !params_ptr->mem_bufs && !params_ptr->single_mode) {
-    if ( info_ptr->extra_resume_set ) {
+  else if (!params_ptr->mem_bufs && !params_ptr->single_mode) {
+    if (info_ptr->extra_resume_set) {
       warn_msg(FN, "%s did not exist. Maybe previous run used memory buffers or the dir was deleted manually.", info_ptr->tmp_dirname);
     }
     /* mkdir with 700 perms */
@@ -1225,7 +1248,7 @@ void check_files_and_dirs(info_s *info_ptr) {
   }
 
   /* ctrl */
-  if (!params_ptr->read_only) {
+  if (!params_ptr->to_stdout) {
     if (!params_ptr->resume && !params_ptr->force && !access(info_ptr->ctrl_filename, F_OK)) {
       fatal(FN, "Resume disabled and %s exists.", info_ptr->ctrl_filename);
     }

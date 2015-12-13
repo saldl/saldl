@@ -117,6 +117,13 @@ static off_t resume_was_default(info_s *info_ptr, ctrl_info_s *ctrl) {
 
 void check_resume(info_s *info_ptr) {
   ctrl_info_s ctrl;
+  saldl_params *params_ptr = info_ptr->params;
+
+  if (params_ptr->read_only || params_ptr->to_stdout) {
+    warn_msg(FN, "resume does not work if read-only or piping to stdout, disabling..");
+    params_ptr->resume = false;
+    return;
+  }
 
   if (access(info_ptr->part_filename,F_OK)) {
     info_msg(FN, "Nothing to resume: %s does not exist.", info_ptr->part_filename);

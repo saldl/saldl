@@ -140,8 +140,11 @@ static int merge_finished_tmpf(chunk_s *chunk, info_s *info_ptr) {
   SALDL_ASSERT(info_ptr->part_filename);
 
   saldl_fseeko(tmp_f->name, tmp_f->file, 0, SEEK_SET);
-  saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
   saldl_fflush(tmp_f->name, tmp_f->file);
+
+  if (!info_ptr->params->to_stdout) {
+    saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
+  }
 
   SALDL_ASSERT(chunk->size);
 
@@ -221,7 +224,10 @@ static int merge_finished_mem(chunk_s *chunk, info_s *info_ptr) {
   SALDL_ASSERT(info_ptr->params);
   SALDL_ASSERT(info_ptr->params->chunk_size);
 
-  saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
+  if (!info_ptr->params->to_stdout) {
+    saldl_fseeko(info_ptr->part_filename, info_ptr->file, offset, SEEK_SET);
+  }
+
   saldl_fwrite_fflush(buf->memory, 1, size, info_ptr->file, info_ptr->part_filename, offset);
 
   SALDL_FREE(buf->memory);
@@ -263,6 +269,11 @@ static void reset_storage_single(thread_s *thread) {
 
   saldl_fseeko(storage->name, storage->file, offset, SEEK_SET);
   info_msg(FN, "restarting from offset %"SAL_JD"", (intmax_t)offset);
+}
+
+static void reset_storage_single_pipe(thread_s *thread) {
+  (void)thread;
+  fatal(FN, "Handling non-fatal failures requires seeking.");
 }
 
 static size_t single_write_function(void  *ptr, size_t  size, size_t nmemb, void *data) {
@@ -311,13 +322,18 @@ void set_modes(info_s *info_ptr) {
     info_ptr->merge_finished = &merge_finished_null;
     reset_storage = &reset_storage_null;
   }
-  else if ( params_ptr->single_mode ) {
+  else if (params_ptr->single_mode) {
     info_msg(FN, "single mode, writing to %s directly.", info_ptr->part_filename);
     storage_info_ptr->name = info_ptr->part_filename;
     storage_info_ptr->file = info_ptr->file;
     info_ptr->prepare_storage = &prepare_storage_single;
     info_ptr->merge_finished = &merge_finished_single;
-    reset_storage = &reset_storage_single;
+    if (params_ptr->to_stdout) {
+      reset_storage = &reset_storage_single_pipe;
+    }
+    else {
+      reset_storage = &reset_storage_single;
+    }
   }
   else if (params_ptr->mem_bufs) {
     info_ptr->prepare_storage = &prepare_storage_mem;

@@ -90,7 +90,7 @@ void saldl(saldl_params *params_ptr) {
   /* initialize chunks early for extra_resume() */
   chunks_init(&info);
 
-  if (params_ptr->resume && !params_ptr->read_only) {
+  if (params_ptr->resume) {
     check_resume(&info);
   }
 
@@ -122,7 +122,7 @@ void saldl(saldl_params *params_ptr) {
   /* Create event pthreads */
   saldl_pthread_create(&info.trigger_events_pth, NULL, events_trigger_thread, &info);
 
-  if (!params_ptr->read_only) {
+  if (!params_ptr->read_only && !params_ptr->to_stdout) {
     saldl_pthread_create(&info.sync_ctrl_pth, NULL, sync_ctrl, &info);
   }
 
@@ -141,7 +141,7 @@ void saldl(saldl_params *params_ptr) {
   } while (params_ptr->single_mode ? info.chunks[0].progress != PRG_FINISHED : info.global_progress.complete_size != info.file_size);
 
   /* Join event pthreads */
-  if (!params_ptr->read_only) {
+  if (!params_ptr->read_only && !params_ptr->to_stdout) {
     join_event_pth(&info.ev_ctrl ,&info.sync_ctrl_pth);
   }
 
@@ -167,7 +167,8 @@ saldl_all_data_merged:
   /*** Final Steps ***/
 
   /* One last check  */
-  if (info.file_size && !params_ptr->read_only && !params_ptr->no_remote_info &&
+  if (info.file_size && !params_ptr->no_remote_info &&
+      !params_ptr->read_only && !params_ptr->to_stdout &&
       (!info.content_encoded || params_ptr->no_decompress)) {
     off_t saved_file_size = saldl_fsizeo(info.part_filename, info.file);
     if (saved_file_size != info.file_size) {
@@ -181,7 +182,7 @@ saldl_all_data_merged:
     debug_msg(FN, "Strict check for finished file size skipped.");
   }
 
-  if (!params_ptr->read_only) {
+  if (!params_ptr->read_only && !params_ptr->to_stdout) {
     saldl_fclose(info.part_filename, info.file);
     if (rename(info.part_filename, params_ptr->filename) ) {
       err_msg(FN, "Failed to rename now-complete %s to %s: %s", info.part_filename, params_ptr->filename, strerror(errno));

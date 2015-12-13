@@ -90,6 +90,18 @@ General
   But it might help performance in some situations, especially when IO is
   the bottleneck.
 
+*--stdout*::
+  Write/Pipe output to *stdout*. +
+  +
+  Everything else will behave in the same way except: :::
+   +
+   1- The pseudo output filename "STDOUT" will be used. +
+   2- Chunks will only be merged (written to stdout) in order. +
+   3- Resume is disabled. +
+   4- No state is saved in a '<filename>.ctrl.sal' file. +
+   5- If single mode is used, timeouts and other non-fatal response
+      errors will become fatal. +
+
 *--read-only*::
   Don't create files or write anything to disk.
   This should be only used to test network performance.
