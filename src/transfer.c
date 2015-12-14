@@ -1015,9 +1015,9 @@ void set_params(thread_s *thread, info_s *info_ptr) {
   }
 #endif
 
-#if LIBCURL_VERSION_MINOR >= 45
+#if CURL_AT_LEAST_VERSION(7, 45, 0)
   /* CURLOPT_DEFAULT_PROTOCOL was introduced in libcurl 7.45.0 */
-  if (info_ptr->curl_info->version_num >= 0x072d00) { // >= 7.45
+  if (info_ptr->curl_info->version_num >= 0x072d00) { // >= 7.45.0
     /* If protocol unknown, assume https */
     curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
   }
