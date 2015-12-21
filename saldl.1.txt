@@ -344,6 +344,12 @@ cases:
 *--no-http2*::
   Don't try HTTP/2 requests.
 
+*--http2-upgrade*::
+  Try HTTP/2 requests with plain HTTP. +
+  This option only has effect if saldl was built with and running
+  (libcurl >= 7.47.0). Otherwise, HTTP/2 would be default for both
+  HTTP and HTTPS.
+
 *--no-tcp-keep-alive*::
   Don't send TCP keep-alive probes.
 

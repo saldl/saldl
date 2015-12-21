@@ -1032,9 +1032,21 @@ void set_params(thread_s *thread, info_s *info_ptr) {
   }
 
   if (!params_ptr->no_http2) {
-    /* Try HTTP/2, but don't care about the return value.
-     * Most libcurl binaries would not include support for HTTP/2 in the short term */
+    /* Try HTTP/2, but don't care about the return value. Many libcurl packages
+     * distributed are not built with HTTP/2 support. */
+#if CURL_AT_LEAST_VERSION(7, 47, 0)
+    if (info_ptr->curl_info->version_num >= 0x072f00 && // >= 7.47.0
+        !params_ptr->http2_upgrade) {
+      /* Default: Use HTTP/2 over TLS if available */
+      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
+    }
+    else {
+      /* Try to use HTTP/2 with both HTTP and HTTPS */
+      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+    }
+#else
     curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+#endif
   }
 
   /* For our use-cases, Nagle's algorithm seems to have negative or

@@ -54,6 +54,7 @@ typedef struct {
   char **proxy_custom_headers; /* NULL-terminated */
   uint8_t forced_ip_protocol; /* 4 or 6 */
   bool no_http2;
+  bool http2_upgrade;
   bool compress;
   bool no_decompress;
   bool no_user_agent;
