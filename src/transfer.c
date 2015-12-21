@@ -153,7 +153,11 @@ static void headers_info(info_s *info_ptr) {
       SALDL_FREE(info_ptr->curr_url);
     }
 
-    info_ptr->curr_url = saldl_strdup(h->location);
+    /* We don't use location directly because it could be relative. And
+     * we want to be sure we are getting the real URL libcurl will be using. */
+    char *effective_url;
+    curl_easy_getinfo(h->handle, CURLINFO_EFFECTIVE_URL, &effective_url);
+    info_ptr->curr_url = saldl_strdup(effective_url);
   }
 
   if (h->content_range) {
@@ -631,6 +635,7 @@ void get_info(info_s *info_ptr) {
 
   /* remote part starts here */
   tmp.ehandle = curl_easy_init();
+  info_ptr->headers.handle = tmp.ehandle;
   set_params(&tmp, info_ptr);
 
   /* Set If-Modified-Since or If-Unmodified-Since here if requested */
