@@ -382,7 +382,9 @@ static off_t remote_info_simple_file_size(CURL *handle) {
   return size;
 }
 
-static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
+static remote_info_s request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
+  remote_info_s remote_info = DEF_REMOTE_INFO_S;
+
   CURLcode ret;
   saldl_params *params_ptr = info_ptr->params;
 
@@ -394,12 +396,10 @@ static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
 
   if (params_ptr->assume_range_support) {
     debug_msg(FN, "Range support assumed, skipping check.");
-    return 0;
-  }
-
-  if (params_ptr->single_mode && !params_ptr->resume) {
-    debug_msg(FN, "Skipping unnecessary range check.");
-    goto no_range;
+    remote_info.range_support = true;
+    remote_info.force_single = false;
+    remote_info.possible_upgrade_error = false;
+    return remote_info;
   }
 
   debug_msg(FN, "Checking server response with range support..");
@@ -413,12 +413,10 @@ static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
 
     curl_easy_getinfo(tmp->ehandle, CURLINFO_RESPONSE_CODE, &response);
     if (ret == CURLE_HTTP_RETURNED_ERROR && response == 400 && !params_ptr->no_http2) {
-      /* Assume we got 400 because of the HTTP/2 upgrade request */
-      warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
-      /* Fall-back to HTTP/1.1 */
-      params_ptr->no_http2 = true;
-      curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-      continue;
+      if (!params_ptr->no_http2) {
+        remote_info.possible_upgrade_error = true;
+        return remote_info;
+      }
     }
 
     semi_fatal_error = (ret == CURLE_SSL_CONNECT_ERROR || ret == CURLE_SEND_ERROR);
@@ -436,34 +434,18 @@ static int request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
   curl_easy_getinfo(tmp->ehandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length);
 
   if (content_length == expected_length) {
+    remote_info.range_support = true;
 
     /* Special handling for FTP */
     if (strstr(info_ptr->curr_url, "ftp") == info_ptr->curr_url) {
-      /*
-       * Despite the fact that range support is working. Making
-       * concurrent connections to FTP servers seems problematic.
-       * So, we force single mode, but allow resume if requested.
-       */
-      warn_msg(FN, "Range support works. But we force single mode for ftp URLs.");
-      params_ptr->single_mode = true;
+      remote_info.force_single = true;
     }
-
-    /* Return success */
-    return 0;
   }
-  /* Range check failed */
   else {
-    warn_msg(FN, "Wrong link, server lacks range support or file too small.");
-    warn_msg(FN, "We well make a second check without ranges.");
     debug_msg(FN, "Expected length %.0lf, got %.0lf", expected_length, content_length);
   }
 
-no_range:
-  warn_msg(FN, "Single mode force-enabled, resume force-disabled.");
-  params_ptr->single_mode = true;
-  params_ptr->resume = false;
-  return -1;
-
+  return remote_info;
 }
 
 static void set_names(info_s* info_ptr) {
@@ -622,6 +604,52 @@ static void print_info(info_s *info_ptr) {
   }
 }
 
+void request_remote_info(info_s *info_ptr, thread_s *tmp) {
+  /*
+   * Check remote info with range support in one request.
+   * If that check fails in a way we're not expecting, do
+   * a secondary check without ranges.
+   * We also make a 2nd check if filesize was not set. This
+   * could happen with non-HTTP protocols like FTP.
+   */
+  SALDL_ASSERT(info_ptr);
+  SALDL_ASSERT(tmp);
+
+  saldl_params *params_ptr = info_ptr->params;
+  SALDL_ASSERT(params_ptr);
+
+  remote_info_s remote_info = request_remote_info_with_ranges(tmp, info_ptr);
+
+  if (remote_info.possible_upgrade_error) {
+    warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
+    params_ptr->no_http2 = true;
+    curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    remote_info = request_remote_info_with_ranges(tmp, info_ptr);
+  }
+  headers_info(info_ptr);
+
+  if (remote_info.force_single) {
+    warn_msg(FN, "We force single mode with protocols that don't cope well with multiple connections.");
+    params_ptr->single_mode = true;
+  }
+
+  if (!remote_info.range_support) {
+    warn_msg(FN, "Server lacks range support, the link is wrong, or the file is too small.");
+    warn_msg(FN, "Single mode force-enabled, resume force-disabled.");
+    params_ptr->single_mode = true;
+    params_ptr->resume = false;
+  }
+
+  if (!remote_info.range_support || !info_ptr->file_size) {
+    warn_msg(FN, "Range support check failed or skipped, or file size not set.");
+    warn_msg(FN, "We well make a second check without ranges.");
+    request_remote_info_simple(tmp, &params_ptr->no_http2);
+    headers_info(info_ptr);
+    /* We didn't get file size from Content-Range, so get it from Content-Length */
+    info_ptr->file_size = remote_info_simple_file_size(tmp->ehandle);
+  }
+}
+
 void get_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   thread_s tmp = DEF_THREAD_S;
@@ -660,23 +688,7 @@ void get_info(info_s *info_ptr) {
   }
 
   set_write_opts(tmp.ehandle, NULL, params_ptr, true);
-
-  /*
-   * Check remote info with range support in one request.
-   * If that check fails in a way we're not expecting, do
-   * a secondary check without ranges.
-   * We also make a 2nd check if filesize was not set. This
-   * could happen with non-HTTP protocols like FTP.
-   */
-  int ret_ranges = request_remote_info_with_ranges(&tmp, info_ptr);
-  headers_info(info_ptr);
-
-  if (ret_ranges || !info_ptr->file_size) {
-    request_remote_info_simple(&tmp, &params_ptr->no_http2);
-    headers_info(info_ptr);
-    /* We didn't get file size from Content-Range, so get it from Content-Length */
-    info_ptr->file_size = remote_info_simple_file_size(tmp.ehandle);
-  }
+  request_remote_info(info_ptr, &tmp);
 
   curl_slist_free_all(tmp.header_list);
   curl_easy_cleanup(tmp.ehandle);

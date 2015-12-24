@@ -163,6 +163,13 @@ typedef struct {
   char *content_disposition;
 } headers_s;
 
+/* remote_info_s: Information inferred from checking range support */
+typedef struct {
+  bool range_support;
+  bool force_single; // e.g. with FTP
+  bool possible_upgrade_error;
+} remote_info_s;
+
 /* info_s: mother of all structs */
 typedef struct {
   char *curr_url;
@@ -214,5 +221,6 @@ typedef struct {
  */
 static const thread_s DEF_THREAD_S;
 static const info_s DEF_INFO_S;
+static const remote_info_s DEF_REMOTE_INFO_S;
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */
