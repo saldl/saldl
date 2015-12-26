@@ -344,6 +344,9 @@ semi_fatal_request_retry:
         curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         goto semi_fatal_request_retry;
       }
+      else {
+        fatal(FN, "libcurl returned (%d: %s).", ret, tmp->err_buf);
+      }
       break;
     case CURLE_SSL_CONNECT_ERROR:
     case CURLE_SEND_ERROR: // 55: SSL_write() returned SYSCALL, errno = 32
@@ -361,7 +364,7 @@ semi_fatal_request_retry:
       }
       break;
     default:
-      fatal(FN, "libcurl returned (%d: %s) while trying to get remote info.", ret, tmp->err_buf);
+      fatal(FN, "libcurl returned (%d: %s).", ret, tmp->err_buf);
   }
 }
 
