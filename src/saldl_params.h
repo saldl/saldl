@@ -36,7 +36,6 @@ typedef struct {
   char* start_url;
   char* root_dir;
   char* filename;
-  char* attachment_filename;
   size_t chunk_size;
   size_t last_chunks_first;
   off_t last_size_first;

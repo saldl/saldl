@@ -168,6 +168,13 @@ typedef struct {
   bool range_support;
   bool force_single; // e.g. with FTP
   bool possible_upgrade_error;
+  bool content_encoded;
+  bool encoding_forced;
+  bool gzip_content;
+  off_t file_size;
+  char *effective_url;
+  char *attachment_filename;
+  char *content_type;
 } remote_info_s;
 
 /* info_s: mother of all structs */
@@ -187,7 +194,6 @@ typedef struct {
   size_t chunk_count;
   size_t initial_merged_count;
   bool extra_resume_set;
-  char *content_type;
   long redirects_count;
   FILE* file;
   FILE* ctrl_file;
@@ -196,8 +202,8 @@ typedef struct {
   char ctrl_filename[PATH_MAX];
   off_t file_size;
   bool file_size_from_dltotal;
-  bool content_encoded;
   headers_s headers;
+  remote_info_s remote_info;
   thread_s *threads;
   chunk_s *chunks;
   progress_s global_progress;

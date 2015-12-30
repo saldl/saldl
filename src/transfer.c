@@ -142,22 +142,17 @@ void chunks_init(info_s *info_ptr) {
 
 }
 
-static void headers_info(info_s *info_ptr) {
+static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_info) {
   headers_s *h = &info_ptr->headers;
 
   if (h->location) {
     debug_msg(FN, "Location: %s", h->location);
 
-    if (info_ptr->curr_url) {
-      debug_msg(FN, "curr_url was %s", info_ptr->curr_url);
-      SALDL_FREE(info_ptr->curr_url);
-    }
-
     /* We don't use location directly because it could be relative. And
      * we want to be sure we are getting the real URL libcurl will be using. */
     char *effective_url;
     curl_easy_getinfo(h->handle, CURLINFO_EFFECTIVE_URL, &effective_url);
-    info_ptr->curr_url = saldl_strdup(effective_url);
+    remote_info->effective_url = saldl_strdup(effective_url);
   }
 
   if (h->content_range) {
@@ -165,42 +160,47 @@ static void headers_info(info_s *info_ptr) {
     debug_msg(FN, "Content-Range: %s", h->content_range);
 
     if ( (tmp = strcasestr(h->content_range, "/")) ) {
-      info_ptr->file_size = parse_num_o(tmp+1, 0);
-      debug_msg(FN, "file size from Content-Range: %"SAL_JU"", info_ptr->file_size);
+      remote_info->file_size = parse_num_o(tmp+1, 0);
+      debug_msg(FN, "Remote file size from Content-Range: %"SAL_JU"", remote_info->file_size);
     }
 
     SALDL_FREE(h->content_range);
   }
+  else {
+    double d_size;
+    curl_easy_getinfo(h->handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&d_size);
+    if (d_size > 0) {
+      remote_info->file_size = (off_t)d_size;
+      debug_msg(FN, "Remote file size from CURLINFO_CONTENT_LENGTH_DOWNLOAD: %"SAL_JU" %s",
+          remote_info->file_size,
+          remote_info->file_size == 4096 ? "(unreliable)" : "");
+    }
+  }
 
   if (h->content_encoding) {
     debug_msg(FN, "Content-Encoding: %s", h->content_encoding);
-    info_ptr->content_encoded = true;
+    remote_info->content_encoded = true;
 
     if (!info_ptr->params->compress) {
       info_msg(FN, "Compression forced by server.");
-      /* Pretend that we asked for compression to allow automatic decompression */
-      info_ptr->params->compress = true;
+      remote_info->encoding_forced = true;
     }
 
     SALDL_FREE(h->content_encoding);
   }
 
   if (h->content_type) {
-    /* XXX: content_type block should always be after content_encoding block */
     debug_msg(FN, "Content-Type: %s", h->content_type);
 
-    if (info_ptr->content_type) {
-      debug_msg(FN, "Clearing Content-Type: %s", info_ptr->content_type);
-      SALDL_FREE(info_ptr->content_type);
+    if (remote_info->content_type) {
+      debug_msg(FN, "Clearing Content-Type: %s", remote_info->content_type);
+      SALDL_FREE(remote_info->content_type);
     }
 
-    info_ptr->content_type = saldl_strdup(h->content_type);
+    remote_info->content_type = saldl_strdup(h->content_type);
 
     if (strcasestr(h->content_type, "gzip")) {
-      if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
-        info_msg(FN, "Skipping decompression, the content is already gzipped.");
-        info_ptr->params->no_decompress = true;
-      }
+      remote_info->gzip_content = true;
     }
 
     SALDL_FREE(h->content_type);
@@ -235,30 +235,17 @@ static void headers_info(info_s *info_ptr) {
         tmp += strlen(to_strip);
       }
 
-      if (info_ptr->params->attachment_filename) {
-        debug_msg(FN, "Clearing attachment filename: %s", info_ptr->params->attachment_filename);
-        SALDL_FREE(info_ptr->content_type);
+      if (remote_info->attachment_filename) {
+        debug_msg(FN, "Clearing attachment filename: %s", remote_info->attachment_filename);
+        SALDL_FREE(remote_info->attachment_filename);
       }
 
       debug_msg(FN, "Before basename: %s", tmp);
-      info_ptr->params->attachment_filename = saldl_strdup( basename(tmp) );
-      debug_msg(FN, "After basename: %s", info_ptr->params->attachment_filename);
+      remote_info->attachment_filename = saldl_strdup( basename(tmp) );
+      debug_msg(FN, "After basename: %s", remote_info->attachment_filename);
     }
 
     SALDL_FREE(h->content_disposition);
-  }
-
-  if (info_ptr->content_encoded && !info_ptr->params->no_decompress) {
-    if (!info_ptr->params->single_mode) {
-      warn_msg(FN, "Content compressed and will be decompressed, forcing single mode.");
-      warn_msg(FN, "Single mode wouldn't be forced if the user requests no decompression.");
-      info_ptr->params->single_mode = true;
-    }
-    else {
-      debug_msg(FN, "Content compressed and will be decompressed.");
-    }
-
-    debug_msg(FN, "Strict downloaded file size checking will be skipped.");
   }
 
 }
@@ -315,7 +302,7 @@ static long num_redirects(CURL *handle) {
   return redirects;
 }
 
-static void request_remote_info_simple(thread_s *tmp, bool *no_http2) {
+static int request_remote_info_simple(thread_s *tmp, bool *no_http2) {
   long response;
   short semi_fatal_retries = 0;
   CURLcode ret;
@@ -338,11 +325,7 @@ semi_fatal_request_retry:
     case CURLE_HTTP_RETURNED_ERROR:
       if (response == 400 && !(*no_http2)) {
         /* Assume we got 400 because of the HTTP/2 upgrade request */
-        warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
-        /* Fall-back to HTTP/1.1 */
-        *no_http2 = true;
-        curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-        goto semi_fatal_request_retry;
+        return -1;
       }
       else {
         fatal(FN, "libcurl returned (%d: %s).", ret, tmp->err_buf);
@@ -366,28 +349,10 @@ semi_fatal_request_retry:
     default:
       fatal(FN, "libcurl returned (%d: %s).", ret, tmp->err_buf);
   }
+  return 0;
 }
 
-static off_t remote_info_simple_file_size(CURL *handle) {
-  double d_size;
-  off_t size = 0;
-
-  curl_easy_getinfo(handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&d_size);
-
-  size = (off_t)d_size;
-  debug_msg(FN, "filesize=%"SAL_JD"", size);
-
-  if ( size == -1 ) {
-    debug_msg(FN, "Zeroing filesize, was -1.");
-    size = 0;
-  }
-
-  return size;
-}
-
-static remote_info_s request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr) {
-  remote_info_s remote_info = DEF_REMOTE_INFO_S;
-
+static void request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr, remote_info_s *remote_info) {
   CURLcode ret;
   saldl_params *params_ptr = info_ptr->params;
 
@@ -399,10 +364,10 @@ static remote_info_s request_remote_info_with_ranges(thread_s *tmp, info_s *info
 
   if (params_ptr->assume_range_support) {
     debug_msg(FN, "Range support assumed, skipping check.");
-    remote_info.range_support = true;
-    remote_info.force_single = false;
-    remote_info.possible_upgrade_error = false;
-    return remote_info;
+    remote_info->range_support = true;
+    remote_info->force_single = false;
+    remote_info->possible_upgrade_error = false;
+    return;
   }
 
   debug_msg(FN, "Checking server response with range support..");
@@ -417,8 +382,8 @@ static remote_info_s request_remote_info_with_ranges(thread_s *tmp, info_s *info
     curl_easy_getinfo(tmp->ehandle, CURLINFO_RESPONSE_CODE, &response);
     if (ret == CURLE_HTTP_RETURNED_ERROR && response == 400 && !params_ptr->no_http2) {
       if (!params_ptr->no_http2) {
-        remote_info.possible_upgrade_error = true;
-        return remote_info;
+        remote_info->possible_upgrade_error = true;
+        return;
       }
     }
 
@@ -437,23 +402,24 @@ static remote_info_s request_remote_info_with_ranges(thread_s *tmp, info_s *info
   curl_easy_getinfo(tmp->ehandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length);
 
   if (content_length == expected_length) {
-    remote_info.range_support = true;
+    remote_info->range_support = true;
 
     /* Special handling for FTP */
     if (strstr(info_ptr->curr_url, "ftp") == info_ptr->curr_url) {
-      remote_info.force_single = true;
+      remote_info->force_single = true;
     }
   }
   else {
     debug_msg(FN, "Expected length %.0lf, got %.0lf", expected_length, content_length);
   }
 
-  return remote_info;
+  remote_info_from_headers(info_ptr, remote_info);
 }
 
 static void set_names(info_s* info_ptr) {
 
   saldl_params *params_ptr = info_ptr->params;
+  remote_info_s *remote_info = &info_ptr->remote_info;
 
   if (params_ptr->to_stdout) {
     params_ptr->filename = saldl_strdup("STDOUT");
@@ -466,8 +432,8 @@ static void set_names(info_s* info_ptr) {
     CURL *handle = NULL;
 
     /* Get initial filename */
-    if (params_ptr->attachment_filename) {
-      prev_unescaped = saldl_strdup(params_ptr->attachment_filename);
+    if (remote_info->attachment_filename) {
+      prev_unescaped = saldl_strdup(remote_info->attachment_filename);
     }
     else if (params_ptr->filename_from_redirect) {
       prev_unescaped = saldl_strdup(info_ptr->curr_url);
@@ -486,7 +452,7 @@ static void set_names(info_s* info_ptr) {
     free_prev(prev_unescaped);
 
     /* keep attachment name ,if present, as is. basename() unescaped url */
-    if (params_ptr->attachment_filename) {
+    if (remote_info->attachment_filename) {
       params_ptr->filename = saldl_strdup(unescaped);
     } else {
       params_ptr->filename = saldl_strdup(basename(unescaped));
@@ -587,13 +553,14 @@ static void set_names(info_s* info_ptr) {
 
 static void print_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
+  remote_info_s *remote_info = &info_ptr->remote_info;
 
   if (strcmp(params_ptr->start_url, info_ptr->curr_url)) {
     main_msg("Redirected", "%s", info_ptr->curr_url);
   }
 
-  if (info_ptr->content_type) {
-    main_msg("Content-Type", "%s", info_ptr->content_type);
+  if (remote_info->content_type) {
+    main_msg("Content-Type", "%s", remote_info->content_type);
   }
 
   const char *save_mode = "";
@@ -607,7 +574,59 @@ static void print_info(info_s *info_ptr) {
   }
 }
 
-void request_remote_info(info_s *info_ptr, thread_s *tmp) {
+static void set_info_params_from_remote_info(info_s *info_ptr, remote_info_s *remote_info) {
+  saldl_params *params_ptr = info_ptr->params;
+
+  if (remote_info->force_single) {
+    warn_msg(FN, "We force single mode with protocols that don't cope well with multiple connections.");
+    params_ptr->single_mode = true;
+  }
+
+  if (!remote_info->range_support) {
+    warn_msg(FN, "Server lacks range support, the link is wrong, or the file is too small.");
+    warn_msg(FN, "Single mode force-enabled, resume force-disabled.");
+    params_ptr->single_mode = true;
+    params_ptr->resume = false;
+  }
+
+  if (remote_info->effective_url) {
+    if (info_ptr->curr_url) {
+      debug_msg(FN, "curr_url was %s", info_ptr->curr_url);
+      SALDL_FREE(info_ptr->curr_url);
+    }
+    info_ptr->curr_url = saldl_strdup(remote_info->effective_url);
+  }
+
+  if (remote_info->file_size) {
+    info_ptr->file_size = remote_info->file_size;
+  }
+
+  if (remote_info->encoding_forced) {
+    /* Pretend that we asked for compression to allow automatic decompression */
+    info_ptr->params->compress = true;
+  }
+
+  if (remote_info->content_encoded) {
+    if (remote_info->gzip_content) {
+      info_msg(FN, "Skipping decompression, the content is already gzipped.");
+      info_ptr->params->no_decompress = true;
+    }
+    else {
+      if (!info_ptr->params->no_decompress) {
+      warn_msg(FN, "Content compressed and will be decompressed, forcing single mode.");
+      warn_msg(FN, "Single mode wouldn't be forced if the user requests no decompression.");
+      info_ptr->params->single_mode = true;
+      }
+    }
+
+    if (!info_ptr->params->no_decompress) {
+      debug_msg(FN, "Strict downloaded file size checking will be skipped.");
+    }
+  }
+
+}
+
+static void request_remote_info(info_s *info_ptr, thread_s *tmp) {
   /*
    * Check remote info with range support in one request.
    * If that check fails in a way we're not expecting, do
@@ -621,36 +640,33 @@ void request_remote_info(info_s *info_ptr, thread_s *tmp) {
   saldl_params *params_ptr = info_ptr->params;
   SALDL_ASSERT(params_ptr);
 
-  remote_info_s remote_info = request_remote_info_with_ranges(tmp, info_ptr);
+  request_remote_info_with_ranges(tmp, info_ptr, &info_ptr->remote_info);
 
-  if (remote_info.possible_upgrade_error) {
+  if (info_ptr->remote_info.possible_upgrade_error) {
     warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
     params_ptr->no_http2 = true;
     curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-    remote_info = request_remote_info_with_ranges(tmp, info_ptr);
-  }
-  headers_info(info_ptr);
-
-  if (remote_info.force_single) {
-    warn_msg(FN, "We force single mode with protocols that don't cope well with multiple connections.");
-    params_ptr->single_mode = true;
+    request_remote_info_with_ranges(tmp, info_ptr, &info_ptr->remote_info);
   }
 
-  if (!remote_info.range_support) {
-    warn_msg(FN, "Server lacks range support, the link is wrong, or the file is too small.");
-    warn_msg(FN, "Single mode force-enabled, resume force-disabled.");
-    params_ptr->single_mode = true;
-    params_ptr->resume = false;
-  }
-
-  if (!remote_info.range_support || !info_ptr->file_size) {
-    warn_msg(FN, "Range support check failed or skipped, or file size not set.");
+  if (!info_ptr->remote_info.range_support ||
+      !info_ptr->remote_info.file_size ||
+      params_ptr->assume_range_support || // Set other remote_info members
+      info_ptr->remote_info.force_single) { // Avoid 4.00KiB size with non-HTTP protocols
+    warn_msg(FN, "Range support check failed or skipped, or file size not set (reliably).");
     warn_msg(FN, "We well make a second check without ranges.");
-    request_remote_info_simple(tmp, &params_ptr->no_http2);
-    headers_info(info_ptr);
-    /* We didn't get file size from Content-Range, so get it from Content-Length */
-    info_ptr->file_size = remote_info_simple_file_size(tmp->ehandle);
+
+    if (request_remote_info_simple(tmp, &params_ptr->no_http2)) {
+      warn_msg(FN, "Got 400 error, retrying without HTTP/2 upgrade request.");
+      params_ptr->no_http2 = true;
+      curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+      request_remote_info_simple(tmp, &params_ptr->no_http2);
+    }
+
+    remote_info_from_headers(info_ptr, &info_ptr->remote_info);
   }
+
+  set_info_params_from_remote_info(info_ptr, &info_ptr->remote_info);
 }
 
 void get_info(info_s *info_ptr) {

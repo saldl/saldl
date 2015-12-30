@@ -32,20 +32,23 @@ void check_libcurl(curl_version_info_data *curl_info) {
 
 static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
+  remote_info_s *remote_info = &info_ptr->remote_info;
 
   /* Make valgrind happy */
   SALDL_FREE(info_ptr->curr_url);
-  SALDL_FREE(info_ptr->content_type);
   SALDL_FREE(info_ptr->threads);
   SALDL_FREE(info_ptr->chunks);
 
   saldl_custom_headers_free_all(params_ptr->custom_headers);
   saldl_custom_headers_free_all(params_ptr->proxy_custom_headers);
 
+  SALDL_FREE(remote_info->effective_url);
+  SALDL_FREE(remote_info->attachment_filename);
+  SALDL_FREE(remote_info->content_type);
+
   SALDL_FREE(params_ptr->start_url);
   SALDL_FREE(params_ptr->root_dir);
   SALDL_FREE(params_ptr->filename);
-  SALDL_FREE(params_ptr->attachment_filename);
   SALDL_FREE(params_ptr->referer);
   SALDL_FREE(params_ptr->date_expr);
   SALDL_FREE(params_ptr->since_file_mtime);
@@ -169,7 +172,7 @@ saldl_all_data_merged:
   /* One last check  */
   if (info.file_size && !params_ptr->no_remote_info &&
       !params_ptr->read_only && !params_ptr->to_stdout &&
-      (!info.content_encoded || params_ptr->no_decompress)) {
+      (!info.remote_info.content_encoded || params_ptr->no_decompress)) {
     off_t saved_file_size = saldl_fsizeo(info.part_filename, info.file);
     if (saved_file_size != info.file_size) {
       pre_fatal(FN, "Unexpected saved file size (%"SAL_JU"!=%"SAL_JU").", saved_file_size, info.file_size);
