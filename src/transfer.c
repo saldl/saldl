@@ -206,7 +206,7 @@ static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_inf
     SALDL_FREE(h->content_type);
   }
 
-  if (h->content_disposition && !info_ptr->params->no_attachment_detection) {
+  if (h->content_disposition) {
     char *tmp;
     debug_msg(FN, "Content-Disposition: %s", h->content_disposition);
 
@@ -432,7 +432,7 @@ static void set_names(info_s* info_ptr) {
     CURL *handle = NULL;
 
     /* Get initial filename */
-    if (remote_info->attachment_filename) {
+    if (remote_info->attachment_filename && !params_ptr->no_attachment_detection) {
       prev_unescaped = saldl_strdup(remote_info->attachment_filename);
     }
     else if (params_ptr->filename_from_redirect) {
