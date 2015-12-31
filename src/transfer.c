@@ -626,6 +626,28 @@ static void set_info_params_from_remote_info(info_s *info_ptr, remote_info_s *re
 
 }
 
+static bool mirror_is_valid(info_s *info_ptr) {
+  remote_info_s cp_ri = info_ptr->remote_info;
+  remote_info_s cp_mirror_ri = info_ptr->mirror_remote_info;
+
+  /* The following remote_info members are allowed to be different (in addr and val):
+   *  1- effective_url
+   *  2- attachment_filename
+   *  3- content_type
+   */
+
+  return (
+      cp_ri.range_support == cp_mirror_ri.range_support &&
+      cp_ri.force_single == cp_mirror_ri.force_single &&
+      cp_ri.possible_upgrade_error == cp_mirror_ri.possible_upgrade_error &&
+      cp_ri.content_encoded == cp_mirror_ri.content_encoded &&
+      cp_ri.encoding_forced == cp_mirror_ri.encoding_forced &&
+      cp_ri.gzip_content == cp_mirror_ri.gzip_content &&
+      cp_ri.file_size == cp_mirror_ri.file_size
+      );
+
+}
+
 static void request_remote_info(info_s *info_ptr, thread_s *tmp) {
   /*
    * Check remote info with range support in one request.
@@ -662,11 +684,28 @@ static void request_remote_info(info_s *info_ptr, thread_s *tmp) {
       curl_easy_setopt(tmp->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
       request_remote_info_simple(tmp, &params_ptr->no_http2);
     }
-
     remote_info_from_headers(info_ptr, &info_ptr->remote_info);
   }
 
   set_info_params_from_remote_info(info_ptr, &info_ptr->remote_info);
+
+  if (params_ptr->start_mirror_url) {
+    if (params_ptr->single_mode) {
+      info_msg(FN, "Mirror URL skipped if single mode.");
+    }
+    else {
+      info_msg(FN, "Getting remote info for mirror URL.");
+      curl_easy_setopt(tmp->ehandle, CURLOPT_URL, params_ptr->start_mirror_url);
+      request_remote_info_with_ranges(tmp, info_ptr, &info_ptr->mirror_remote_info);
+      if (mirror_is_valid(info_ptr)) {
+        info_msg(FN, "Valid mirror.");
+      }
+      else {
+        info_msg(FN, "Invalid mirror.");
+      }
+    }
+  }
+
 }
 
 void get_info(info_s *info_ptr) {

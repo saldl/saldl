@@ -204,6 +204,7 @@ typedef struct {
   bool file_size_from_dltotal;
   headers_s headers;
   remote_info_s remote_info;
+  remote_info_s mirror_remote_info;
   thread_s *threads;
   chunk_s *chunks;
   progress_s global_progress;
