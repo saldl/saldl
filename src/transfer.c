@@ -145,15 +145,9 @@ void chunks_init(info_s *info_ptr) {
 static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_info) {
   headers_s *h = &info_ptr->headers;
 
-  if (h->location) {
-    debug_msg(FN, "Location: %s", h->location);
-
-    /* We don't use location directly because it could be relative. And
-     * we want to be sure we are getting the real URL libcurl will be using. */
-    char *effective_url;
-    curl_easy_getinfo(h->handle, CURLINFO_EFFECTIVE_URL, &effective_url);
-    remote_info->effective_url = saldl_strdup(effective_url);
-  }
+  char *effective_url;
+  curl_easy_getinfo(h->handle, CURLINFO_EFFECTIVE_URL, &effective_url);
+  remote_info->effective_url = saldl_strdup(effective_url);
 
   if (h->content_range) {
     char *tmp;
@@ -259,12 +253,6 @@ static size_t  header_function(  void  *ptr,  size_t  size, size_t nmemb, void *
   char *tmp;
   if ( (tmp = strstr(header, "\r\n")) ) {
     *tmp = '\0';
-  }
-
-  if (strcasestr(header, "Location:") == header) {
-    char *h_info = saldl_lstrip(header + strlen("Location:"));
-    SALDL_FREE(h->location);
-    h->location = saldl_strdup(h_info);
   }
 
   if (strcasestr(header, "Content-Range:") == header) {

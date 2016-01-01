@@ -156,7 +156,6 @@ typedef struct {
 /* headers_s: Variables used in header_function() & headers_info() */
 typedef struct {
   CURL *handle;
-  char *location;
   char *content_range;
   char *content_encoding;
   char *content_type;
