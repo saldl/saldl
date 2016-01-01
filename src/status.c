@@ -36,8 +36,19 @@ size_t num_of_lines(info_s *info_ptr, int cols) {
   return lines;
 }
 
-static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, size_t size) {
+static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, bool set_invert, size_t size) {
   while (size) {
+    if (set_invert) {
+      strncpy(ptr,invert,strlen(invert));
+      ptr += strlen(invert);
+    }
+    else {
+      /* This works because strlen(invert) == strlen(bold) always */
+      strncpy(ptr,end,strlen(end));
+      ptr+= strlen(end);
+    }
+
+
     switch (val) {
       case PRG_NOT_STARTED:
       case PRG_QUEUED:
@@ -65,6 +76,7 @@ static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, size_t size) {
       case PRG_UNDEF:
         fatal(FN, "This should never happen.");
     }
+
     memset(ptr, STATUS_CH_CHUNK_PROGRESS[val], 1);
     ptr++;
     strncpy(ptr,end,strlen(end));
@@ -132,7 +144,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
 
     /* Set progress_status */
     for (size_t counter = 0; counter < info_ptr->chunk_count; counter++) {
-      colorset(chunks_status+(counter*c_char_size), info_ptr->chunks[counter].progress, 1);
+      colorset(chunks_status+(counter*c_char_size), info_ptr->chunks[counter].progress, info_ptr->chunks[counter].from_mirror, 1);
     }
 
     main_msg("Chunk progress", " ");
@@ -174,14 +186,14 @@ void* status_display(void *void_info_ptr) {
   info_ptr->ev_status.event_status = EVENT_THREAD_STARTED;
 
   /* initialize status */
-  size_t c_char_size = status_ptr->c_char_size = strlen(ok_color) +strlen(end) + 1;
+  size_t c_char_size = status_ptr->c_char_size = strlen(ok_color) +strlen(end) + strlen(invert) + 1;
   char *chunks_status = status_ptr->chunks_status = saldl_calloc(info_ptr->chunk_count*c_char_size + 1, sizeof(char)); /* Sometimes, an extra char is shown/read(valgrind) at the end without the extra bit, maybe due to lack of space for \0 */
 
   int cols = tty_width() >= 0 ? tty_width() : 0;
   status_ptr->lines = num_of_lines(info_ptr, cols);
 
   /* initial chunks_status */
-  colorset(chunks_status, PRG_NOT_STARTED, info_ptr->chunk_count);
+  colorset(chunks_status, PRG_NOT_STARTED, false, info_ptr->chunk_count);
 
   /* event loop */
   events_init(&info_ptr->ev_status, status_update_cb, info_ptr, EVENT_STATUS);
