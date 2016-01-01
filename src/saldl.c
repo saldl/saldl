@@ -33,6 +33,7 @@ void check_libcurl(curl_version_info_data *curl_info) {
 static void saldl_free_all(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   remote_info_s *remote_info = &info_ptr->remote_info;
+  remote_info_s *mirror_remote_info = &info_ptr->mirror_remote_info;
 
   /* Make valgrind happy */
   SALDL_FREE(info_ptr->threads);
@@ -44,6 +45,10 @@ static void saldl_free_all(info_s *info_ptr) {
   SALDL_FREE(remote_info->effective_url);
   SALDL_FREE(remote_info->attachment_filename);
   SALDL_FREE(remote_info->content_type);
+
+  SALDL_FREE(mirror_remote_info->effective_url);
+  SALDL_FREE(mirror_remote_info->attachment_filename);
+  SALDL_FREE(mirror_remote_info->content_type);
 
   SALDL_FREE(params_ptr->start_url);
   SALDL_FREE(params_ptr->root_dir);
