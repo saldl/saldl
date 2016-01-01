@@ -541,6 +541,14 @@ static void print_info(info_s *info_ptr) {
     main_msg("Redirected", "%s", info_ptr->remote_info.effective_url);
   }
 
+  if (info_ptr->mirror_valid) {
+    main_msg("Mirror", "%s", params_ptr->mirror_start_url);
+
+    if (strcmp(params_ptr->mirror_start_url, info_ptr->mirror_remote_info.effective_url)) {
+      main_msg("Mirror-Redirected", "%s", info_ptr->mirror_remote_info.effective_url);
+    }
+  }
+
   if (remote_info->content_type) {
     main_msg("Content-Type", "%s", remote_info->content_type);
   }
@@ -659,16 +667,17 @@ static void request_remote_info(info_s *info_ptr, thread_s *tmp) {
 
   set_info_params_from_remote_info(info_ptr, &info_ptr->remote_info);
 
-  if (params_ptr->start_mirror_url) {
+  if (params_ptr->mirror_start_url) {
     if (params_ptr->single_mode) {
       info_msg(FN, "Mirror URL skipped if single mode.");
     }
     else {
       info_msg(FN, "Getting remote info for mirror URL.");
-      curl_easy_setopt(tmp->ehandle, CURLOPT_URL, params_ptr->start_mirror_url);
+      curl_easy_setopt(tmp->ehandle, CURLOPT_URL, params_ptr->mirror_start_url);
       request_remote_info_with_ranges(tmp, info_ptr, &info_ptr->mirror_remote_info);
       if (mirror_is_valid(info_ptr)) {
         info_msg(FN, "Valid mirror.");
+        info_ptr->mirror_valid = true;
       }
       else {
         info_msg(FN, "Invalid mirror.");
@@ -692,7 +701,7 @@ void get_info(info_s *info_ptr) {
   /* remote part starts here */
   tmp.ehandle = curl_easy_init();
   info_ptr->headers.handle = tmp.ehandle;
-  set_params(&tmp, info_ptr);
+  set_params(&tmp, info_ptr, params_ptr->start_url);
 
   /* Set If-Modified-Since or If-Unmodified-Since here if requested */
   if (params_ptr->date_expr) {
@@ -1037,9 +1046,15 @@ void set_progress_params(thread_s *thread, info_s *info_ptr) {
   }
 }
 
-void set_params(thread_s *thread, info_s *info_ptr) {
+void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   saldl_params *params_ptr = info_ptr->params;
 
+  SALDL_ASSERT(thread);
+  SALDL_ASSERT(info_ptr);
+  SALDL_ASSERT(params_ptr);
+  SALDL_ASSERT(url);
+
+  curl_easy_setopt(thread->ehandle, CURLOPT_URL, url);
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
 #if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
@@ -1163,12 +1178,6 @@ void set_params(thread_s *thread, info_s *info_ptr) {
     set_inline_cookies(thread->ehandle, params_ptr->inline_cookies);
   }
 
-  if (info_ptr->remote_info.effective_url) {
-    curl_easy_setopt(thread->ehandle, CURLOPT_URL, info_ptr->remote_info.effective_url);
-  }
-  else {
-    curl_easy_setopt(thread->ehandle, CURLOPT_URL, info_ptr->params->start_url);
-  }
 
   curl_easy_setopt(thread->ehandle,CURLOPT_NOSIGNAL,1l); /* Try to avoid threading related segfaults */
   curl_easy_setopt(thread->ehandle,CURLOPT_FAILONERROR,1l); /* Fail on 4xx errors */

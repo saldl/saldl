@@ -86,6 +86,7 @@ typedef struct {
 /* chunk_s: fields needed for each chunk */
 typedef struct {
   pthread_t thr_id;
+  bool from_mirror;
   size_t idx;
   size_t size;
   size_t size_complete;
@@ -202,6 +203,7 @@ typedef struct {
   headers_s headers;
   remote_info_s remote_info;
   remote_info_s mirror_remote_info;
+  bool mirror_valid;
   thread_s *threads;
   chunk_s *chunks;
   progress_s global_progress;

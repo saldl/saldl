@@ -34,7 +34,7 @@ typedef struct {
   double status_refresh_interval;
   bool no_status;
   char* start_url;
-  char* start_mirror_url;
+  char* mirror_start_url;
   char* root_dir;
   char* filename;
   size_t chunk_size;

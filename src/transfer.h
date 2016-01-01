@@ -35,7 +35,7 @@ void print_chunk_info(info_s*);
 void check_url(char*);
 void global_progress_init(info_s*);
 void global_progress_update(info_s *info_ptr, bool init);
-void set_params(thread_s *thread, info_s *info_ptr);
+void set_params(thread_s *thread, info_s *info_ptr, char *url);
 void set_progress_params(thread_s*, info_s*);
 void set_single_mode(info_s*);
 void check_files_and_dirs(info_s *info_ptr);

@@ -104,7 +104,13 @@ void prep_next(info_s *info_ptr, thread_s *thread, chunk_s *chunk, int init) {
 
   if (init) {
     thread->ehandle = curl_easy_init() ;
-    set_params(thread, info_ptr);
+
+    if (thread->chunk->from_mirror) {
+      set_params(thread, info_ptr, info_ptr->mirror_remote_info.effective_url);
+    }
+    else {
+      set_params(thread, info_ptr, info_ptr->remote_info.effective_url);
+    }
   }
 
   set_progress_params(thread, info_ptr);
@@ -123,6 +129,10 @@ void queue_next_chunk(info_s *info_ptr, size_t thr_idx, int init) {
 
   thread_s *thr = &info_ptr->threads[thr_idx];
   chunk_s *chunk = pick_next(info_ptr);
+
+  if (info_ptr->mirror_valid) {
+    chunk->from_mirror = thr_idx % 2;
+  }
 
   prep_next(info_ptr, thr, chunk, init);
 

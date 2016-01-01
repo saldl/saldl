@@ -309,7 +309,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       /* long only */
       case SAL_OPT_MIRROR_URL:
-        params_ptr->start_mirror_url = saldl_strdup(optarg);
+        params_ptr->mirror_start_url = saldl_strdup(optarg);
         break;
 
       case SAL_OPT_NO_HTTP2:
