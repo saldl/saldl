@@ -165,7 +165,6 @@ typedef struct {
 /* remote_info_s: Information inferred from checking range support */
 typedef struct {
   bool range_support;
-  bool force_single; // e.g. with FTP
   bool possible_upgrade_error;
   bool content_encoded;
   bool encoding_forced;

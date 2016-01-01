@@ -353,7 +353,6 @@ static void request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr, rem
   if (params_ptr->assume_range_support) {
     debug_msg(FN, "Range support assumed, skipping check.");
     remote_info->range_support = true;
-    remote_info->force_single = false;
     remote_info->possible_upgrade_error = false;
     return;
   }
@@ -391,11 +390,6 @@ static void request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr, rem
 
   if (content_length == expected_length) {
     remote_info->range_support = true;
-
-    /* Special handling for FTP */
-    if (strstr(info_ptr->curr_url, "ftp") == info_ptr->curr_url) {
-      remote_info->force_single = true;
-    }
   }
   else {
     debug_msg(FN, "Expected length %.0lf, got %.0lf", expected_length, content_length);
@@ -565,8 +559,9 @@ static void print_info(info_s *info_ptr) {
 static void set_info_params_from_remote_info(info_s *info_ptr, remote_info_s *remote_info) {
   saldl_params *params_ptr = info_ptr->params;
 
-  if (remote_info->force_single) {
-    warn_msg(FN, "We force single mode with protocols that don't cope well with multiple connections.");
+    /* Special handling for FTP */
+  if (strstr(remote_info->effective_url, "ftp") == remote_info->effective_url) {
+    warn_msg(FN, "We force single mode with FTP. It doesn't cope well with concurrent connections.");
     params_ptr->single_mode = true;
   }
 
@@ -618,15 +613,10 @@ static bool mirror_is_valid(info_s *info_ptr) {
   remote_info_s cp_ri = info_ptr->remote_info;
   remote_info_s cp_mirror_ri = info_ptr->mirror_remote_info;
 
-  /* The following remote_info members are allowed to be different (in addr and val):
-   *  1- effective_url
-   *  2- attachment_filename
-   *  3- content_type
-   */
-
+  /* Note: We don't care about attachment_filename or content_type */
   return (
+      strstr(cp_mirror_ri.effective_url, "ftp") != cp_mirror_ri.effective_url &&
       cp_ri.range_support == cp_mirror_ri.range_support &&
-      cp_ri.force_single == cp_mirror_ri.force_single &&
       cp_ri.possible_upgrade_error == cp_mirror_ri.possible_upgrade_error &&
       cp_ri.content_encoded == cp_mirror_ri.content_encoded &&
       cp_ri.encoding_forced == cp_mirror_ri.encoding_forced &&
@@ -662,7 +652,7 @@ static void request_remote_info(info_s *info_ptr, thread_s *tmp) {
   if (!info_ptr->remote_info.range_support ||
       !info_ptr->remote_info.file_size ||
       params_ptr->assume_range_support || // Set other remote_info members
-      info_ptr->remote_info.force_single) { // Avoid 4.00KiB size with non-HTTP protocols
+      info_ptr->remote_info.file_size == 4096) { // Avoid 4.00KiB size with non-HTTP protocols
     warn_msg(FN, "Range support check failed or skipped, or file size not set (reliably).");
     warn_msg(FN, "We well make a second check without ranges.");
 
