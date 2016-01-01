@@ -418,7 +418,7 @@ static void set_names(info_s* info_ptr) {
       prev_unescaped = saldl_strdup(remote_info->attachment_filename);
     }
     else if (params_ptr->filename_from_redirect) {
-      prev_unescaped = saldl_strdup(info_ptr->curr_url);
+      prev_unescaped = saldl_strdup(info_ptr->remote_info.effective_url);
     }
     else {
       prev_unescaped = saldl_strdup(params_ptr->start_url);
@@ -537,8 +537,8 @@ static void print_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   remote_info_s *remote_info = &info_ptr->remote_info;
 
-  if (strcmp(params_ptr->start_url, info_ptr->curr_url)) {
-    main_msg("Redirected", "%s", info_ptr->curr_url);
+  if (strcmp(params_ptr->start_url, info_ptr->remote_info.effective_url)) {
+    main_msg("Redirected", "%s", info_ptr->remote_info.effective_url);
   }
 
   if (remote_info->content_type) {
@@ -570,14 +570,6 @@ static void set_info_params_from_remote_info(info_s *info_ptr, remote_info_s *re
     warn_msg(FN, "Single mode force-enabled, resume force-disabled.");
     params_ptr->single_mode = true;
     params_ptr->resume = false;
-  }
-
-  if (remote_info->effective_url) {
-    if (info_ptr->curr_url) {
-      debug_msg(FN, "curr_url was %s", info_ptr->curr_url);
-      SALDL_FREE(info_ptr->curr_url);
-    }
-    info_ptr->curr_url = saldl_strdup(remote_info->effective_url);
   }
 
   if (remote_info->file_size) {
@@ -1171,7 +1163,12 @@ void set_params(thread_s *thread, info_s *info_ptr) {
     set_inline_cookies(thread->ehandle, params_ptr->inline_cookies);
   }
 
-  curl_easy_setopt(thread->ehandle, CURLOPT_URL, info_ptr->curr_url);
+  if (info_ptr->remote_info.effective_url) {
+    curl_easy_setopt(thread->ehandle, CURLOPT_URL, info_ptr->remote_info.effective_url);
+  }
+  else {
+    curl_easy_setopt(thread->ehandle, CURLOPT_URL, info_ptr->params->start_url);
+  }
 
   curl_easy_setopt(thread->ehandle,CURLOPT_NOSIGNAL,1l); /* Try to avoid threading related segfaults */
   curl_easy_setopt(thread->ehandle,CURLOPT_FAILONERROR,1l); /* Fail on 4xx errors */

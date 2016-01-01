@@ -177,7 +177,6 @@ typedef struct {
 
 /* info_s: mother of all structs */
 typedef struct {
-  char *curr_url;
   saldl_params *params;
   curl_version_info_data *curl_info;
   file_s storage_info;

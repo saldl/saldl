@@ -35,7 +35,6 @@ static void saldl_free_all(info_s *info_ptr) {
   remote_info_s *remote_info = &info_ptr->remote_info;
 
   /* Make valgrind happy */
-  SALDL_FREE(info_ptr->curr_url);
   SALDL_FREE(info_ptr->threads);
   SALDL_FREE(info_ptr->chunks);
 
@@ -84,8 +83,7 @@ void saldl(saldl_params *params_ptr) {
 
   /* get/set initial info */
   main_msg("URL", "%s", params_ptr->start_url);
-  info.curr_url = saldl_strdup(params_ptr->start_url);
-  check_url(info.curr_url);
+  check_url(params_ptr->start_url);
   get_info(&info);
   set_info(&info);
   check_remote_file_size(&info);
