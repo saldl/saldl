@@ -84,11 +84,20 @@ General
 *-d, --dry-run*::
   Do not download, only display information.
 
-*-m, --memory-buffers*::
-  Use memory buffers instead of temp files for downloading chunks. +
-  This mode increases memory overhead. And we lose sub-chunk resumability.
-  But it might help performance in some situations, especially when IO is
-  the bottleneck.
+*--mirror-url*::
+  If the mirror is valid, Assign half the connections to it. +
+
+  A mirror URL is considered valid when compared to URL if: :::
+  +
+  1- Both do not have the same effective URL. +
+  2- Both have the same content size. +
+  3- Both support ranges. +
+  4- Both are not FTP. +
+  5- Both are not using content encoding. Or both do, but we will not
+     decode/decompress.
+
+*--fatal-if-invalid-mirror*::
+  Fatally fail if the mirror is invalid. Only a warning is displayed by default.
 
 *--stdout*::
   Write/Pipe output to *stdout*. +
@@ -101,6 +110,12 @@ General
    4- No state is saved in a '<filename>.ctrl.sal' file. +
    5- If single mode is used, timeouts and other non-fatal response
       errors will become fatal. +
+
+*-m, --memory-buffers*::
+  Use memory buffers instead of temp files for downloading chunks. +
+  This mode increases memory overhead. And we lose sub-chunk resumability.
+  But it might help performance in some situations, especially when IO is
+  the bottleneck.
 
 *--read-only*::
   Don't create files or write anything to disk.
