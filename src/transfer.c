@@ -614,6 +614,16 @@ static bool mirror_is_valid(info_s *info_ptr) {
   remote_info_s cp_mirror_ri = info_ptr->mirror_remote_info;
 
   /* Note: We don't care about attachment_filename or content_type */
+
+  SALDL_ASSERT(cp_ri.effective_url);
+  SALDL_ASSERT(cp_mirror_ri.effective_url);
+
+  /* We don't set a locale in saldl. So, it's okay to use strcasecomp() */
+  if ( !strcasecmp(cp_ri.effective_url, cp_mirror_ri.effective_url) ) {
+    warn_msg(FN, "Both primary and mirror URLs point to the same effective URL.");
+    return false;
+  }
+
   return (
       strstr(cp_mirror_ri.effective_url, "ftp") != cp_mirror_ri.effective_url &&
       cp_ri.range_support == cp_mirror_ri.range_support &&
