@@ -61,6 +61,12 @@ static void set_date_cond_from_file(CURL *handle, char *file_path) {
     warn_msg(FN, "Getting mtime of \"%s\" failed, %s.", file_path, strerror(errno));
   }
   else {
+#ifdef HAVE_STRFTIME
+    char time_str[512];
+    if ( strftime(time_str, 512, "%a, %d %b %Y %T %Z", gmtime(&date)) ) {
+      debug_msg(FN, "mtime: %s", time_str);
+    }
+#endif
     curl_easy_setopt(handle, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
     curl_easy_setopt(handle, CURLOPT_TIMEVALUE, (long)date);
   }

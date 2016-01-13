@@ -228,6 +228,7 @@ def check_api(conf):
     check_timer_support(conf)
     check_function_tty_width(conf)
     conf.check_cc(function_name='GetModuleFileName', header_name="windows.h", mandatory=False)
+    conf.check_cc(function_name='strftime', header_name="time.h", mandatory=False)
     conf.check_cc(function_name='asprintf', header_name="stdio.h", mandatory=False)
     conf.check_cc(function_name='strcasestr', header_name="string.h", mandatory=False)
     conf.check_cc(function_name='strsignal', header_name="string.h", mandatory=False)
