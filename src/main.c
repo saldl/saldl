@@ -127,7 +127,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_STDOUT                  CHAR_MAX+11
 #define SAL_OPT_HTTP2_UPGRADE           CHAR_MAX+12
 #define SAL_OPT_MIRROR_URL              CHAR_MAX+13
+#define SAL_OPT_FATAL_IF_INVALID_MIRROR CHAR_MAX+14
     {"mirror-url", required_argument, 0, SAL_OPT_MIRROR_URL},
+    {"fatal-if-invalid-mirror", no_argument, 0, SAL_OPT_FATAL_IF_INVALID_MIRROR},
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
     {"http2-upgrade", no_argument, 0, SAL_OPT_HTTP2_UPGRADE},
     {"no-tcp-keep-alive", no_argument, 0, SAL_OPT_NO_TCP_KEEP_ALIVE},
@@ -310,6 +312,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
       /* long only */
       case SAL_OPT_MIRROR_URL:
         params_ptr->mirror_start_url = saldl_strdup(optarg);
+        break;
+
+      case SAL_OPT_FATAL_IF_INVALID_MIRROR:
+        params_ptr->fatal_if_invalid_mirror = true;
         break;
 
       case SAL_OPT_NO_HTTP2:

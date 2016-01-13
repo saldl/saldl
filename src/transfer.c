@@ -690,7 +690,12 @@ static void request_remote_info(info_s *info_ptr, thread_s *tmp) {
         info_ptr->mirror_valid = true;
       }
       else {
-        info_msg(FN, "Invalid mirror.");
+        if (params_ptr->fatal_if_invalid_mirror) {
+          fatal(FN, "Invalid mirror.");
+        }
+        else {
+          warn_msg(FN, "Invalid mirror.");
+        }
       }
     }
   }

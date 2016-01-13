@@ -35,6 +35,7 @@ typedef struct {
   bool no_status;
   char* start_url;
   char* mirror_start_url;
+  bool fatal_if_invalid_mirror;
   char* root_dir;
   char* filename;
   size_t chunk_size;
