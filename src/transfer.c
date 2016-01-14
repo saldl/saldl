@@ -63,7 +63,7 @@ static void set_date_cond_from_file(CURL *handle, char *file_path) {
   else {
 #ifdef HAVE_STRFTIME
     char time_str[512];
-    if ( strftime(time_str, 512, "%a, %d %b %Y %H:%M:%S %Z", gmtime(&date)) ) {
+    if ( strftime(time_str, 512, "%a, %d %b %Y %H:%M:%S GMT", gmtime(&date)) ) {
       debug_msg(FN, "mtime: %s", time_str);
     }
 #endif
