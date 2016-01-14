@@ -1,7 +1,7 @@
 /*
     This file is a part of saldl.
 
-    Copyright (C) 2014-2015 Mohammad AlSaleh <CE.Mohammad.AlSaleh at gmail.com>
+    Copyright (C) 2014-2016 Mohammad AlSaleh <CE.Mohammad.AlSaleh at gmail.com>
     https://saldl.github.io
 
     saldl is free software: you can redistribute it and/or modify

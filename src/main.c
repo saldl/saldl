@@ -1,7 +1,7 @@
 /*
     This file is a part of saldl.
 
-    Copyright (C) 2014-2015 Mohammad AlSaleh <CE.Mohammad.AlSaleh at gmail.com>
+    Copyright (C) 2014-2016 Mohammad AlSaleh <CE.Mohammad.AlSaleh at gmail.com>
     https://saldl.github.io
 
     saldl is free software: you can redistribute it and/or modify
@@ -46,7 +46,7 @@ static int saldl_version() {
   fprintf(stderr, "WARNING: Windows builds of %s are experimental.\n", SALDL_NAME);
 #endif
   fprintf(stderr, "\n");
-  fprintf(stderr, "Copyright (C) 2014-2015 Mohammad AlSaleh.\n");
+  fprintf(stderr, "Copyright (C) 2014-2016 Mohammad AlSaleh.\n");
   fprintf(stderr, "Free use of this software is granted under the terms of\n");
   fprintf(stderr, "the GNU Affero General Public License (AGPL).\n");
   fprintf(stderr, "\n");
