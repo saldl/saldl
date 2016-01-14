@@ -153,6 +153,12 @@ static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_inf
 
   char *effective_url;
   curl_easy_getinfo(h->handle, CURLINFO_EFFECTIVE_URL, &effective_url);
+
+  if (remote_info->effective_url) {
+    debug_msg(FN, "Clearing effective URL: %s", remote_info->effective_url);
+    SALDL_FREE(remote_info->effective_url);
+  }
+
   remote_info->effective_url = saldl_strdup(effective_url);
 
   if (h->content_range) {
