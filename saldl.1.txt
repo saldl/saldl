@@ -109,7 +109,12 @@ General
    3- Resume is disabled. +
    4- No state is saved in a '<filename>.ctrl.sal' file. +
    5- If single mode is used, timeouts and other non-fatal response
-      errors will become fatal. +
+      errors will become fatal.
+
+
+ ::
+  If *-m/--memory-buffers* are used, saldl will not create or write to
+  any files directly.
 
 *-m, --memory-buffers*::
   Use memory buffers instead of temp files for downloading chunks. +
