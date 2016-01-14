@@ -42,6 +42,9 @@ static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
         ) {
       info_ptr->merge_finished(first_finished, info_ptr);
     }
+    else {
+      break;
+    }
   }
 
 }
