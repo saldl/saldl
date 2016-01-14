@@ -39,12 +39,14 @@ size_t num_of_lines(info_s *info_ptr, int cols) {
 static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, bool set_invert, size_t size) {
   while (size) {
     if (set_invert) {
-      strncpy(ptr,invert,strlen(invert));
-      ptr += strlen(invert);
+      strncpy(ptr, invert_white_fg, strlen(invert_white_fg));
+      ptr += strlen(invert_white_fg);
     }
     else {
-      /* This works because strlen(invert) == strlen(bold) always */
-      strncpy(ptr,end,strlen(end));
+      /* This works because strlen(invert_white_fg) == strlen(end) + strlen(default_fg) always */
+      strncpy(ptr, default_fg, strlen(default_fg));
+      ptr+= strlen(default_fg);
+      strncpy(ptr, end, strlen(end));
       ptr+= strlen(end);
     }
 
@@ -179,7 +181,7 @@ void* status_display(void *void_info_ptr) {
   info_ptr->ev_status.event_status = EVENT_THREAD_STARTED;
 
   /* initialize status */
-  size_t c_char_size = status_ptr->c_char_size = strlen(ok_color) +strlen(end) + strlen(invert) + 1;
+  size_t c_char_size = status_ptr->c_char_size = strlen(ok_color) +strlen(end) + strlen(invert_white_fg) + 1;
   char *chunks_status = status_ptr->chunks_status = saldl_calloc(info_ptr->chunk_count*c_char_size + 1, sizeof(char)); /* Sometimes, an extra char is shown/read(valgrind) at the end without the extra bit, maybe due to lack of space for \0 */
 
   int cols = tty_width() >= 0 ? tty_width() : 0;

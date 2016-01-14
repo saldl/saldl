@@ -52,6 +52,7 @@
 #define BOLD "\033[1m"
 #define UNDERLINE "\033[4m"
 #define INVERT "\033[7m"
+#define INVERT_WHITE_FG WHITE_BG INVERT
 
 /* Color Descriptions */
 #define OK_COLOR GREEN_FG
