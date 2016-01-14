@@ -8,7 +8,7 @@ them in-order with multiple concurrent connections. Classic modes
 (single chunk single connection, no. of chunks = no. of connections)
 are also available as *options*.
 
-More than 50 command-line options are available to customize saldl's behavior.
+More than 57 command-line options are available to customize saldl's behavior.
 
 ## Documentation
 
