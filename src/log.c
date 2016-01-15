@@ -84,8 +84,6 @@ void set_color(size_t *no_color) {
   ret_char = RET_CHAR;
   bold = BOLD;
   invert = INVERT;
-  invert_white_fg = INVERT_WHITE_FG;
-  default_fg = DEFAULT_FG;
   end = END;
   up = UP;
   erase_before = ERASE_BEFORE;
@@ -97,7 +95,7 @@ void set_color(size_t *no_color) {
   }
   switch (*no_color) {
     case MAX_NO_COLOR:
-      bold = invert = invert_white_fg = default_fg = end = up = erase_before = erase_after = erase_screen_before = erase_screen_after = ret_char = "";
+      bold = invert = end = up = erase_before = erase_after = erase_screen_before = erase_screen_after = ret_char = "";
     case 1:
       ok_color = debug_event_color = debug_color = info_color = warn_color = error_color = fatal_color = finish_color = "";
       break;

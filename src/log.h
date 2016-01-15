@@ -82,8 +82,6 @@ const char* ret_char;
 
 const char *bold;
 const char *invert;
-const char *invert_white_fg;
-const char *default_fg;
 const char *end;
 const char *up;
 const char *erase_before;
