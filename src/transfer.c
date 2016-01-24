@@ -1362,9 +1362,12 @@ void check_files_and_dirs(info_s *info_ptr) {
 void saldl_perform(thread_s *thread) {
   CURLcode ret;
   long response;
-  size_t retries = 0;
-  size_t delay = 1;
   short semi_fatal_retries = 0;
+
+  size_t retries = 0;
+  const size_t max_delay = 32;
+  const size_t init_delay = 1;
+  size_t delay = init_delay;
 
 
   while (1) {
@@ -1448,7 +1451,8 @@ void saldl_perform(thread_s *thread) {
 semi_fatal_perform_retry:
         sleep(delay);
         thread->reset_storage(thread);
-        delay=retries*3/2;
+        delay *= 2;
+        if (delay > max_delay) delay = init_delay;
         break;
       default:
         fatal(NULL, "libcurl returned fatal error (%d: %s) while downloading chunk %"SAL_ZU".", ret, thread->err_buf, thread->chunk->idx);
