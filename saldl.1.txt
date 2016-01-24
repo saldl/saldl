@@ -195,6 +195,21 @@ Chunk sizes and connections
   This option overrides *-l/--last-chunks-first*.
   (*default*: '0')
 
+*--merge-in-order*::
+  Only merge chunks in-order. +
+  +
+  This works as if we were piping to the output file, which could be useful
+  with some storage devices.
+
+[WARNING]
+================
+1. It does not make sense to use *--merge-in-order* with *--last-chunks-first*
+   or *--last-size-first*. As merging those chunks will be delayed. Even if
+   they were downloaded early.
+2. If memory buffers *--merge-in-order* are both used, completely downloaded
+   chunks could be lost due to delayed merges if the download was interrupted.
+================
+
 *-a 'num', --auto-size='num'*::
   increase chunk size so that chunk progress can fit in 'num' lines.
 

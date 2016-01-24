@@ -84,6 +84,7 @@ typedef struct {
   bool mem_bufs;
   bool read_only;
   bool to_stdout;
+  bool merge_in_order;
 } saldl_params;
 
 /* Static initializer.

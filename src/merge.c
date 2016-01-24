@@ -21,6 +21,7 @@
 
 static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
   info_s *info_ptr = arg;
+  saldl_params *params_ptr = info_ptr->params;
   event_s *ev_merge = &info_ptr->ev_merge;
 
   debug_event_msg(FN, "callback no. %"SAL_JU" for triggered event %s, with what %d", ++ev_merge->num_of_calls, str_EVENT_FD(fd) , what);
@@ -29,14 +30,15 @@ static void merge_finished_cb(evutil_socket_t fd, short what, void *arg) {
     events_deactivate(ev_merge);
   }
 
+  bool in_order = params_ptr->to_stdout || params_ptr->merge_in_order;
   chunk_s *first_finished = NULL;
   while ( (first_finished = first_prg(info_ptr, PRG_FINISHED, true)) ) {
     /* Don't delay merging if:
-     * 1- We are not piping.
+     * 1- We are not piping and merge_in_order was not requested.
      * 2- It's the first chunk
      * 3- All previous chunks have been merged/sent to pipe.
      */
-    if (!info_ptr->params->to_stdout ||
+    if (!in_order ||
         !first_finished->idx ||
         !first_prg_with_range(info_ptr, PRG_MERGED, false, 0, first_finished->idx - 1)
         ) {
