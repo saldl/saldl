@@ -110,6 +110,32 @@ char* saldl_strdup(const char *str) {
   return dup;
 }
 
+int saldl_strcmp(const char *s1, const char *s2) {
+  if (s1 && s2) {
+    return strcmp(s1, s2);
+  }
+  else if (s1 || s2) {
+    fatal(FN, "One of the arguments is NULL");
+  }
+  else {
+    /* Return 0 if both are NULL */
+    return 0;
+  }
+}
+
+int saldl_strcasecmp(const char *s1, const char *s2) {
+  if (s1 && s2) {
+    return strcasecmp(s1, s2);
+  }
+  else if (s1 || s2) {
+    fatal(FN, "One of the arguments is NULL");
+  }
+  else {
+    /* Return 0 if both are NULL */
+    return 0;
+  }
+}
+
 static size_t saldl_custom_headers_count(char **headers) {
   size_t count = 0;
   SALDL_ASSERT(headers);

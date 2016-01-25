@@ -50,6 +50,8 @@ void* saldl_calloc(size_t nmemb, size_t size);
 void* saldl_malloc(size_t size);
 void* saldl_realloc(void *ptr, size_t size);
 char* saldl_strdup(const char *str);
+int saldl_strcmp(const char *s1, const char *s2);
+int saldl_strcasecmp(const char *s1, const char *s2);
 
 void saldl_custom_headers_free_all(char **headers);
 char** saldl_custom_headers_append(char **headers, char *header);

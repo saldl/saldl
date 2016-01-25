@@ -438,7 +438,7 @@ static void set_names(info_s* info_ptr) {
 
     /* unescape name/url */
     void(*free_prev)(void*) = free;
-    while ( strcmp(unescaped = curl_easy_unescape(handle, prev_unescaped, 0, NULL), prev_unescaped) ) {
+    while ( saldl_strcmp(unescaped = curl_easy_unescape(handle, prev_unescaped, 0, NULL), prev_unescaped) ) {
       curl_free(prev_unescaped);
       prev_unescaped = unescaped;
       free_prev = curl_free;
@@ -465,7 +465,7 @@ static void set_names(info_s* info_ptr) {
         }
       }
 
-      if ( strcmp(pre_filename, params_ptr->filename) ) {
+      if ( saldl_strcmp(pre_filename, params_ptr->filename) ) {
         info_msg(FN, "Before stripping GET attrs: %s", pre_filename);
         info_msg(FN, "After  stripping GET attrs: %s", params_ptr->filename);
       }
@@ -549,14 +549,14 @@ static void print_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   remote_info_s *remote_info = &info_ptr->remote_info;
 
-  if (strcmp(params_ptr->start_url, info_ptr->remote_info.effective_url)) {
+  if (saldl_strcmp(params_ptr->start_url, info_ptr->remote_info.effective_url)) {
     main_msg("Redirected", "%s", info_ptr->remote_info.effective_url);
   }
 
   if (info_ptr->mirror_valid) {
     main_msg("Mirror", "%s", params_ptr->mirror_start_url);
 
-    if (strcmp(params_ptr->mirror_start_url, info_ptr->mirror_remote_info.effective_url)) {
+    if (saldl_strcmp(params_ptr->mirror_start_url, info_ptr->mirror_remote_info.effective_url)) {
       main_msg("Mirror-Redirected", "%s", info_ptr->mirror_remote_info.effective_url);
     }
   }
@@ -631,7 +631,7 @@ static bool mirror_is_valid(info_s *info_ptr) {
   SALDL_ASSERT(cp_mirror_ri.effective_url);
 
   /* We don't set a locale in saldl. So, it's okay to use strcasecomp() */
-  if ( !strcasecmp(cp_ri.effective_url, cp_mirror_ri.effective_url) ) {
+  if ( !saldl_strcasecmp(cp_ri.effective_url, cp_mirror_ri.effective_url) ) {
     warn_msg(FN, "Both primary and mirror URLs point to the same effective URL.");
     return false;
   }
@@ -822,7 +822,7 @@ static void auto_size_func(info_s *info_ptr, int auto_size) {
 
 void check_url(char *url) {
   /* TODO: Add more checks */
-  if (! strcmp(url, "") ) {
+  if (! saldl_strcmp(url, "") ) {
     fatal(NULL, "Invalid empty url \"%s\".", url);
   }
 }
