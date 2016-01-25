@@ -554,14 +554,16 @@ static void print_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
   remote_info_s *remote_info = &info_ptr->remote_info;
 
-  if (saldl_strcmp(params_ptr->start_url, info_ptr->remote_info.effective_url)) {
+  if ( info_ptr->remote_info.effective_url &&
+      saldl_strcmp(params_ptr->start_url, info_ptr->remote_info.effective_url) ) {
     main_msg("Redirected", "%s", info_ptr->remote_info.effective_url);
   }
 
   if (info_ptr->mirror_valid) {
     main_msg("Mirror", "%s", params_ptr->mirror_start_url);
 
-    if (saldl_strcmp(params_ptr->mirror_start_url, info_ptr->mirror_remote_info.effective_url)) {
+    if (info_ptr->mirror_remote_info.effective_url &&
+        saldl_strcmp(params_ptr->mirror_start_url, info_ptr->mirror_remote_info.effective_url) ) {
       main_msg("Mirror-Redirected", "%s", info_ptr->mirror_remote_info.effective_url);
     }
   }

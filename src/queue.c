@@ -109,7 +109,13 @@ void prep_next(info_s *info_ptr, thread_s *thread, chunk_s *chunk, int init) {
       set_params(thread, info_ptr, info_ptr->mirror_remote_info.effective_url);
     }
     else {
-      set_params(thread, info_ptr, info_ptr->remote_info.effective_url);
+      if (info_ptr->remote_info.effective_url) {
+        set_params(thread, info_ptr, info_ptr->remote_info.effective_url);
+      }
+      else {
+        /* --no-remote-info */
+        set_params(thread, info_ptr, params_ptr->start_url);
+      }
     }
   }
 
