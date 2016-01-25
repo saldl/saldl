@@ -474,8 +474,13 @@ static void set_names(info_s* info_ptr) {
 
   }
 
-  if ( !strcmp(params_ptr->filename,"") || !strcmp(params_ptr->filename,".") || !strcmp(params_ptr->filename,"..") || !strcmp(params_ptr->filename,"...") || ( strrchr(params_ptr->filename,'/') && ( !strcmp(strrchr(params_ptr->filename,'/'), "/") || !strcmp(strrchr(params_ptr->filename,'/'), "/.") || !strcmp(strrchr(params_ptr->filename,'/'), "/..") ) ) ) {
-    fatal(NULL, "Invalid filename \"%s\".", params_ptr->filename);
+  if ( !saldl_strcmp(params_ptr->filename,"") ) {
+    fatal(FN, "Output filename is empty!");
+  }
+
+  char *last_path_sep = strrchr(params_ptr->filename,'/');
+  if ( last_path_sep && !saldl_strcmp(last_path_sep, "/") ) {
+    fatal(FN, "Output filename \"%s\" ends with a path separator!", params_ptr->filename);
   }
 
   if ( params_ptr->no_path ) {
