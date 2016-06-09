@@ -41,6 +41,7 @@ typedef struct {
   size_t chunk_size;
   size_t last_chunks_first;
   off_t last_size_first;
+  bool random_order;
   size_t num_connections;
   size_t connection_max_rate;
   bool auto_referer;

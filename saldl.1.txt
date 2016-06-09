@@ -195,6 +195,9 @@ Chunk sizes and connections
   This option overrides *-l/--last-chunks-first*.
   (*default*: '0')
 
+*--random-order*::
+  Download chunks in random order.
+
 *--merge-in-order*::
   Only merge chunks in-order. +
   +

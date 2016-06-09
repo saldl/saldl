@@ -51,6 +51,30 @@ static size_t last_chunk_from_last_size(info_s *info_ptr) {
   }
 }
 
+static chunk_s* pick_next_random(info_s *info_ptr) {
+  chunk_s *chunk = NULL;
+  chunk_s *chunks = info_ptr->chunks;
+
+  if (info_ptr->params->random_order) {
+    size_t r = (double)rand()/RAND_MAX * (info_ptr->chunk_count - 1);
+
+    /* Pick the 1st and the last chunks first */
+    if (chunks[0].progress == PRG_NOT_STARTED) return &chunks[0];
+    if (chunks[info_ptr->chunk_count -1].progress == PRG_NOT_STARTED) return &chunks[info_ptr->chunk_count -1];
+
+    /* Pick the random chunk if it's not started already */
+    if (chunks[r].progress == PRG_NOT_STARTED) return &chunks[r];
+
+    /* if the random chunk is already started, pick the 1st one to the left.
+     * if all chunks to the left already started, pick the 1st one to the right */
+    if (! (chunk = last_prg_with_range(info_ptr, PRG_NOT_STARTED, true, r, 0)) ) {
+      chunk = first_prg_with_range(info_ptr, PRG_NOT_STARTED, true, r, info_ptr->chunk_count -1);
+    }
+  }
+
+  return chunk;
+}
+
 static chunk_s* pick_next_last_first(info_s *info_ptr) {
   size_t last_first, start_idx;
   size_t end_idx = info_ptr->chunk_count - 1;
@@ -83,7 +107,9 @@ static chunk_s* pick_next(info_s *info_ptr) {
   chunk_s *chunk = NULL;
 
   if (! (chunk = pick_next_last_first(info_ptr)) ) {
-    chunk = first_prg(info_ptr, PRG_NOT_STARTED, true);
+    if (! (chunk = pick_next_random(info_ptr)) ) {
+      chunk = first_prg(info_ptr, PRG_NOT_STARTED, true);
+    }
   }
 
   SALDL_ASSERT(chunk);

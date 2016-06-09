@@ -129,6 +129,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_MIRROR_URL              CHAR_MAX+13
 #define SAL_OPT_FATAL_IF_INVALID_MIRROR CHAR_MAX+14
 #define SAL_OPT_MERGE_IN_ORDER          CHAR_MAX+15
+#define SAL_OPT_RANDOM_ORDER            CHAR_MAX+16
     {"mirror-url", required_argument, 0, SAL_OPT_MIRROR_URL},
     {"fatal-if-invalid-mirror", no_argument, 0, SAL_OPT_FATAL_IF_INVALID_MIRROR},
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
@@ -141,6 +142,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"no-mmap", no_argument, 0, SAL_OPT_NO_MMAP},
     {"stdout", no_argument, 0, SAL_OPT_STDOUT},
     {"merge-in-order", no_argument, 0, SAL_OPT_MERGE_IN_ORDER},
+    {"random-order", no_argument, 0, SAL_OPT_RANDOM_ORDER},
     {"read-only", no_argument, 0, SAL_OPT_READ_ONLY},
     {"custom-headers", required_argument, 0, SAL_OPT_CUSTOM_HEADERS},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
@@ -342,6 +344,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_NO_MMAP:
         params_ptr->no_mmap = true;
+        break;
+
+      case SAL_OPT_RANDOM_ORDER:
+        params_ptr->random_order= true;
         break;
 
       case SAL_OPT_MERGE_IN_ORDER:
