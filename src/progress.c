@@ -57,6 +57,7 @@ chunk_s* prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, s
   size_t index = start;
   while(true) {
     if (!reverse && index > end) break;
+    /* Checking against SIZE_MAX in case the decrement caused wrapping */
     if (reverse && (index < end || index == SIZE_MAX)) break;
 
     if (match && chunks[index].progress == prg) {
