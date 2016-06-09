@@ -39,25 +39,48 @@ bool exist_prg(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match) {
   return false;
 }
 
-chunk_s* first_prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end) {
+chunk_s* prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end) {
   chunk_s *chunks = info_ptr->chunks;
 
   SALDL_ASSERT(start < info_ptr->chunk_count);
   SALDL_ASSERT(end < info_ptr->chunk_count);
-  SALDL_ASSERT(end >= start);
 
-  for (size_t counter = start; counter <= end; counter++) {
+  bool reverse;
 
-    if (match && chunks[counter].progress == prg) {
-      return &chunks[counter];
+  if (end >= start) {
+    reverse = false;
+  }
+  else {
+    reverse = true;
+  }
+
+  size_t index = start;
+  while(true) {
+    if (!reverse && index > end) break;
+    if (reverse && (index < end || index == SIZE_MAX)) break;
+
+    if (match && chunks[index].progress == prg) {
+      return &chunks[index];
     }
 
-    if (!match &&  chunks[counter].progress != prg) {
-      return &chunks[counter];
+    if (!match &&  chunks[index].progress != prg) {
+      return &chunks[index];
     }
+
+    index += reverse ? -1 : 1;
   }
 
   return NULL;
+}
+
+chunk_s* first_prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end) {
+  SALDL_ASSERT(end >= start);
+  return prg_with_range(info_ptr, prg, match, start, end);
+}
+
+chunk_s* last_prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end) {
+  SALDL_ASSERT(end <= start);
+  return prg_with_range(info_ptr, prg, match, start, end);
 }
 
 chunk_s* first_prg(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match) {

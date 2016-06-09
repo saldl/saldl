@@ -66,6 +66,7 @@ enum CH_CHUNK_PROGRESS {
 
 bool exist_prg(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match);
 chunk_s* first_prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end);
+chunk_s* last_prg_with_range(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match, size_t start, size_t end);
 chunk_s* first_prg(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match);
 size_t first_prg_idx(info_s *info_ptr, enum CHUNK_PROGRESS prg, bool match);
 void set_chunk_progress(chunk_s *chunk, enum CHUNK_PROGRESS progress);
