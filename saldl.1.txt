@@ -195,6 +195,11 @@ Chunk sizes and connections
   This option overrides *-l/--last-chunks-first*.
   (*default*: '0')
 
+*-F, --allow-ftp-segments*::
+  Due to a certain limitation in the information provided by libcurl, single
+  mode is force-enabled by default with FTP links. This option overrides that
+  behavior.
+
 *--random-order*::
   Download chunks in random order.
 

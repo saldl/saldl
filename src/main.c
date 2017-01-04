@@ -113,6 +113,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"auto-size", required_argument, 0, 'a'},
     {"whole-file", no_argument, 0, 'w'},
     {"memory-buffers", no_argument, 0, 'm'},
+    {"allow-ftp-segments", no_argument, 0, 'F'},
     /* long only */
 #define SAL_OPT_NO_STATUS               CHAR_MAX+1
 #define SAL_OPT_NO_HTTP2                CHAR_MAX+2
@@ -149,7 +150,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:U64Zz";
+  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:U64ZzF";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -311,6 +312,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
       case 'm':
         params_ptr->mem_bufs = true;
+        break;
+      case 'F':
+        params_ptr->allow_ftp_segments = true;
         break;
 
       /* long only */

@@ -93,6 +93,7 @@ typedef struct {
   off_t range_start;
   off_t curr_range_start; /* used for strict checking when resuming or resetting */
   off_t range_end;
+  bool unsafe_range_size_check; // for ftp
   void *storage;
   enum CHUNK_PROGRESS progress;
   event_s *ev_trigger;
@@ -199,6 +200,7 @@ typedef struct {
   char part_filename[PATH_MAX];
   char ctrl_filename[PATH_MAX];
   off_t file_size;
+  bool is_ftp;
   bool file_size_from_dltotal;
   headers_s headers;
   remote_info_s remote_info;

@@ -128,6 +128,9 @@ void chunks_init(info_s *info_ptr) {
     info_ptr->chunks[idx].size = info_ptr->params->chunk_size;
     info_ptr->chunks[idx].range_start = (off_t)idx * info_ptr->chunks[idx].size;
     info_ptr->chunks[idx].range_end = (off_t)(idx+1) * info_ptr->chunks[idx].size - 1;
+    if (info_ptr->is_ftp && info_ptr->params->allow_ftp_segments) {
+      info_ptr->chunks[idx].unsafe_range_size_check = true;
+    }
   }
 
   if (info_ptr->rem_size) {
@@ -588,8 +591,11 @@ static void set_info_params_from_remote_info(info_s *info_ptr, remote_info_s *re
 
     /* Special handling for FTP */
   if (strstr(remote_info->effective_url, "ftp") == remote_info->effective_url) {
-    warn_msg(FN, "We force single mode with FTP. It doesn't cope well with concurrent connections.");
-    params_ptr->single_mode = true;
+    info_ptr->is_ftp = true;
+    if (!params_ptr->allow_ftp_segments) {
+      warn_msg(FN, "We force single mode with FTP. It doesn't cope well with concurrent connections.");
+      params_ptr->single_mode = true;
+    }
   }
 
   if (!remote_info->range_support) {
@@ -1045,7 +1051,8 @@ static int chunk_progress(void *void_chunk_ptr, curl_off_t dltotal, curl_off_t d
   size_t rem;
 
   /* Check bad server behavior, e.g. if dltotal becomes file_size mid-transfer. */
-  if (dltotal && dltotal != (chunk->range_end - chunk->curr_range_start + 1) ) {
+  if (dltotal && !chunk->unsafe_range_size_check &&
+      dltotal != (chunk->range_end - chunk->curr_range_start + 1) ) {
     fatal(FN, "Transfer size(%"SAL_JD") does not match requested range(%"SAL_JD"-%"SAL_JD") in chunk %"SAL_ZU", this is a sign of a bad server, retry with a single connection.", (intmax_t)dltotal, (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end, chunk->idx);
   }
 

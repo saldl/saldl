@@ -86,6 +86,7 @@ typedef struct {
   bool read_only;
   bool to_stdout;
   bool merge_in_order;
+  bool allow_ftp_segments;
 } saldl_params;
 
 /* Static initializer.
