@@ -368,7 +368,6 @@ def check_warning_cflags(conf):
 
     if conf.env['CFLAGS_SAL_WARNING']:
         conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_WARNING'])
-        #print('Added warning flags: ' + str(conf.env['CFLAGS_SAL_WARNING']))
     else:
         if not os_flags:
             conf.fatal('None of the warning CFLAGS are supported by the compiler!')
@@ -398,10 +397,8 @@ def check_sanitize_flags(conf):
     if conf.env['CFLAGS_SAL_SANITIZE'] or conf.env['LINKFLAGS_SAL_SANITIZE']:
         if conf.env['CFLAGS_SAL_SANITIZE']:
             conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_SANITIZE'])
-            print('Added sanitizers to cflags: ' + str(conf.env['CFLAGS_SAL_SANITIZE']))
         if conf.env['LINKFLAGS_SAL_SANITIZE']:
             conf.env.append_value('LINKFLAGS', conf.env['LINKFLAGS_SAL_SANITIZE'])
-            print('Added sanitizers to linkflags: ' + str(conf.env['LINKFLAGS_SAL_SANITIZE']))
     else:
             if not os_flags:
                 print('None of the sanitizers are supported by the compiler!')
@@ -430,7 +427,6 @@ def check_debug_cflags(conf):
 
     if conf.env['CFLAGS_SAL_DEBUG']:
         conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_DEBUG'])
-        #print('Added debug flags: ' + str(conf.env['CFLAGS_SAL_DEBUG']))
     else:
         if not os_flags:
             conf.fatal('None of the debug CFLAGS are supported by the compiler!')
@@ -458,7 +454,6 @@ def check_link_flags(conf):
 
     if conf.env['LINKFLAGS_SAL']:
         conf.env.append_value('LINKFLAGS', conf.env['LINKFLAGS_SAL'])
-        #print('Added linkflags: ' + str(conf.env['LINKFLAGS_SAL']))
 
 
 @conf
@@ -492,11 +487,9 @@ def check_lto_flags(conf):
     if conf.env['CFLAGS_SAL_LTO'] or conf.env['LINKFLAGS_SAL_LTO']:
         if conf.env['CFLAGS_SAL_LTO']:
             conf.env.append_value('CFLAGS', conf.env['CFLAGS_SAL_LTO'])
-            print('Added lto flags to cflags: ' + str(conf.env['CFLAGS_SAL_LTO']))
 
         if conf.env['LINKFLAGS_SAL_LTO']:
             conf.env.append_value('LINKFLAGS', conf.env['LINKFLAGS_SAL_LTO'])
-            print('Added lto flags to linkflags: ' + str(conf.env['LINKFLAGS_SAL_LTO']))
 
     else:
         if not (l_os_flags or c_os_flags):
