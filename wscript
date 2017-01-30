@@ -451,7 +451,6 @@ def check_link_flags(conf):
                 ['-Wl,--as-needed'],
                 ['-Wl,-z,relro'],
                 ['-Wl,-z,now'],
-                ['-Wl,--hash-style=gnu']
         ]
 
     for l in linkflags:
