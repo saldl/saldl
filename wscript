@@ -611,6 +611,10 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
         if conf.env[libpath_var]:
             conf.env.LIBPATH += conf.env[libpath_var]
 
+        cflags_var = 'CFLAGS_' + pkg_name.upper()
+        if conf.env[cflags_var]:
+            conf.env.CFLAGS += conf.env[cflags_var]
+
         lib_var = 'LIB_' + pkg_name.upper()
         if conf.env[lib_var]:
             conf.env.LIB += conf.env[lib_var]
