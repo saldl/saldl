@@ -295,6 +295,7 @@ def check_timer_support(conf):
             ''',
             define_name="HAVE_CLOCK_MONOTONIC_RAW",
             msg = "Checking for clock_gettime() with CLOCK_MONOTONIC_RAW support",
+            execute=True,
             mandatory=False)
     conf.check_cc(function_name='gettimeofday', header_name="sys/time.h", mandatory=False)
 
