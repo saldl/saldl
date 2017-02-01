@@ -98,7 +98,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"no-timeouts", no_argument, 0, 'O'},
     {"no-remote-info", no_argument, 0, 'I'},
     {"no-attachment-detection", no_argument, 0, 'A'},
-    {"use-HEAD", no_argument, 0, 'H'},
+    {"custom-headers", required_argument, 0, 'H'},
     {"single", no_argument, 0, 'S'},
     {"no-path", no_argument, 0, 'n'},
     {"keep-GET-attrs", no_argument, 0, 'G'},
@@ -121,7 +121,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_SKIP_TLS_VERIFICATION   CHAR_MAX+4
 #define SAL_OPT_VERBOSE_LIBCURL         CHAR_MAX+5
 #define SAL_OPT_READ_ONLY               CHAR_MAX+6
-#define SAL_OPT_CUSTOM_HEADERS          CHAR_MAX+7
+#define SAL_OPT_USE_HEAD                CHAR_MAX+7
 #define SAL_OPT_PROXY_CUSTOM_HEADERS    CHAR_MAX+8
 #define SAL_OPT_NO_MMAP                 CHAR_MAX+9
 #define SAL_OPT_NO_TCP_KEEP_ALIVE       CHAR_MAX+10
@@ -145,12 +145,12 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"merge-in-order", no_argument, 0, SAL_OPT_MERGE_IN_ORDER},
     {"random-order", no_argument, 0, SAL_OPT_RANDOM_ORDER},
     {"read-only", no_argument, 0, SAL_OPT_READ_ONLY},
-    {"custom-headers", required_argument, 0, SAL_OPT_CUSTOM_HEADERS},
+    {"use-HEAD", no_argument, 0, SAL_OPT_USE_HEAD},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
     {0, 0, 0, 0}
   };
 
-  const char *opts = "s:l:L:c:R:x:X:N3OSHIAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:U64ZzF";
+  const char *opts = "s:l:L:c:R:x:X:N3OSH:IAnGgdD:o:tTrfa:wmVvCi:K:k:M:Y:p:P:e:Eu:U64ZzF";
   opt_idx = 0 , optind = 0;
   while (1) {
     c = getopt_long(full_argc, full_argv, opts, long_opts, &opt_idx);
@@ -263,7 +263,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->no_timeouts = true;
         break;
       case 'H':
-        params_ptr->head = true;
+        params_ptr->custom_headers = saldl_custom_headers_append(params_ptr->custom_headers, optarg);
         break;
       case 'I':
         params_ptr->no_remote_info = true;
@@ -374,8 +374,8 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         params_ptr->libcurl_verbosity = true;
         break;
 
-      case SAL_OPT_CUSTOM_HEADERS:
-        params_ptr->custom_headers = saldl_custom_headers_append(params_ptr->custom_headers, optarg);
+      case SAL_OPT_USE_HEAD:
+        params_ptr->head = true;
         break;
 
       case SAL_OPT_PROXY_CUSTOM_HEADERS:

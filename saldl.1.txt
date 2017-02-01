@@ -353,7 +353,7 @@ Custom Request Options
 The following settings should not be generally used, but might help in rare
 cases:
 
-*--custom-headers='header(s)'*::
+*-H, --custom-headers='header(s)'*::
   Add one or more custom headers to the request. Or suppress an auto one.
   Those headers would be sent to the remote server. If you need to send them
   to the proxy, use *--proxy-custom-headers*. +
@@ -376,7 +376,7 @@ cases:
   Works like *--custom-headers*. But the headers are passed to the proxy
   instead of the remote server.
 
-*-H, --use-HEAD*::
+*--use-HEAD*::
   Use 'HEAD' instead of 'GET' to retrieve download information from
   servers.
 
