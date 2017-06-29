@@ -345,6 +345,8 @@ def check_warning_cflags(conf):
                 ['-Wall'],
                 ['-Wextra'],
                 ['-Wmissing-format-attribute'],
+                # In GCC 7, -Wextra enables -Wimplicit-fallthrough
+                ['-Wno-implicit-fallthrough'],
         ]
 
     for w in warn_flags:
