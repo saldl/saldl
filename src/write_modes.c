@@ -32,7 +32,7 @@ static void prepare_storage_tmpf(chunk_s *chunk, file_s* dir) {
 
   file_s *tmp_f = saldl_calloc (1, sizeof(file_s));
   tmp_f->name = saldl_calloc(PATH_MAX, sizeof(char));
-  snprintf(tmp_f->name, PATH_MAX, "%s/%"SAL_ZU"", dir->name, chunk->idx);
+  saldl_snprintf(tmp_f->name, PATH_MAX, "%s/%"SAL_ZU"", dir->name, chunk->idx);
 
   if (chunk->size_complete) {
     if (! (tmp_f->file = fopen(tmp_f->name, "rb+"))) {

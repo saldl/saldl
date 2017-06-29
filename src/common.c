@@ -39,7 +39,7 @@ void curl_set_ranges(CURL *handle, chunk_s *chunk) {
   SALDL_ASSERT(chunk->range_end);
   SALDL_ASSERT( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
   chunk->curr_range_start = chunk->range_start + (off_t)chunk->size_complete;
-  snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
+  saldl_snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
   curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
 }
 
@@ -501,6 +501,24 @@ void restore_sig_handler(int sig, struct sigaction *sa_restore) {
 }
 #endif
 
+int saldl_snprintf(char *str, size_t size, const char *format, ...) {
+  int ret = 0;
+
+  if (format) {
+    va_list args;
+    va_start(args, format);
+
+    ret = vsnprintf(str, size, format, args);
+    if (size &&  (intmax_t)ret >= (intmax_t)size) {
+      fatal(FN, "\"%s\" is truncated.", str);
+    }
+
+    va_end(args);
+  }
+
+  return ret;
+}
+
 void saldl_fputc(int c, FILE *stream, const char *label) {
   int ret;
 
@@ -567,11 +585,11 @@ const char* human_size_suffix(double size) {
 }
 
 size_t s_num_digits(intmax_t num) {
-	return snprintf(NULL, 0, "%"SAL_JD"", num);
+	return saldl_snprintf(NULL, 0, "%"SAL_JD"", num);
 }
 
 size_t u_num_digits(uintmax_t num) {
-	return snprintf(NULL, 0, "%"SAL_JU"", num);
+	return saldl_snprintf(NULL, 0, "%"SAL_JU"", num);
 }
 
 size_t saldl_min(size_t a, size_t b) {
@@ -639,7 +657,7 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   pre_trunc_copy = saldl_strdup(pre_trunc);
   tmp_dirname = dirname(pre_trunc_copy);
   if ( tmp_dirname[0] != '.' ) {
-    snprintf(dir_name,PATH_MAX,"%s/", tmp_dirname);
+    saldl_snprintf(dir_name,PATH_MAX,"%s/", tmp_dirname);
   }
   SALDL_FREE(pre_trunc_copy);
 
@@ -654,10 +672,10 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   tmp_basename = basename(pre_trunc_copy);
   tmp_basename[ strlen(tmp_basename) - ext_len ] = '\0';
   base_name = saldl_strdup(tmp_basename);
-  snprintf(base_name,NAME_MAX-EXT_LEN-ext_len,"%s", tmp_basename);
+  saldl_snprintf(base_name,NAME_MAX-EXT_LEN-ext_len,"%s", tmp_basename);
   SALDL_FREE(pre_trunc_copy);
 
-  snprintf(trunc_name,
+  saldl_snprintf(trunc_name,
            PATH_MAX - EXT_LEN - u_num_digits(SIZE_MAX) - (dir_name[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),
            "%s%s%s",
            dir_name,

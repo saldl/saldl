@@ -140,9 +140,9 @@ void* sync_ctrl(void *void_info_ptr) {
   char char_file_size[s_num_digits(OFF_T_MAX)];
   char char_chunk_size[u_num_digits(SIZE_MAX)];
   char char_rem_size[u_num_digits(SIZE_MAX)];
-  snprintf(char_file_size, s_num_digits(OFF_T_MAX), "%"SAL_JD"", (intmax_t)info_ptr->file_size);
-  snprintf(char_chunk_size, u_num_digits(SIZE_MAX), "%"SAL_ZU"", info_ptr->params->chunk_size);
-  snprintf(char_rem_size, u_num_digits(SIZE_MAX), "%"SAL_ZU"", info_ptr->rem_size);
+  saldl_snprintf(char_file_size, s_num_digits(OFF_T_MAX), "%"SAL_JD"", (intmax_t)info_ptr->file_size);
+  saldl_snprintf(char_chunk_size, u_num_digits(SIZE_MAX), "%"SAL_ZU"", info_ptr->params->chunk_size);
+  saldl_snprintf(char_rem_size, u_num_digits(SIZE_MAX), "%"SAL_ZU"", info_ptr->rem_size);
 
   /* Rewind ctrl_file */
   saldl_fseeko(info_ptr->ctrl_filename, info_ptr->ctrl_file, 0, SEEK_SET);
