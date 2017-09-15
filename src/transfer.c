@@ -793,8 +793,13 @@ void check_remote_file_size(info_s *info_ptr) {
 
 static void whole_file(info_s *info_ptr) {
   if (0 < info_ptr->file_size) {
-    info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)info_ptr->params->chunk_size , (uintmax_t)info_ptr->file_size  / info_ptr->params->num_connections);
-    info_ptr->params->chunk_size = info_ptr->params->chunk_size >> 12 << 12 ; /* Round down to 4k boundary */
+
+    size_t chunk_size = info_ptr->file_size  / info_ptr->params->num_connections;
+    // Make sure the number of chunks (including last_chunk) will equal num_connections
+    chunk_size += info_ptr->file_size  % info_ptr->params->num_connections;
+    chunk_size = (chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
+
+    info_ptr->params->chunk_size = saldl_max_z_umax(info_ptr->params->chunk_size , chunk_size);
     info_msg(FN, "Chunk size set to %.2f%s based on file size %.2f%s and number of connections %"SAL_ZU".",
         human_size(info_ptr->params->chunk_size), human_size_suffix(info_ptr->params->chunk_size),
         human_size(info_ptr->file_size), human_size_suffix(info_ptr->file_size),
