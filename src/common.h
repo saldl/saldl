@@ -87,7 +87,7 @@ void saldl_sigaction(int sig, const struct sigaction *restrict act, struct sigac
 void saldl_win_signal(int signum, void (*handler)(int));
 #endif
 
-int saldl_snprintf(char *str, size_t size, const char *format, ...) __attribute__(( format(SALDL_PRINTF_FORMAT,3,4) ));
+void saldl_snprintf(bool allow_truncation, char *str, size_t size, const char *format, ...) __attribute__(( format(SALDL_PRINTF_FORMAT,4,5) ));
 void saldl_fputc(int c, FILE *stream, const char *label);
 void saldl_fputs(const char *str, FILE *stream, const char *label);
 void saldl_fputs_count(uintmax_t count, const char* str, FILE* stream, const char *label);

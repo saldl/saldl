@@ -111,7 +111,7 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
 
 char* saldl_user_agent() {
   char *agent = saldl_calloc(1024, sizeof(char));
-  saldl_snprintf(agent, 1024, "%s/%s", "libcurl", curl_version_info(CURLVERSION_NOW)->version);
+  saldl_snprintf(false, agent, 1024, "%s/%s", "libcurl", curl_version_info(CURLVERSION_NOW)->version);
   return agent;
 }
 
@@ -506,7 +506,7 @@ static void set_names(info_s* info_ptr) {
 
     info_msg(FN, "Prepending root_dir(%s) to filename(%s).", params_ptr->root_dir, params_ptr->filename);
     params_ptr->filename = saldl_calloc(full_buf_size, sizeof(char)); // +1 for '\0'
-    saldl_snprintf(params_ptr->filename, full_buf_size, "%s/%s", params_ptr->root_dir, curr_filename);
+    saldl_snprintf(false, params_ptr->filename, full_buf_size, "%s/%s", params_ptr->root_dir, curr_filename);
     SALDL_FREE(curr_filename);
   }
 
@@ -547,10 +547,10 @@ static void set_names(info_s* info_ptr) {
       pre_path_len = strlen(saldl_getcwd(cwd,PATH_MAX)) + 1;
     }
 
-    saldl_snprintf(info_ptr->part_filename, PATH_MAX-pre_path_len, "%s.part.sal", params_ptr->filename);
-    saldl_snprintf(info_ptr->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
+    saldl_snprintf(false, info_ptr->part_filename, PATH_MAX-pre_path_len, "%s.part.sal", params_ptr->filename);
+    saldl_snprintf(false, info_ptr->ctrl_filename,PATH_MAX,"%s.ctrl.sal",params_ptr->filename);
   }
-  saldl_snprintf(info_ptr->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
+  saldl_snprintf(false, info_ptr->tmp_dirname,PATH_MAX,"%s.tmp.sal",params_ptr->filename);
 }
 
 static void print_info(info_s *info_ptr) {
@@ -1103,7 +1103,7 @@ void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   char ca_bundle_path[PATH_MAX];
   char *exe_dir = windows_exe_path();
   if (exe_dir) {
-    saldl_snprintf(ca_bundle_path, PATH_MAX, "%s/ca-bundle.trust.crt", exe_dir);
+    saldl_snprintf(false, ca_bundle_path, PATH_MAX, "%s/ca-bundle.trust.crt", exe_dir);
 
     if ( access(ca_bundle_path, F_OK) ) {
       warn_msg(FN, "CA bundle file %s does not exist.", ca_bundle_path);

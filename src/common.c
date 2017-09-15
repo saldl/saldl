@@ -32,14 +32,14 @@
 #include "common.h"
 
 /* .part.sal , .ctrl.sal len is 9 */
-#define EXT_LEN 9
+#define SUFFIX_LEN 9
 
 void curl_set_ranges(CURL *handle, chunk_s *chunk) {
   char range_str[2 * s_num_digits(OFF_T_MAX) + 1];
   SALDL_ASSERT(chunk->range_end);
   SALDL_ASSERT( (uintmax_t)(chunk->range_end - chunk->range_start) <= (uintmax_t)SIZE_MAX );
   chunk->curr_range_start = chunk->range_start + (off_t)chunk->size_complete;
-  saldl_snprintf(range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
+  saldl_snprintf(false, range_str, 2 * s_num_digits(OFF_T_MAX) + 1, "%"SAL_JD"-%"SAL_JD"", (intmax_t)chunk->curr_range_start, (intmax_t)chunk->range_end);
   curl_easy_setopt(handle, CURLOPT_RANGE, range_str);
 }
 
@@ -501,22 +501,23 @@ void restore_sig_handler(int sig, struct sigaction *sa_restore) {
 }
 #endif
 
-int saldl_snprintf(char *str, size_t size, const char *format, ...) {
-  int ret = 0;
-
+void saldl_snprintf(bool allow_truncation, char *str, size_t size, const char *format, ...) {
   if (format) {
     va_list args;
     va_start(args, format);
 
-    ret = vsnprintf(str, size, format, args);
-    if (size &&  (intmax_t)ret >= (intmax_t)size) {
+    int ret = vsnprintf(str, size, format, args);
+
+    if (size && ret <= 0) {
+      fatal(FN, "snprintf() returned error.");
+    }
+
+    if (size && !allow_truncation &&  (intmax_t)ret >= (intmax_t)size) {
       fatal(FN, "\"%s\" is truncated.", str);
     }
 
     va_end(args);
   }
-
-  return ret;
 }
 
 void saldl_fputc(int c, FILE *stream, const char *label) {
@@ -585,11 +586,15 @@ const char* human_size_suffix(double size) {
 }
 
 size_t s_num_digits(intmax_t num) {
-	return saldl_snprintf(NULL, 0, "%"SAL_JD"", num);
+  int len = snprintf(NULL, 0, "%"SAL_JD"", num);
+  if (len < 0) fatal(FN, "Failed to get len of %"SAL_JD"", num);
+  return len;
 }
 
 size_t u_num_digits(uintmax_t num) {
-	return saldl_snprintf(NULL, 0, "%"SAL_JU"", num);
+  int len = snprintf(NULL, 0, "%"SAL_JU"", num);
+  if (len < 0) fatal(FN, "Failed to get len of %"SAL_JU"", num);
+  return len;
 }
 
 size_t saldl_min(size_t a, size_t b) {
@@ -657,7 +662,13 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   pre_trunc_copy = saldl_strdup(pre_trunc);
   tmp_dirname = dirname(pre_trunc_copy);
   if ( tmp_dirname[0] != '.' ) {
-    saldl_snprintf(dir_name,PATH_MAX,"%s/", tmp_dirname);
+
+    // Make sure dirname is not too long even if the shortest possible basename is used
+    if (strlen(tmp_dirname) >= PATH_MAX - strlen("/0.part.sal"))  {
+      fatal(FN, "dirname '%s' is too long.", tmp_dirname);
+    }
+
+    saldl_snprintf(false, dir_name,PATH_MAX,"%s/", tmp_dirname);
   }
   SALDL_FREE(pre_trunc_copy);
 
@@ -672,15 +683,19 @@ char* trunc_filename(const char *pre_trunc, int keep_ext) {
   tmp_basename = basename(pre_trunc_copy);
   tmp_basename[ strlen(tmp_basename) - ext_len ] = '\0';
   base_name = saldl_strdup(tmp_basename);
-  saldl_snprintf(base_name,NAME_MAX-EXT_LEN-ext_len,"%s", tmp_basename);
+
+  if (ext_len >= NAME_MAX - SUFFIX_LEN) {
+    fatal(FN, "Extension '%s' is too long.", ext_str);
+  }
+  saldl_snprintf(true, base_name,NAME_MAX-SUFFIX_LEN-ext_len,"%s", tmp_basename);
   SALDL_FREE(pre_trunc_copy);
 
-  saldl_snprintf(trunc_name,
-           PATH_MAX - EXT_LEN - u_num_digits(SIZE_MAX) - (dir_name[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),
-           "%s%s%s",
-           dir_name,
-           base_name,
-           ext_str);
+  saldl_snprintf(false, trunc_name,
+      PATH_MAX - SUFFIX_LEN - u_num_digits(SIZE_MAX) - (dir_name[0]=='/'?0:strlen(getcwd(cwd,PATH_MAX))+1),
+      "%s%s%s",
+      dir_name,
+      base_name,
+      ext_str);
   SALDL_FREE(base_name);
   SALDL_FREE(ext_str_empty);
   return trunc_name;

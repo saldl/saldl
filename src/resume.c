@@ -49,7 +49,7 @@ static void extra_resume(info_s *info_ptr, char* chunks_progress_str) {
             break;
           }
 
-          saldl_snprintf(idx_filename, PATH_MAX, "%s/%"SAL_ZU"", info_ptr->tmp_dirname, idx);
+          saldl_snprintf(false, idx_filename, PATH_MAX, "%s/%"SAL_ZU"", info_ptr->tmp_dirname, idx);
           tmpf_size = saldl_fsize_sys(idx_filename);
 
           if (tmpf_size == (size_t)-1) {
