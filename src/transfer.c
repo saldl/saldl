@@ -850,8 +850,8 @@ void set_info(info_s *info_ptr) {
   saldl_params *params_ptr = info_ptr->params;
 
   /* I know this is a crazy way to set defaults */
-  params_ptr->num_connections += !params_ptr->num_connections * SALDL_DEF_NUM_CONNECTIONS;
-  params_ptr->chunk_size += !params_ptr->chunk_size * SALDL_DEF_CHUNK_SIZE;
+  params_ptr->num_connections += !params_ptr->num_connections * (size_t)SALDL_DEF_NUM_CONNECTIONS;
+  params_ptr->chunk_size += !params_ptr->chunk_size * (size_t)SALDL_DEF_CHUNK_SIZE;
 
   if (! params_ptr->single_mode) {
     if ( params_ptr->auto_size  ) {

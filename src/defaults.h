@@ -34,9 +34,16 @@
 #endif
 
 /* Default Params */
-#define SALDL_DEF_CHUNK_SIZE (size_t)1*1024*1024 /* 1.00 MiB */
-#define SALDL_DEF_NUM_CONNECTIONS (size_t)6
 #define SALDL_DEF_STATUS_REFRESH_INTERVAL 0.3
+
+/* Default Params (configurable) */
+#ifndef SALDL_DEF_CHUNK_SIZE
+#define SALDL_DEF_CHUNK_SIZE 1*1024*1024 /* 1.00 MiB */
+#endif
+
+#ifndef SALDL_DEF_NUM_CONNECTIONS
+#define SALDL_DEF_NUM_CONNECTIONS 6
+#endif
 
 /* Constants */
 #define SALDL_STATUS_INITIAL_INTERVAL 0.5

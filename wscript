@@ -31,6 +31,25 @@ def options(opt):
     bld_gr = opt.get_option_group('Build and installation options')
     conf_gr = opt.get_option_group('Configuration options')
 
+    def_chunk_size_mib = 1
+    def_chunk_size = def_chunk_size_mib * 1024 * 1024 # 1 MiB
+    conf_gr.add_option(
+            '--default-chunk-size',
+            dest = 'SALDL_DEF_CHUNK_SIZE',
+            default = str(def_chunk_size),
+            action = 'store',
+            help = "Set default chunk size in bytes. (default: %s (%s MiB))." % (def_chunk_size, def_chunk_size_mib)
+            )
+
+    def_num_connections = 6
+    conf_gr.add_option(
+            '--default-num-connections',
+            dest = 'SALDL_DEF_NUM_CONNECTIONS',
+            default = str(def_num_connections),
+            action = 'store',
+            help = "Set default number of connections. (default: %s)." % def_num_connections
+            )
+
     def_saldl_version = None # Use git describe
     conf_gr.add_option(
             '--saldl-version',
@@ -219,6 +238,12 @@ def prep_man(conf):
 def set_defines(conf):
     conf.env.append_value('DEFINES', '_FILE_OFFSET_BITS=64')
     conf.env.append_value('DEFINES', '_GNU_SOURCE')
+
+    if conf.options.SALDL_DEF_NUM_CONNECTIONS:
+        conf.env.append_value('DEFINES', 'SALDL_DEF_NUM_CONNECTIONS=' + conf.options.SALDL_DEF_NUM_CONNECTIONS)
+
+    if conf.options.SALDL_DEF_CHUNK_SIZE:
+        conf.env.append_value('DEFINES', 'SALDL_DEF_CHUNK_SIZE=' + conf.options.SALDL_DEF_CHUNK_SIZE)
 
 
 @conf
