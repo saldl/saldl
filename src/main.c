@@ -66,6 +66,23 @@ static int usage(char *caller) {
   return EXIT_FAILURE;
 }
 
+int set_get_info(saldl_params *params, char *get_info) {
+  if (!strcmp(get_info, "file-name")) {
+    params->get_file_name = true;
+  }
+  else if (!strcmp(get_info, "file-size")) {
+    params->get_file_size = true;
+  }
+  else if (!strcmp(get_info, "effective-url")) {
+    params->get_effective_url = true;
+  }
+  else {
+    fprintf(stderr, "Only one of the following arguments can be passed to --get-info: \"file-name\", \"file-size\", or \"effective-url\".\n\n");
+    return  1;
+  }
+  return 0;
+}
+
 static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv) {
   int opt_idx = 0, c = 0;
   static struct option long_opts[] = {
@@ -131,6 +148,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_FATAL_IF_INVALID_MIRROR CHAR_MAX+14
 #define SAL_OPT_MERGE_IN_ORDER          CHAR_MAX+15
 #define SAL_OPT_RANDOM_ORDER            CHAR_MAX+16
+#define SAL_OPT_GET_INFO                CHAR_MAX+17
     {"mirror-url", required_argument, 0, SAL_OPT_MIRROR_URL},
     {"fatal-if-invalid-mirror", no_argument, 0, SAL_OPT_FATAL_IF_INVALID_MIRROR},
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
@@ -147,6 +165,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"read-only", no_argument, 0, SAL_OPT_READ_ONLY},
     {"use-HEAD", no_argument, 0, SAL_OPT_USE_HEAD},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
+    {"get-info", required_argument, 0, SAL_OPT_GET_INFO},
     {0, 0, 0, 0}
   };
 
@@ -318,6 +337,12 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         break;
 
       /* long only */
+      case SAL_OPT_GET_INFO:
+        if (set_get_info(params_ptr, optarg)) {
+          return EXIT_FAILURE;
+        }
+        break;
+
       case SAL_OPT_MIRROR_URL:
         params_ptr->mirror_start_url = saldl_strdup(optarg);
         break;

@@ -103,6 +103,29 @@ void saldl(saldl_params *params_ptr) {
   print_chunk_info(&info);
   global_progress_init(&info);
 
+  /* if get-info, print the requested info and exit */
+  if (params_ptr->get_file_name || params_ptr->get_file_size || params_ptr->get_effective_url) {
+    if (params_ptr->get_file_name && params_ptr->filename) {
+      fprintf(stdout, "%s\n", params_ptr->filename);
+    }
+
+    if (params_ptr->get_file_size) {
+      fprintf(stdout, "%"SAL_JU"\n", (uintmax_t)info.file_size);
+    }
+
+    if (params_ptr->get_effective_url) {
+      if (info.remote_info.effective_url) {
+        fprintf(stdout, "%s\n", info.remote_info.effective_url);
+      }
+      else {
+        fprintf(stdout, "%s\n", params_ptr->start_url);
+      }
+    }
+
+    saldl_free_all(&info);
+    finish_msg_and_exit("Getting info done.");
+  }
+
   /* exit here if dry_run was set */
   if ( params_ptr->dry_run  ) {
     saldl_free_all(&info);

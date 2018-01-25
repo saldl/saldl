@@ -84,6 +84,13 @@ General
 *-d, --dry-run*::
   Do not download, only display information.
 
+*--get-info*::
+  Do not download, only print specific informational to stdout. +
+  The option can be passed multiple times with different arguments.
+
+  ::
+  (Valid arguments are "file-name", "file-size", and "effective-url".)
+
 *--mirror-url*::
   If the mirror is valid, Assign half the connections to it.
 

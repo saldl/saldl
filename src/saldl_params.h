@@ -28,6 +28,9 @@
 typedef struct {
   bool print_version;
   bool dry_run;
+  bool get_file_name;
+  bool get_file_size;
+  bool get_effective_url;
   size_t no_color;
   size_t verbosity;
   bool libcurl_verbosity;
