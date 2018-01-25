@@ -176,11 +176,11 @@ static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_inf
     SALDL_FREE(h->content_range);
   }
   else {
-    double d_size;
-    curl_easy_getinfo(h->handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&d_size);
-    if (d_size > 0) {
-      remote_info->file_size = (off_t)d_size;
-      debug_msg(FN, "Remote file size from CURLINFO_CONTENT_LENGTH_DOWNLOAD: %"SAL_JU" %s",
+    curl_off_t size;
+    curl_easy_getinfo(h->handle,CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,&size);
+    if (size > 0) {
+      remote_info->file_size = size;
+      debug_msg(FN, "Remote file size from CURLINFO_CONTENT_LENGTH_DOWNLOAD_T: %"SAL_JD" %s",
           remote_info->file_size,
           remote_info->file_size == 4096 ? "(unreliable)" : "");
     }
@@ -362,8 +362,8 @@ static void request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr, rem
   short semi_fatal_retries = 0;
   bool semi_fatal_error = false;
 
-  const double expected_length = 4096;
-  double content_length = 0;
+  const curl_off_t expected_length = 4096;
+  curl_off_t content_length = 0;
 
   if (params_ptr->assume_range_support) {
     debug_msg(FN, "Range support assumed, skipping check.");
@@ -401,13 +401,13 @@ static void request_remote_info_with_ranges(thread_s *tmp, info_s *info_ptr, rem
 
   }
 
-  curl_easy_getinfo(tmp->ehandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &content_length);
+  curl_easy_getinfo(tmp->ehandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &content_length);
 
   if (content_length == expected_length) {
     remote_info->range_support = true;
   }
   else {
-    debug_msg(FN, "Expected length %.0lf, got %.0lf", expected_length, content_length);
+    debug_msg(FN, "Expected length %"SAL_JD", got %"SAL_JD"", expected_length, content_length);
   }
 
   remote_info_from_headers(info_ptr, remote_info);
@@ -1121,13 +1121,8 @@ void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   }
 #endif
 
-#if CURL_AT_LEAST_VERSION(7, 45, 0)
-  /* CURLOPT_DEFAULT_PROTOCOL was introduced in libcurl 7.45.0 */
-  if (info_ptr->curl_info->version_num >= 0x072d00) { // >= 7.45.0
-    /* If protocol unknown, assume https */
-    curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
-  }
-#endif
+  /* If protocol unknown, assume https */
+  curl_easy_setopt(thread->ehandle, CURLOPT_DEFAULT_PROTOCOL, "https");
 
 
   if (params_ptr->forced_ip_protocol == 6) {
@@ -1138,21 +1133,17 @@ void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   }
 
   if (!params_ptr->no_http2) {
-    /* Try HTTP/2, but don't care about the return value. Many libcurl packages
-     * distributed are not built with HTTP/2 support. */
-#if CURL_AT_LEAST_VERSION(7, 47, 0)
-    if (info_ptr->curl_info->version_num >= 0x072f00 && // >= 7.47.0
-        !params_ptr->http2_upgrade) {
-      /* Default: Use HTTP/2 over TLS if available */
-      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
-    }
-    else {
+    /* Some libcurl packages distributed are not built with HTTP/2 support.
+     * So, try HTTP/2, but don't care about the return value.
+     */
+    if (params_ptr->http2_upgrade) {
       /* Try to use HTTP/2 with both HTTP and HTTPS */
       curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
     }
-#else
-    curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-#endif
+    else {
+      /* Default: Use HTTP/2 over TLS if available */
+      curl_easy_setopt(thread->ehandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
+    }
   }
 
   /* For our use-cases, Nagle's algorithm seems to have negative or

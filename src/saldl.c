@@ -25,8 +25,8 @@
 info_s *info_global = NULL; /* Referenced in the signal handler */
 
 void check_libcurl(curl_version_info_data *curl_info) {
-  if (curl_info->version_num < 0x072a00) { /* < 7.42 */
-    fatal(FN, "Loaded libcurl version %s (>= 7.42 required)", curl_info->version);
+  if (curl_info->version_num < 0x073700) { /* < 7.55 */
+    fatal(FN, "Loaded libcurl version %s (>= 7.55 required)", curl_info->version);
   }
 }
 

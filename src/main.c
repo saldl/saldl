@@ -21,8 +21,8 @@
 
 #include "saldl.h"
 
-#if !CURL_AT_LEAST_VERSION(7, 42, 0)
-#error "libcurl >= 7.42.0 required."
+#if !CURL_AT_LEAST_VERSION(7, 55, 0)
+#error "libcurl >= 7.55.0 required."
 #endif
 
 static void print_libcurl_protocols(const char * const *protocols) {

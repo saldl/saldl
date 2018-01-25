@@ -565,7 +565,7 @@ def check_pkg_deps(conf):
 def check_libcurl(conf):
     pkg_name = 'libcurl'
     check_args = ['--cflags', '--libs']
-    min_ver = '7.42'
+    min_ver = '7.55'
     check_pkg(conf, pkg_name, check_args, min_ver)
 
 @conf

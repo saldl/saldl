@@ -38,7 +38,7 @@ a [manual page](https://saldl.github.io/saldl.1.html).
 
  * **Runtime Dependencies**
 
-  * [libcurl](https://github.com/bagder/curl) >= 7.42
+  * [libcurl](https://github.com/bagder/curl) >= 7.55
   * [libevent + libevent_pthreads](https://github.com/libevent/libevent) >= 2.0.20
 
  * **Build Dependencies**
