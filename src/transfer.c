@@ -186,7 +186,8 @@ static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_inf
     }
   }
 
-  if (h->content_encoding) {
+  // TODO: Remove "none" check when minimum libcurl version required is >= 7.59
+  if (h->content_encoding && saldl_strcasecmp(h->content_encoding, "none"))  {
     debug_msg(FN, "Content-Encoding: %s", h->content_encoding);
     remote_info->content_encoded = true;
 
