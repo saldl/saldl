@@ -867,8 +867,8 @@ void set_info(info_s *info_ptr) {
   /* Avoid single_mode if file_size is >= 0.5 * chunk_size */
   double file_size = (double)info_ptr->file_size;
   size_t curr_chunk_size = params_ptr->chunk_size;
-  if (file_size <= curr_chunk_size && file_size >= 0.5 * curr_chunk_size) {
-    info_msg(FN, "file_size(%.2f %s) >= 0.5 chunk_size(%.2f %s). Changing chunk size to %.2f %s to avoid single mode.",
+  if (file_size < 1.5 * curr_chunk_size && file_size > 0.5 * curr_chunk_size) {
+    info_msg(FN, "file_size= %.2f%s, chunk_size=%.2f%s. Changing chunk size to %.2f %s to avoid being blocked on the first chunk.",
         human_size(file_size), human_size_suffix(file_size),
         human_size(curr_chunk_size), human_size_suffix(curr_chunk_size),
         human_size(curr_chunk_size/2), human_size_suffix(curr_chunk_size/2));
