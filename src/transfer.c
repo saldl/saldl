@@ -864,6 +864,18 @@ void set_info(info_s *info_ptr) {
     }
   }
 
+  /* Avoid single_mode if file_size is >= 0.5 * chunk_size */
+  double file_size = (double)info_ptr->file_size;
+  size_t curr_chunk_size = params_ptr->chunk_size;
+  if (file_size <= curr_chunk_size && file_size >= 0.5 * curr_chunk_size) {
+    info_msg(FN, "file_size(%.2f %s) >= 0.5 chunk_size(%.2f %s). Changing chunk size to %.2f %s to avoid single mode.",
+        human_size(file_size), human_size_suffix(file_size),
+        human_size(curr_chunk_size), human_size_suffix(curr_chunk_size),
+        human_size(curr_chunk_size/2), human_size_suffix(curr_chunk_size/2));
+    params_ptr->chunk_size =  curr_chunk_size / 2;
+  }
+
+
   /* Chunk size should be at least 4k */
   if (info_ptr->params->chunk_size < 4096) {
     warn_msg(FN, "Rounding up chunk_size from %"SAL_ZU" to 4096(4k).", info_ptr->params->chunk_size);
