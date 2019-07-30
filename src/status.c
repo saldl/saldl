@@ -44,26 +44,26 @@ static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, bool set_invert,
     }
     else {
       /* This works because strlen(invert) == strlen(bold) always */
-      strncpy(ptr,end,strlen(end));
+      memcpy(ptr,end,strlen(end));
       ptr+= strlen(end);
     }
 
     switch (val) {
       case PRG_NOT_STARTED:
       case PRG_QUEUED:
-        strncpy(ptr,error_color,strlen(error_color));
+        memcpy(ptr,error_color,strlen(error_color));
         ptr+= strlen(error_color);
         break;
       case PRG_STARTED:
-        strncpy(ptr,warn_color,strlen(warn_color));
+        memcpy(ptr,warn_color,strlen(warn_color));
         ptr+= strlen(warn_color);
         break;
       case PRG_FINISHED:
-        strncpy(ptr,info_color,strlen(info_color));
+        memcpy(ptr,info_color,strlen(info_color));
         ptr+= strlen(info_color);
         break;
       case PRG_MERGED:
-        strncpy(ptr,ok_color,strlen(ok_color));
+        memcpy(ptr,ok_color,strlen(ok_color));
         ptr+= strlen(ok_color);
         break;
       case PRG_UNDEF:
@@ -72,7 +72,7 @@ static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, bool set_invert,
 
     memset(ptr, STATUS_CH_CHUNK_PROGRESS[val], 1);
     ptr++;
-    strncpy(ptr,end,strlen(end));
+    memcpy(ptr,end,strlen(end));
     ptr+= strlen(end);
     size--;
   }
