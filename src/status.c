@@ -39,7 +39,7 @@ size_t num_of_lines(info_s *info_ptr, int cols) {
 static inline void colorset(char *ptr, enum CHUNK_PROGRESS val, bool set_invert, size_t size) {
   while (size) {
     if (set_invert) {
-      strncpy(ptr,invert,strlen(invert));
+      memcpy(ptr,invert,strlen(invert));
       ptr += strlen(invert);
     }
     else {
