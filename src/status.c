@@ -122,7 +122,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
   /* Calculate rates, remaining times */
   if (p->dur >= SALDL_STATUS_INITIAL_INTERVAL) {
     p->rate = session_complete_size/p->dur;
-    p->rem = p->rate ? rem_size/p->rate : INT64_MAX;
+    p->rem = p->rate ? rem_size/p->rate : (double)INT64_MAX;
   }
 
   if (p->curr_dur >= refresh_interval ||
@@ -130,7 +130,7 @@ static void status_update_cb(evutil_socket_t fd, short what, void *arg) {
       p->complete_size == info_ptr->file_size) {
     off_t curr_complete_size = saldl_max_o(p->complete_size - p->dlprev, 0); // Don't go -ve on reconnects
     p->curr_rate = curr_complete_size/p->curr_dur;
-    p->curr_rem = p->curr_rate ? rem_size/p->curr_rate : INT64_MAX;
+    p->curr_rem = p->curr_rate ? rem_size/p->curr_rate : (double)INT64_MAX;
 
     p->prev = p->curr;
     p->dlprev = p->complete_size;

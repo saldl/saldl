@@ -1024,7 +1024,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
       if (p->curr_dur >= refresh_interval) {
         off_t curr_done = saldl_max_o(dlnow + offset - p->dlprev, 0); // Don't go -ve on reconnects
         p->curr_rate =  curr_done / p->curr_dur;
-        p->curr_rem = p->curr_rate && dltotal ? (dltotal - dlnow) / p->curr_rate : INT64_MAX;
+        p->curr_rem = p->curr_rate && dltotal ? (dltotal - dlnow) / p->curr_rate : (double)INT64_MAX;
 
         p->prev = p->curr;
         p->dlprev = dlnow + offset;
@@ -1032,7 +1032,7 @@ static int status_single_display(void *void_info_ptr, curl_off_t dltotal, curl_o
 
       if (p->dur >= SALDL_STATUS_INITIAL_INTERVAL) {
         p->rate = dlnow / p->dur;
-        p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : INT64_MAX;
+        p->rem = p->rate && dltotal ? (dltotal - dlnow) / p->rate : (double)INT64_MAX;
       }
 
       saldl_fputs_count(lines+!!offset, up, stderr, "stderr");
