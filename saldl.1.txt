@@ -285,6 +285,19 @@ If both *-6* and *-4* are passed, what's passed last will take precedence.
 *-O, --no-timeouts*::
   disable all timeouts.
 
+*--timeout-connection-period*::
+  period (in seconds) before a connection timeout is triggered.
+  (*default*: '10')
+
+*--timeout-low-speed-period*::
+  period (in seconds) before a low-speed timeout is triggered.
+  (*default*: '10')
+
+*--timeout-low-speed*::
+  minimum rate per connection in bytes/s.
+  <<unit-suf,*A unit suffix*>> can be used.
+  (*default*: '512B/s')
+
 *-x 'proxy', --proxy='proxy'*::
   set proxy.
 

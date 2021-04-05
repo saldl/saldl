@@ -19,6 +19,7 @@
 
 #include "events.h"
 #include "utime.h"
+#include <curl/curl.h>
 
 #define MAX_SEMI_FATAL_RETRIES 5
 
@@ -752,11 +753,6 @@ void get_info(info_s *info_ptr) {
     set_date_cond_from_file(tmp.ehandle, params_ptr->since_file_mtime);
   }
 
-  /* Resolving the host for the 1st time takes a long time sometimes */
-  if (!params_ptr->no_timeouts) {
-    curl_easy_setopt(tmp.ehandle, CURLOPT_LOW_SPEED_TIME, 75l);
-  }
-
   curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERFUNCTION, header_function);
   curl_easy_setopt(tmp.ehandle, CURLOPT_HEADERDATA, &info_ptr->headers);
 
@@ -1243,8 +1239,12 @@ void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   }
 
   if (!params_ptr->no_timeouts) {
-    curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_LIMIT,512l); /* Abort if dl rate goes below .5K/s for > 15 seconds */
-    curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_TIME,10l);
+    long low_speed = params_ptr->timeout_low_speed ? params_ptr->timeout_low_speed : 512;
+    long low_speed_period = params_ptr->timeout_low_speed_period ? params_ptr->timeout_low_speed_period : 10;
+    long connection_period = params_ptr->timeout_connection_period ? params_ptr->timeout_connection_period : 10;
+    curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_LIMIT, low_speed); /* Abort if dl rate goes below low_speed/s for > period */
+    curl_easy_setopt(thread->ehandle,CURLOPT_LOW_SPEED_TIME, low_speed_period);
+    curl_easy_setopt(thread->ehandle,CURLOPT_CONNECTTIMEOUT, connection_period);
   }
 
   if (params_ptr->tls_no_verify) {

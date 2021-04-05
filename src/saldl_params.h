@@ -90,6 +90,9 @@ typedef struct {
   bool to_stdout;
   bool merge_in_order;
   bool allow_ftp_segments;
+  size_t timeout_low_speed;
+  size_t timeout_low_speed_period;
+  size_t timeout_connection_period;
 } saldl_params;
 
 /* Static initializer.

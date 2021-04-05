@@ -149,6 +149,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_MERGE_IN_ORDER          CHAR_MAX+15
 #define SAL_OPT_RANDOM_ORDER            CHAR_MAX+16
 #define SAL_OPT_GET_INFO                CHAR_MAX+17
+#define SAL_OPT_TIMEOUT_LOW_SPEED         CHAR_MAX+18
+#define SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD  CHAR_MAX+19
+#define SAL_OPT_TIMEOUT_CONNECTION_PERIOD CHAR_MAX+20
     {"mirror-url", required_argument, 0, SAL_OPT_MIRROR_URL},
     {"fatal-if-invalid-mirror", no_argument, 0, SAL_OPT_FATAL_IF_INVALID_MIRROR},
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
@@ -166,6 +169,9 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"use-HEAD", no_argument, 0, SAL_OPT_USE_HEAD},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
     {"get-info", required_argument, 0, SAL_OPT_GET_INFO},
+    {"timeout-low-speed", required_argument, 0, SAL_OPT_TIMEOUT_LOW_SPEED},
+    {"timeout-low-speed-period", required_argument, 0, SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD},
+    {"timeout-connection-period", required_argument, 0, SAL_OPT_TIMEOUT_CONNECTION_PERIOD},
     {0, 0, 0, 0}
   };
 
@@ -405,6 +411,18 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_PROXY_CUSTOM_HEADERS:
         params_ptr->proxy_custom_headers = saldl_custom_headers_append(params_ptr->proxy_custom_headers, optarg);
+        break;
+
+      case SAL_OPT_TIMEOUT_LOW_SPEED:
+        params_ptr->timeout_low_speed = parse_num_z(optarg, 1);
+        break;
+
+      case SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD:
+        params_ptr->timeout_low_speed_period = parse_num_z(optarg, 0);
+        break;
+
+      case SAL_OPT_TIMEOUT_CONNECTION_PERIOD:
+        params_ptr->timeout_connection_period = parse_num_z(optarg, 0);
         break;
 
       default:
