@@ -312,6 +312,7 @@ def check_required_flags(conf):
         conf.check_cc(cflags = '-pedantic', uselib_store='SAL_REQUIRED', mandatory=False)
 
     conf.check_cc(cflags = '-fPIE', uselib_store='SAL_REQUIRED', mandatory=False)
+    conf.check_cc(cflags = '-fcommon', uselib_store='SAL_REQUIRED', mandatory=False)
     conf.check_cc(linkflags = '-pie', uselib_store='SAL_REQUIRED', mandatory=False)
 
     if conf.env['CFLAGS_SAL_REQUIRED']:
