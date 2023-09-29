@@ -240,10 +240,14 @@ static void remote_info_from_headers(info_s *info_ptr, remote_info_s *remote_inf
         }
       }
 
-      /* Strip UTF-8'' if tmp starts with it, this usually comes from filename*=UTF-8''string */
-      const char *to_strip = "UTF-8''";
-      if (strcasestr(tmp, to_strip) == tmp) {
-        tmp += strlen(to_strip);
+      /*
+       * We used to only check for "UTF-8''", but now we handle all
+       * cases of extended notation:
+       * https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.2
+       * We also check if extended notation was used to begin with
+       */
+      if (*(tmp - 2) == '*' && strrchr(tmp, '\'')) {
+        tmp = strrchr(tmp, '\'') + 1;
       }
 
       if (remote_info->attachment_filename) {
