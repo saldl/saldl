@@ -819,11 +819,6 @@ static void auto_size_func(info_s *info_ptr, int auto_size) {
   if (0 < info_ptr->file_size) {
     size_t orig_chunk_size = info_ptr->params->chunk_size;
 
-    if ( info_ptr->params->num_connections > (size_t)cols ) {
-      info_ptr->params->num_connections = (size_t)cols; /* Limit active connections to 1 line */
-      info_msg(NULL, "no. of connections reduced to %"SAL_ZU" based on tty width %d.", info_ptr->params->num_connections, cols);
-    }
-
     if ( ( info_ptr->params->chunk_size = saldl_max_z_umax((uintmax_t)orig_chunk_size, (uintmax_t)info_ptr->file_size / (uintmax_t)(cols * auto_size) ) ) != orig_chunk_size) {
       info_ptr->params->chunk_size = (info_ptr->params->chunk_size  + (1<<12) - 1) >> 12 << 12; /* Round up to 4k boundary */
       info_msg(FN, "Chunk size set to %.2f%s, no. of connections set to %"SAL_ZU", based on tty width %d and no. of lines requested %d.",
