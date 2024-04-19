@@ -28,6 +28,7 @@
 typedef struct {
   bool print_version;
   bool dry_run;
+  bool force_get_info;
   bool get_file_name;
   bool get_file_size;
   bool get_effective_url;

@@ -91,6 +91,9 @@ General
   ::
   (Valid arguments are "file-name", "file-size", and "effective-url".)
 
+*--force-get-info*::
+  Get and print information, even if filename already exists.
+
 *--mirror-url*::
   If the mirror is valid, Assign half the connections to it.
 

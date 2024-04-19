@@ -149,9 +149,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_MERGE_IN_ORDER          CHAR_MAX+15
 #define SAL_OPT_RANDOM_ORDER            CHAR_MAX+16
 #define SAL_OPT_GET_INFO                CHAR_MAX+17
-#define SAL_OPT_TIMEOUT_LOW_SPEED         CHAR_MAX+18
-#define SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD  CHAR_MAX+19
-#define SAL_OPT_TIMEOUT_CONNECTION_PERIOD CHAR_MAX+20
+#define SAL_OPT_FORCE_GET_INFO                CHAR_MAX+18
+#define SAL_OPT_TIMEOUT_LOW_SPEED         CHAR_MAX+19
+#define SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD  CHAR_MAX+20
+#define SAL_OPT_TIMEOUT_CONNECTION_PERIOD CHAR_MAX+21
     {"mirror-url", required_argument, 0, SAL_OPT_MIRROR_URL},
     {"fatal-if-invalid-mirror", no_argument, 0, SAL_OPT_FATAL_IF_INVALID_MIRROR},
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
@@ -169,6 +170,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"use-HEAD", no_argument, 0, SAL_OPT_USE_HEAD},
     {"proxy-custom-headers", required_argument, 0, SAL_OPT_PROXY_CUSTOM_HEADERS},
     {"get-info", required_argument, 0, SAL_OPT_GET_INFO},
+    {"force-get-info", no_argument, 0, SAL_OPT_FORCE_GET_INFO},
     {"timeout-low-speed", required_argument, 0, SAL_OPT_TIMEOUT_LOW_SPEED},
     {"timeout-low-speed-period", required_argument, 0, SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD},
     {"timeout-connection-period", required_argument, 0, SAL_OPT_TIMEOUT_CONNECTION_PERIOD},
@@ -347,6 +349,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
         if (set_get_info(params_ptr, optarg)) {
           return EXIT_FAILURE;
         }
+        break;
+
+      case SAL_OPT_FORCE_GET_INFO:
+        params_ptr->force_get_info = true;
         break;
 
       case SAL_OPT_MIRROR_URL:

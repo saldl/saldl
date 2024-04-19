@@ -537,7 +537,11 @@ static void set_names(info_s* info_ptr) {
 
   /* Check if filename exists  */
   if (!access(params_ptr->filename,F_OK)) {
-    fatal(NULL, "%s exists, quiting...", params_ptr->filename);
+    if (params_ptr->force_get_info && (params_ptr->get_file_name || params_ptr->get_file_size || params_ptr->get_effective_url)) {
+      warn_msg(NULL, "%s exists, but forcing get-info was requested.", params_ptr->filename);
+    } else {
+      fatal(NULL, "%s exists, quitting...", params_ptr->filename);
+    }
   }
 
   /* Set part/ctrl filenames, tmp dir */
