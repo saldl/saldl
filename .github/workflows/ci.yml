@@ -19,9 +19,11 @@ jobs:
       - name: install build deps
         run: |
           sudo apt install -y --no-install-recommends build-essential pkg-config libcurl4-openssl-dev libevent-dev asciidoc docbook-xml git
-      - name: build and test
+      - name: build
         run: |
           python3 waf configure -vv
           python3 waf build -vv
-          ./build/saldl "https://google.com"
+      - name: simple test
+        run: |
+          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
       - run: echo "🍏 This job's status is ${{ job.status }}."
