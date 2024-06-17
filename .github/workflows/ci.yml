@@ -18,10 +18,10 @@ jobs:
           sudo apt upgrade
       - name: install build deps
         run: |
-          sudo apt install -y --no-install-recommends libcurl4-openssl-dev libevent-dev gcc asciidoc
+          sudo apt install -y --no-install-recommends build-essential pkg-config libcurl4-openssl-dev libevent-dev asciidoc docbook-xml git
       - name: build and test
         run: |
-          ./waf configure
-          ./waf build
+          python3 waf configure -vv
+          python3 waf build -vv
           ./build/saldl "https://google.com"
       - run: echo "🍏 This job's status is ${{ job.status }}."
