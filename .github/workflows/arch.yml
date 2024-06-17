@@ -1,8 +1,8 @@
-name: Test workflow
+name: arch workflow
 run-name: ${{ github.actor }} is building ${{ github.repository }} using GitHub Actions 🚀
 on: [push, pull_request]
 jobs:
-  Test job:
+  build_arch:
     runs-on: archlinux-multilib-devel
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
