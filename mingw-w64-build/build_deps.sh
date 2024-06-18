@@ -31,13 +31,20 @@ pexec () {
         [ $NO_P_EXEC ] || "$@"
 }
 
+pexec useradd -mU -s /bin/bash user
+echo 'allow user to run pacman via sudo'
+echo 'user  ALL=(ALL) NOPASSWD: /usr/bin/pacman' >> /etc/sudoers
+su user
+
 # build aur deps
 for pkg in ${AUR_PKGS[@]}; do
   pwd
   pexec git clone https://aur.archlinux.org/${pkg}.git $pkg
   pushd $pkg
   pwd
-  pexec makepkg -s --nocheck --noconfirm
+  pexec chown -R user:root .
+  pexec su user -c 'makepkg -s --nocheck --noconfirm'
+  pexec pacman -U --noconfirm mingw-w64-*.pkg.*
   popd
 done
 
@@ -46,9 +53,9 @@ pwd
 # build our libevent
 pushd mingw-w64-libevent-saldl
 pwd
-pexec makepkg -s --nocheck --noconfirm
+pexec chown -R user:root .
+pexec su user -c 'makepkg -s --nocheck --noconfirm'
+pexec pacman -U --noconfirm mingw-w64-*.pkg.*
 
 popd
 pwd
-
-pexec pacman -U --noconfirm mingw-w64-*/mingw-w64-*.pkg.tar.*

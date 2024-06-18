@@ -23,21 +23,16 @@ jobs:
         run: |
           pwd
           pacman -S --noconfirm base-devel mingw-w64-toolchain git python
-      - name: build mingw deps packages
+      - name: build and install mingw deps packages
         run: |
           pwd
           cd mingw-w64-build
           pwd
           ./build_deps.sh
-      - name: install mingw deps packages
-        run: |
-          pwd
-          pacman -U --noconfirm mingw-w64-*/mingw-w64-*.pkg.tar.*
-          cd ..
-          pwd
       - name: build saldl mingw
         run: |
           pwd
+          cd ..
           make -f Makefile.mingw64
           make -f Makefile.mingw32
   build_arch:
