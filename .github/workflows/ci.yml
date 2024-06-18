@@ -32,7 +32,6 @@ jobs:
       - name: build saldl mingw
         run: |
           pwd
-          cd ..
           make -f Makefile.mingw64
           make -f Makefile.mingw32
   build_arch:

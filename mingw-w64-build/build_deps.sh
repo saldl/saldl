@@ -56,6 +56,5 @@ pwd
 pexec chown -R user:root .
 pexec su user -c 'makepkg -s --nocheck --noconfirm'
 pexec pacman -U --noconfirm mingw-w64-*.pkg.*
-
 popd
 pwd
