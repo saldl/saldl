@@ -4,6 +4,42 @@ on: [push, pull_request]
   #schedule:
   #  - cron: '30 18 * * 3'
 jobs:
+  build_arch_mingw:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install toolchain and base build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel mingw-w64-toolchain git python
+      - name: build mingw deps packages
+        run: |
+          pwd
+          cd mingw-w64-build
+          pwd
+          ./build_deps.sh
+      - name: install mingw deps packages
+        run: |
+          pwd
+          pacman -U --noconfirm mingw-w64-*/mingw-w64-*.pkg.tar.*
+          cd ..
+          pwd
+      - name: build saldl mingw
+        run: |
+          pwd
+          make -f Makefile.mingw64
+          make -f Makefile.mingw32
   build_arch:
     runs-on: ubuntu-latest
     container: archlinux:latest
@@ -23,6 +59,37 @@ jobs:
         run: |
           pwd
           pacman -S --noconfirm base-devel curl libevent asciidoc git
+      - name: build
+        run: |
+          pwd
+          python3 waf configure -vv
+          python3 waf build -vv
+      - name: simple test
+        run: |
+          pwd
+          readelf -d ./build/saldl
+          ./build/saldl -v
+          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+  build_ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: update ubuntu
+        run: |
+          pwd
+          sudo apt update
+          sudo apt upgrade
+      - name: install build deps
+        run: |
+          pwd
+          sudo apt install -y --no-install-recommends build-essential pkg-config libcurl4-openssl-dev libevent-dev asciidoc docbook-xml git
       - name: build
         run: |
           pwd
