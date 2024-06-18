@@ -18,11 +18,11 @@ jobs:
       - name: update arch
         run: |
           pwd
-          pacman -Syyu
+          pacman -Syyu --noconfirm
       - name: install build deps
         run: |
           pwd
-          pacman -S base-devel curl libevent asciidoc git
+          pacman -S --noconfirm base-devel curl libevent asciidoc git
       - name: build
         run: |
           pwd
