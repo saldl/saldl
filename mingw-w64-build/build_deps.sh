@@ -1,30 +1,30 @@
 #!/bin/bash
 
-AUR_PKGS={
-  mingw-w64-environment,
-  mingw-w64-pkg-config,
+AUR_PKGS=(
+  mingw-w64-environment
+  mingw-w64-pkg-config
 
-  mingw-w64-configure,
-  mingw-w64-meson,
-  mingw-w64-cmake,
+  mingw-w64-configure
+  mingw-w64-meson
+  mingw-w64-cmake
 
-  mingw-w64-libiconv,
+  mingw-w64-libiconv
 
-  mingw-w64-libunistring,
+  mingw-w64-libunistring
 
-  mingw-w64-zlib,
-  mingw-w64-libidn2,
+  mingw-w64-zlib
+  mingw-w64-libidn2
 
-  mingw-w64-openssl,
+  mingw-w64-openssl
 
-  mingw-w64-zstd,
-  mingw-w64-brotli,
-  mingw-w64-libnghttp2,
-  mingw-w64-libpsl,
-  mingw-w64-libssh2,
+  mingw-w64-zstd
+  mingw-w64-brotli
+  mingw-w64-libnghttp2
+  mingw-w64-libpsl
+  mingw-w64-libssh2
 
-  mingw-w64-curl,
-}
+  mingw-w64-curl
+)
 
 pexec () {
         [ $NO_P_ECHO ] || echo "$@" >&2
