@@ -1,10 +1,8 @@
 name: CI Workflow
 run-name: ${{ github.actor }} is building ${{ github.repository }} using GitHub Actions 🚀
-on:
-  push
-  pull_request
-  schedule:
-    - cron: '30 18 * * 2'
+on: [push, pull_request]
+  #schedule:
+  #  - cron: '30 18 * * 3'
 jobs:
   build_arch:
     runs-on: ubuntu-latest
@@ -18,17 +16,21 @@ jobs:
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: update ubuntu
         run: |
+          pwd
           sudo apt update
           sudo apt upgrade
       - name: install build deps
         run: |
+          pwd
           sudo apt install -y --no-install-recommends build-essential pkg-config libcurl4-openssl-dev libevent-dev asciidoc docbook-xml git
       - name: build
         run: |
+          pwd
           python3 waf configure -vv
           python3 waf build -vv
       - name: simple test
         run: |
+          pwd
           readelf -d ./build/saldl
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
