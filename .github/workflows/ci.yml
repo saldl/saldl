@@ -19,16 +19,20 @@ jobs:
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: update arch
         run: |
+          pwd
           pacman -Syyu
       - name: install build deps
         run: |
+          pwd
           pacman -S base-devel curl libevent asciidoc git
       - name: build
         run: |
+          pwd
           python3 waf configure -vv
           python3 waf build -vv
       - name: simple test
         run: |
+          pwd
           readelf -d ./build/saldl
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
