@@ -25,5 +25,7 @@ jobs:
           python3 waf build -vv
       - name: simple test
         run: |
+          readelf -d ./build/saldl
+          ./build/saldl -V
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
       - run: echo "🍏 This job's status is ${{ job.status }}."
