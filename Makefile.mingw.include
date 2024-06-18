@@ -10,7 +10,7 @@ all: dist
 
 waf: src clean
 	PKG_CONFIG_PATH="${PKG_CONFIG_PATH}" CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
-	./waf configure -o ${BLD_DIR} --enable-static --prefix='/' --bindir='/' --mandir='/'
+	./waf configure -o ${BLD_DIR} --disable-man --enable-static --prefix='/' --bindir='/' --mandir='/'
 
 	./waf install --destdir=${DEST_DIR}
 
