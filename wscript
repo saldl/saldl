@@ -3,6 +3,7 @@
 # python imports
 from os import environ as os_env
 from os import path
+import hashlib
 
 # waf imports
 from waflib.Configure import conf
@@ -84,7 +85,16 @@ def options(opt):
             action= "store_true",
             help = "Don't build manpage. (default: %s)" % def_disable_man
             )
- 
+
+    def_inline_ca_bundle = False
+    conf_gr.add_option(
+            '--inline-ca-bundle',
+            dest = 'INLINE_CA_BUNDLE',
+            default = def_inline_ca_bundle,
+            action= "store_true",
+            help = "Inline CA bundle in executable binary. (default: %s)" % def_inline_ca_bundle
+            )
+
     def_disable_compiler_warnings = False
     conf_gr.add_option(
             '--disable-compiler-warnings',
@@ -232,6 +242,54 @@ def prep_man(conf):
             conf.env['MANDIR'] = conf.env['PREFIX'] + path.sep + conf.options.MANDIR
 
         conf.end_msg(conf.env['MANDIR'])
+
+@conf
+def prep_inline_ca_bundle(conf):
+    if conf.options.INLINE_CA_BUNDLE:
+        ca_bundle_url = 'https://curl.se/ca/cacert.pem'
+        ca_bundle_hash_url = 'https://curl.se/ca/cacert.pem.sha256'
+
+        ca_bundle_dl_cmd = ['curl', '-Lf', ca_bundle_url]
+        ca_bundle_hash_dl_cmd = ['curl', '-Lf', ca_bundle_hash_url]
+
+        conf.start_msg('Download CA bundle from %s' % ca_bundle_url)
+        try:
+            ca_bundle_str = conf.cmd_and_log(ca_bundle_dl_cmd)
+            conf.end_msg("%s bytes" % str(len(ca_bundle_str)))
+        except:
+            conf.end_msg("failed", color="RED")
+            conf.fatal("Failed to download CA bundle")
+
+        conf.start_msg('Download CA bundle_hash SHA256 hash from %s' % ca_bundle_hash_url)
+        try:
+            ca_bundle_hash_str = conf.cmd_and_log(ca_bundle_hash_dl_cmd)
+            conf.end_msg("%s bytes" % str(len(ca_bundle_hash_str)))
+        except:
+            conf.end_msg("failed", color="RED")
+            conf.fatal("Failed to download CA bundle SHA256 hash")
+
+        if len(ca_bundle_str) < 128*1024 or len(ca_bundle_hash_str) < 64:
+            conf.msg("Checking size of downloaded CA bundle data", "failed", color="RED")
+            conf.fatal("Failed size check for downloaded CA bundle data")
+        else:
+            conf.msg("Checking size of downloaded CA bundle data", "pass")
+
+        sha256_hex_str = hashlib.sha256(ca_bundle_str.encode()).hexdigest()
+
+        if ca_bundle_hash_str[0:64] == sha256_hex_str:
+            conf.msg("Check downloaded vs. expected CA bundle SHA256 hash", sha256_hex_str)
+        else:
+            conf.msg("Check downloaded CA bundle SHA256 hash", "failed", color="RED")
+            conf.fatal("Failed SHA256 hash check for downloaded CA bundle data: %s" % ca_bundle_hash_str[0:64] + " != " + sha256_hex_str)
+
+        conf.start_msg("Writing 'ca_bundle.h' file")
+        ca_bundle_str = ''.join(filter(lambda c: c.isascii(), ca_bundle_str)).replace('\n', '\\n\\\n')
+        conf.env.WAF_CONFIG_H_PRELUDE = 'const char* CA_BUNDLE = "%s";' % ca_bundle_str
+        conf.write_config_header('saldl_inline_ca_bundle.h')
+        del conf.env.WAF_CONFIG_H_PRELUDE
+        conf.end_msg('done')
+
+        conf.env.append_value('DEFINES', 'INLINE_CA_BUNDLE')
 
 
 @conf
@@ -384,6 +442,8 @@ def check_warning_cflags(conf):
                 ['-Wmissing-format-attribute'],
                 # In GCC 7, -Wextra enables -Wimplicit-fallthrough
                 ['-Wno-implicit-fallthrough'],
+                # For CA bundle
+                ['-Wno-overlength-strings'],
         ]
 
     for w in warn_flags:
@@ -668,6 +728,7 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
 def configure(conf):
     get_saldl_version(conf)
     prep_man(conf)
+    prep_inline_ca_bundle(conf)
     check_flags(conf)
     set_defines(conf)
     check_api(conf)
@@ -676,7 +737,6 @@ def configure(conf):
 #------------------------------------------------------------------------------
 
 def build(bld):
-
     bld.objects(
             source = [
                 'src/progress.c',
@@ -694,12 +754,14 @@ def build(bld):
                 'src/transfer.c',
                 'src/saldl.c',
                 ],
+            includes = bld.out_dir, # for CA bundle
             target = ['saldl-objs']
             )
 
     bld.program(
             use = ['saldl-objs'],
             source = ['src/main.c'],
+            includes = bld.out_dir, # for CA bundle
             target = 'saldl'
             )
 

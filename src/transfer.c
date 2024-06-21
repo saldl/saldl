@@ -27,6 +27,9 @@
 #include "gnulib_strcasestr.h" // gnulib implementation
 #endif
 
+#ifdef INLINE_CA_BUNDLE
+#include <saldl_inline_ca_bundle.h>
+#endif
 static void set_date_cond(CURL *handle, char *time_str) {
   time_t date;
 
@@ -1115,22 +1118,14 @@ void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   curl_easy_setopt(thread->ehandle, CURLOPT_URL, url);
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
-#if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
-  /* Set CA bundle if the file exists */
-  char ca_bundle_path[PATH_MAX];
-  char *exe_dir = windows_exe_path();
-  if (exe_dir) {
-    saldl_snprintf(false, ca_bundle_path, PATH_MAX, "%s/ca-bundle.trust.crt", exe_dir);
-
-    if ( access(ca_bundle_path, F_OK) ) {
-      warn_msg(FN, "CA bundle file %s does not exist.", ca_bundle_path);
-    }
-    else {
-      curl_easy_setopt(thread->ehandle, CURLOPT_CAINFO, ca_bundle_path);
-    }
-
-    SALDL_FREE(exe_dir);
-  }
+#ifdef INLINE_CA_BUNDLE
+  /* Use inlined CA bundle */
+  struct curl_blob ca_blob;
+  ca_blob.data = (char*)CA_BUNDLE;
+  ca_blob.len = strlen(CA_BUNDLE);
+  ca_blob.flags = CURL_BLOB_NOCOPY;
+  info_msg(FN, "Using inlined CA bundle");
+  curl_easy_setopt(thread->ehandle, CURLOPT_CAINFO_BLOB, &ca_blob);
 #endif
 
   /* If protocol unknown, assume https */
