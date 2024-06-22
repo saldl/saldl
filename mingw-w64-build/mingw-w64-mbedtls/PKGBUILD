@@ -1,0 +1,61 @@
+# XXX: 3.6.0 is broken: https://github.com/Mbed-TLS/mbedtls/issues/9223
+# XXX: Using openssl instead with a fixed curl build
+# AUR PKGBUILD is is out of date
+# This is based on Archlinux's PKGBUILD
+# https://gitlab.archlinux.org/archlinux/packaging/packages/mbedtls/-/raw/852fcacdce7af1213da831bc82d29c3ff80bf3e4/PKGBUILD
+pkgname=mingw-w64-mbedtls
+pkgver=3.6.0
+pkgrel=1
+pkgdesc="Portable cryptographic and SSL/TLS library, aka polarssl (mingw-w64)"
+arch=('any')
+url="https://tls.mbed.org"
+license=('Apache')
+depends=('mingw-w64-crt')
+makedepends=('mingw-w64-cmake' 'git' 'ninja' 'python')
+options=(!strip !buildflags staticlibs)
+_tag=67dc8f869a2ef39b1f19f6a6d3a34965bc50097e
+source=(
+  git+https://github.com/Mbed-TLS/mbedtls.git#tag=${_tag}
+  git+https://github.com/Mbed-TLS/mbedtls-framework.git
+)
+b2sums=('e1baa97607fff9e83b633f2b7ea346783c61ff380a5a65accdc8100534b6b41c2dc479e465c528252d0b01ebc19c043aa3841264a87a0c8fb87a87d6b545c469'
+        'SKIP')
+
+prepare() {
+  cd mbedtls
+  git submodule init framework
+  git config submodule.framework.url "${srcdir}"/mbedtls-framework
+  git -c protocol.file.allow=always submodule update framework
+  scripts/config.py set MBEDTLS_HAVE_SSE2
+  scripts/config.py set MBEDTLS_THREADING_C
+  scripts/config.py set MBEDTLS_THREADING_PTHREAD
+}
+
+pkgver() {
+  cd mbedtls
+  git describe --tags | sed 's/^v//; s/^mbedtls-//'
+}
+
+_architectures="i686-w64-mingw32 x86_64-w64-mingw32"
+
+
+build() {
+  for _arch in ${_architectures}; do
+    ${_arch}-cmake -S mbedtls -B build-${_arch} -G Ninja \
+      -DENABLE_PROGRAMS=OFF -DENABLE_TESTING=OFF \
+      -DUSE_SHARED_MBEDTLS_LIBRARY=ON \
+      -DUSE_STATIC_MBEDTLS_LIBRARY=ON \
+      -Wno-dev
+    cmake --build build-${_arch}
+  done
+}
+
+package() {
+  for _arch in ${_architectures}; do
+    DESTDIR="${pkgdir}" cmake --install build-${_arch}
+    install -d "$pkgdir"/usr/${_arch}/bin
+    mv "$pkgdir"/usr/${_arch}/lib/*.dll "$pkgdir"/usr/${_arch}/bin
+    ${_arch}-strip --strip-unneeded "$pkgdir"/usr/${_arch}/bin/*.dll
+    ${_arch}-strip -g "$pkgdir"/usr/${_arch}/lib/*.a
+  done
+}
