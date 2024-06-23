@@ -4,7 +4,7 @@ on: [push, pull_request]
   #schedule:
   #  - cron: '30 18 * * 3'
 jobs:
-  build_arch_mingw:
+  build_arch_mingw_w64:
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
@@ -22,19 +22,26 @@ jobs:
       - name: install toolchain and base build deps
         run: |
           pwd
-          pacman -S --noconfirm base-devel mingw-w64-toolchain git python
-      - name: build and install mingw deps packages
+          pacman -S --noconfirm base-devel mingw-w64-toolchain git zip python
+      - name: build and install mingw-w64 deps packages
         run: |
           pwd
           cd mingw-w64-build
           pwd
           ./build_deps.sh
-      - name: build saldl mingw
+      - name: build saldl mingw-w64 x86_64
         run: |
           pwd
-          make -f Makefile.mingw64
-          make -f Makefile.mingw32
-  build_arch:
+          su user -c 'make -f Makefile.mingw64'
+          su user -c 'make -f Makefile.mingw32'
+          echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
+          pacman -Sy wine
+          pacman -R mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
+          WINEDEBUG='-all' wine ./saldl-win64/saldl-win64*.exe  -v
+          date --date="@$(WINEDEBUG='-all' wine ./saldl-win64/saldl-win64*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+          WINEDEBUG='-all' wine ./saldl-win32/saldl-win32*.exe  -v
+          date --date="@$(WINEDEBUG='-all' wine ./saldl-win32/saldl-win32*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+  build_arch_gcc:
     runs-on: ubuntu-latest
     container: archlinux:latest
     steps:
@@ -53,11 +60,42 @@ jobs:
         run: |
           pwd
           pacman -S --noconfirm base-devel curl libevent asciidoc git
-      - name: build
+      - name: build with gcc
         run: |
           pwd
-          python3 waf configure -vv
-          python3 waf build -vv
+          CC=gcc python3 waf configure -v
+          python3 waf build -v
+      - name: simple test
+        run: |
+          pwd
+          readelf -d ./build/saldl
+          ./build/saldl -v
+          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+  build_arch_clang:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel curl libevent asciidoc git clang
+      - name: build with clang
+        run: |
+          pwd
+          CC=clang python3 waf configure -v
+          python3 waf build -v
       - name: simple test
         run: |
           pwd
@@ -87,8 +125,8 @@ jobs:
       - name: build
         run: |
           pwd
-          python3 waf configure -vv
-          python3 waf build -vv
+          python3 waf configure -v
+          python3 waf build -v
       - name: simple test
         run: |
           pwd
