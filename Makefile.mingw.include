@@ -3,22 +3,21 @@ SALDL_VERSION = $(subst -,.,$(shell git describe --tags --long --dirty))
 CFLAGS = -O2 -D__USE_MINGW_ANSI_STDIO=0
 LDFLAGS = -Wl,-O1,--sort-common
 
-# Until nghttp2 upstream is fixed
-CFLAGS += -DNGHTTP2_STATICLIB
+# ~Until nghttp2 upstream is fixed~ <= handled by Arch builds
+#CFLAGS += -DNGHTTP2_STATICLIB
 
 all: dist
 
 waf: src clean
 	PKG_CONFIG_PATH="${PKG_CONFIG_PATH}" CC="${CC}" CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" \
-	./waf configure -o ${BLD_DIR} --disable-man --enable-static --prefix='/' --bindir='/' --mandir='/'
+	./waf configure -o ${BLD_DIR} --disable-man --inline-ca-bundle --enable-static --prefix='/' --bindir='/' --mandir='/'
 
-	./waf install --destdir=${DEST_DIR}
+	./waf install -v --destdir=${DEST_DIR}
 
 dist: waf
-	mv -f ${DEST_DIR}/saldl.exe ${DEST_DIR}/saldl-${os_name}.exe
-	${STRIP} ${DEST_DIR}/saldl-${os_name}.exe
-	cp -f /etc/ca-certificates/extracted/ca-bundle.trust.crt ${DEST_DIR}/
-	zip -r saldl-${os_name}-${SALDL_VERSION}.zip ${DEST_DIR}
+	mv -f ${DEST_DIR}/saldl.exe ${DEST_DIR}/saldl-${os_name}-${SALDL_VERSION}.exe
+	${STRIP} ${DEST_DIR}/saldl-${os_name}-${SALDL_VERSION}.exe
+	#zip -r saldl-${os_name}-${SALDL_VERSION}.zip ${DEST_DIR}
 	@echo "`tput setaf 1`Don't forget to update the online version of the manual."
 
 clean:
