@@ -21,9 +21,7 @@ AUR_PKGS=(
   mingw-w64-brotli
   mingw-w64-libnghttp2
   mingw-w64-libpsl
-  mingw-w64-libssh2
-
-  mingw-w64-curl
+  #mingw-w64-libssh2
 )
 
 pexec () {
@@ -37,24 +35,24 @@ echo 'user  ALL=(ALL) NOPASSWD: /usr/bin/pacman' >> /etc/sudoers
 su user
 
 # build aur deps
-for pkg in ${AUR_PKGS[@]}; do
+for pkg in ${AUR_PKGS[@]} mingw-w64-curl mingw-w64-libevent-saldl; do
   pwd
-  pexec git clone https://aur.archlinux.org/${pkg}.git $pkg
+  if ((${AUR_PKGS[(I)$pkg]})); then
+    pexec git clone https://aur.archlinux.org/${pkg}.git $pkg
+  fi
   pushd $pkg
+  if [[ $pkg == "mingw-w64-libpsl" ]]; then
+    sed -i 's|-meson |&--default-library=both |' PKGBUILD
+  elif [[ $pkg == "mingw-w64-zstd" ]]; then
+    sed -i 's|STATIC=OFF|STATIC=ON|' PKGBUILD
+  #elif [[ $pkg == "mingw-w64-curl" ]]; then
+  #  sed -i 's|openssl|mbedtls|' PKGBUILD
+  #  sed -i -e "s|'mingw-w64-libssh2'||" -e 's|--with-libssh2||' PKGBUILD
+  fi
   pwd
   pexec chown -R user:root .
-  pexec su user -c 'makepkg -s --nocheck --noconfirm'
+  pexec su user -c 'makepkg -s --nocheck --noconfirm --skippgpcheck'
   pexec pacman -U --noconfirm mingw-w64-*.pkg.*
+  rm -rf src pkg
   popd
 done
-
-pwd
-
-# build our libevent
-pushd mingw-w64-libevent-saldl
-pwd
-pexec chown -R user:root .
-pexec su user -c 'makepkg -s --nocheck --noconfirm'
-pexec pacman -U --noconfirm mingw-w64-*.pkg.*
-popd
-pwd
