@@ -308,7 +308,7 @@ def check_func(conf, f_name, h_name, mandatory):
     fragment = ''
     if len(h_name) > 0:
         fragment += '#include <' + h_name + '>\n'
-    fragment +='int main() { void(*p)(void) = (void(*)(void)) ' + f_name + '; return !p; }\n'
+    fragment +='int main(void) { void(*p)(void) = (void(*)(void)) ' + f_name + '; return !p; }\n'
 
     msg = 'Checking for ' + f_name + '()'
     define_name = 'HAVE_' + f_name.upper()
@@ -444,6 +444,8 @@ def check_warning_cflags(conf):
                 ['-Wno-implicit-fallthrough'],
                 # For CA bundle
                 ['-Wno-overlength-strings'],
+                # fuck C++ semantics, fuck C23 compat
+                ['-Wno-strict-prototypes'],
         ]
 
     for w in warn_flags:

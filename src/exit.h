@@ -23,7 +23,7 @@
 #error redefining SALDL_EXIT_H
 #endif
 
-void saldl_handle_signals();
-void exit_routine();
+void saldl_handle_signals(void);
+void exit_routine(void);
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

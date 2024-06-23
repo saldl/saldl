@@ -23,6 +23,6 @@
 #error redefining SALDL_UTIME_H
 #endif
 
-double saldl_utime();
+double saldl_utime(void);
 
 /* vim: set filetype=c ts=2 sw=2 et spell foldmethod=syntax: */

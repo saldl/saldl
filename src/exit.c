@@ -29,7 +29,7 @@ void sig_handler(int sig) {
 #endif
 }
 
-void saldl_handle_signals() {
+void saldl_handle_signals(void) {
 #ifdef HAVE_SIGACTION
     struct sigaction sa;
 
@@ -45,7 +45,7 @@ void saldl_handle_signals() {
 #endif
 }
 
-void exit_routine() {
+void exit_routine(void) {
 
   if (info_global) {
 

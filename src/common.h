@@ -40,7 +40,7 @@
 void curl_set_ranges(CURL *handle, chunk_s *chunk);
 
 #if !defined(__CYGWIN__) && !defined(__MSYS__) && defined(HAVE_GETMODULEFILENAME)
-char* windows_exe_path();
+char* windows_exe_path(void);
 #endif
 
 #define SALDL_FREE(x) do { free((x)); (x) = NULL; } while(0)
@@ -71,8 +71,8 @@ void saldl_pthread_join_accept_einval(pthread_t thread, void **retval);
 void saldl_pthread_mutex_lock_retry_deadlock(pthread_mutex_t *mutex);
 void saldl_pthread_mutex_unlock(pthread_mutex_t *mutex);
 
-void saldl_block_sig_pth();
-void saldl_unblock_sig_pth();
+void saldl_block_sig_pth(void);
+void saldl_unblock_sig_pth(void);
 
 #ifdef HAVE_SIGADDSET
 void saldl_sigaddset(sigset_t *set, int signum);

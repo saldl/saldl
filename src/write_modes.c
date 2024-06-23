@@ -280,15 +280,15 @@ static size_t single_write_function(void  *ptr, size_t  size, size_t nmemb, void
   return file_write_function(ptr, size, nmemb, data);
 }
 
-static int merge_finished_single() {
+static int merge_finished_single(void) {
   return 0;
 }
 
 /* Null (read-only) mode */
-static void prepare_storage_null() {
+static void prepare_storage_null(void) {
 }
 
-static void reset_storage_null() {
+static void reset_storage_null(void) {
 }
 
 static size_t null_write_function(void  *ptr,  size_t  size, size_t nmemb, void *data) {

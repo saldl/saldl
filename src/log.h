@@ -125,9 +125,9 @@ log_func status_msg;
 log_func pre_fatal;
 log_func  __attribute__((__noreturn__)) fatal_abort;
 log_func  __attribute__((__noreturn__)) fatal;
-void null_msg();
+void null_msg(void);
 
-int tty_width();
+int tty_width(void);
 void set_color(size_t *no_color);
 void set_verbosity(size_t *verbosity, bool *libcurl_verbosity);
 

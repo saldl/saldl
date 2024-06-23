@@ -26,7 +26,7 @@
 #include "write_modes.h"
 #include "merge.h"
 
-char* saldl_user_agent();
+char* saldl_user_agent(void);
 void chunks_init(info_s*);
 void check_remote_file_size(info_s*);
 void get_info(info_s*);

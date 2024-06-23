@@ -22,7 +22,7 @@
 #ifdef HAVE_CLOCK_MONOTONIC_RAW
 
 #include <time.h>
-double saldl_utime() {
+double saldl_utime(void) {
   struct timespec tp;
   int ret = clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
 
@@ -37,7 +37,7 @@ double saldl_utime() {
 
 #include <sys/time.h>
 
-double saldl_utime() {
+double saldl_utime(void) {
   struct timeval tv;
   int ret = gettimeofday(&tv, NULL);
 

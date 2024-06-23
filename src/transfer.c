@@ -113,7 +113,7 @@ static void set_inline_cookies(CURL *handle, char *cookie_str) {
   SALDL_FREE(copy_cookie_str);
 }
 
-char* saldl_user_agent() {
+char* saldl_user_agent(void) {
   char *agent = saldl_calloc(1024, sizeof(char));
   saldl_snprintf(false, agent, 1024, "%s/%s", "libcurl", curl_version_info(CURLVERSION_NOW)->version);
   return agent;
