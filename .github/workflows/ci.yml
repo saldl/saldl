@@ -22,13 +22,13 @@ jobs:
       - name: install toolchain and base build deps
         run: |
           pwd
-          pacman -S --noconfirm base-devel mingw-w64-toolchain git python
+          pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh
       - name: build and install mingw-w64 deps packages
         run: |
           pwd
           cd mingw-w64-build
           pwd
-          ./build_deps.sh
+          ./build_deps.zsh
       - name: build saldl mingw-w64 x86_64
         run: |
           pwd

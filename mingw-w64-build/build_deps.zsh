@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 AUR_PKGS=(
   mingw-w64-environment
