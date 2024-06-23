@@ -43,13 +43,13 @@ jobs:
           date --date="@$(WINEDEBUG='-all' wine ./saldl-win32/saldl-win32*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
       - name: Upload built executables as artifacts
         uses: actions/upload-artifact@v4
-          with:
-            name: saldl-exes
-            if-no-files-found: error
-            retention-days: 8
-            path: |
-              saldl-win32/*.exe
-              saldl-win64/*.exe
+        with:
+          name: saldl-exes
+          if-no-files-found: error
+          retention-days: 8
+          path: |
+            saldl-win32/*.exe
+            saldl-win64/*.exe
   build_arch_gcc:
     runs-on: ubuntu-latest
     container: archlinux:latest
