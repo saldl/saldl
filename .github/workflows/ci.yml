@@ -65,9 +65,9 @@ jobs:
           export WINEPREFIX="$PWD" # make sure configuration files can be created
           export WINEDEBUG='-all' # silence message spam
           wine ./saldl-win64/saldl-win64*.exe  -v
-          date --date="@$(wine ./saldl-win64/saldl-win64*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+          date --date="@$(wine ./saldl-win64/saldl-win64*.exe -I --no-status --stdout 'https://time.akamai.com/?iso/')"
           wine ./saldl-win32/saldl-win32*.exe  -v
-          date --date="@$(wine ./saldl-win32/saldl-win32*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+          date --date="@$(wine ./saldl-win32/saldl-win32*.exe -I --no-status --stdout 'https://time.akamai.com/?iso/')"
       - name: Upload built executables as artifacts
         uses: actions/upload-artifact@v4
         with:
