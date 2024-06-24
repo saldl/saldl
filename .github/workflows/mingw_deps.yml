@@ -15,10 +15,7 @@ on:
     paths:
       - mingw-w64-build/**
   schedule:
-    with:
-      cron: '30 18 * * 3'
-    paths:
-      - mingw-w64-build/**
+    - cron: '30 18 * * 3'
 jobs:
   build_arch_mingw_w64_pkg_deps:
     runs-on: ubuntu-latest
