@@ -27,6 +27,11 @@ jobs:
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: Set run-id of mingw_w64_pre_built_pkgs artifact in env
         run: |
+          pwd
+          echo "cat-ing"
+          cat mingw-w64-build/successful_runs
+          echo "tail-ing"
+          tail -1 mingw-w64-build/successful_runs
           echo "MINGW_RUN_ID=$(tail -1 mingw-w64-build/successful_runs)" >> "$GITHUB_ENV"
           echo "MINGW_RUN_ID is $MINGW_RUN_ID"
       - name: download pre-built dep pkgs artifact
