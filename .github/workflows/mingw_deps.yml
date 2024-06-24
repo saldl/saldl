@@ -10,12 +10,14 @@ on:
     paths:
       - mingw-w64-build/mingw**
       - mingw-w64-build/build_deps.*
+      - mingw-w64-build/.trigger
   pull_request:
     branches:
       - master
     paths:
       - mingw-w64-build/mingw**
       - mingw-w64-build/build_deps.*
+      - mingw-w64-build/.trigger
   # only runs on master
   schedule:
     - cron: '30 18 * * 3'
