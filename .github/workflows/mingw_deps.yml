@@ -7,17 +7,15 @@ on:
     branches:
       - master
       - actions
-    paths-ignore:
-      - mingw-w64-build/successful_runs
     paths:
-      - mingw-w64-build/**
+      - mingw-w64-build/mingw**
+      - mingw-w64-build/build_deps.*
   pull_request:
     branches:
       - master
-    paths-ignore:
-      - mingw-w64-build/successful_runs
     paths:
-      - mingw-w64-build/**
+      - mingw-w64-build/mingw**
+      - mingw-w64-build/build_deps.*
   # only runs on master
   schedule:
     - cron: '30 18 * * 3'
