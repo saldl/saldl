@@ -41,6 +41,8 @@ jobs:
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Avoid 'dubious ownership' errors from git cli
+        run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: build and install mingw-w64 deps packages
@@ -60,7 +62,6 @@ jobs:
           path: |
             mingw-w64-build/*/mingw-w64-*.pkg.*
       - name: Append successful run run_id ${{ github.run_id }} to successful_runs
-      # Adding safe.directory to avoid  'dubious ownership' errors from git cli
         run: |
           echo ${{ github.run_id }} >> mingw-w64-build/successful_runs
           echo 'set git user config'
