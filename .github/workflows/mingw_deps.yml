@@ -39,14 +39,14 @@ jobs:
           git add mingw-w64-build/successful_runs
           git commit -m "mingw-w64-build: Appending ${{ github.run_id }} to successful_runs"
           git push origin ${{ github.ref_name }}
-#      - name: update arch
-#        run: |
-#          pwd
-#          pacman -Syyu --noconfirm
-#      - name: install toolchain and base build deps
-#        run: |
-#          pwd
-#          pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install toolchain and base build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh
 #      - name: build and install mingw-w64 deps packages
 #        run: |
 #          pwd
@@ -62,3 +62,9 @@ jobs:
 #          retention-days: 40
 #          path: |
 #            mingw-w64-build/*/mingw-w64-*.pkg.*
+      - name: Append successful run run_id ${{ github.run_id }} to successful_runs
+        run: | 
+          echo ${{ github.run_id }} >> mingw-w64-build/successful_runs
+          git add mingw-w64-build/successful_runs
+          git commit -m "mingw-w64-build: Appending ${{ github.run_id }} to successful_runs"
+          git push origin ${{ github.ref_name }}
