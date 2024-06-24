@@ -14,6 +14,7 @@ on:
       - master
     paths:
       - mingw-w64-build/**
+  # only runs on master
   schedule:
     - cron: '30 18 * * 3'
 jobs:
