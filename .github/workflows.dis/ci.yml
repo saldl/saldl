@@ -29,7 +29,7 @@ jobs:
           cd mingw-w64-build
           pwd
           ./build_deps.zsh
-      - name: build saldl mingw-w64 x86_64
+      - name: build saldl mingw-w64 for x86_64 and i686
         run: |
           pwd
           su user -c 'make -f Makefile.mingw64'

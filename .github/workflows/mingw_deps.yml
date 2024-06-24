@@ -1,0 +1,56 @@
+name: CI Workflow
+run-name: ${{ github.actor }} is building ${{ github.repository }} using GitHub Actions 🚀
+on:
+  push:
+    tags:
+      - v**
+    branches:
+      - master
+      - actions
+    paths:
+      - mingw-w64-build/**
+  pull_request:
+    branches:
+      - master
+    paths:
+      - mingw-w64-build/**
+  schedule:
+    with:
+      cron: '30 18 * * 3'
+    paths:
+      - mingw-w64-build/**
+jobs:
+  build_arch_mingw_w64_pkg_deps:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install toolchain and base build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh
+      - name: build and install mingw-w64 deps packages
+        run: |
+          pwd
+          cd mingw-w64-build
+          pwd
+          ./build_deps.zsh
+      - name: upload artifact containing dep packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: saldl-mingw-64-pkg-deps
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 40
+          path: |
+            mingw-w64-build/*/mingw-w64-*.pkg.*

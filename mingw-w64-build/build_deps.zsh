@@ -52,7 +52,7 @@ for pkg in ${AUR_PKGS[@]} mingw-w64-curl mingw-w64-libevent-saldl; do
   pwd
   pexec chown -R user:root .
   pexec su user -c 'makepkg -s --nocheck --noconfirm --skippgpcheck'
-  pexec pacman -U --noconfirm mingw-w64-*.pkg.*
+  #pexec pacman -U --noconfirm mingw-w64-*.pkg.*
   rm -rf src pkg
   popd
 done
