@@ -41,6 +41,8 @@ jobs:
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."

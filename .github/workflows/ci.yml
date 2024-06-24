@@ -23,6 +23,8 @@ jobs:
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
@@ -57,7 +59,7 @@ jobs:
           make -f Makefile.mingw32
           echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
           pacman -Sy --noconfirm wine
-          pacman -R mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
+          pacman -R --noconfirm mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
           WINEDEBUG='-all' wine ./saldl-win64/saldl-win64*.exe  -v
           date --date="@$(WINEDEBUG='-all' wine ./saldl-win64/saldl-win64*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
           WINEDEBUG='-all' wine ./saldl-win32/saldl-win32*.exe  -v
@@ -90,6 +92,8 @@ jobs:
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
@@ -125,6 +129,8 @@ jobs:
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
@@ -160,6 +166,8 @@ jobs:
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
