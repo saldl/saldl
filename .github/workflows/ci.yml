@@ -30,11 +30,11 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: mingw_w64_pre_built_pkgs
-          runs: |
-            pwd
-            ls -l
-            ls -l ..
-            pacman -U --noconfirm mingw_w64_pre_built_pkgs/**/*.pkg.*
+        run: |
+          pwd
+          ls -l
+          ls -l ..
+          pacman -U --noconfirm mingw_w64_pre_built_pkgs/**/*.pkg.*
       - name: build saldl mingw-w64 for x86_64 and i686
         run: |
           pwd
