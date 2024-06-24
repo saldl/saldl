@@ -60,6 +60,10 @@ jobs:
           echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
           pacman -Sy --noconfirm wine
           pacman -R --noconfirm mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
+          echo "USER=$USER"
+          echo "id:"
+          id
+          chown $USER .
           export WINEPREFIX="$PWD" # make sure configuration files can be created
           export WINEDEBUG='-all' # silence message spam
           wine ./saldl-win64/saldl-win64*.exe  -v
