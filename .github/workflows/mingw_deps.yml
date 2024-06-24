@@ -1,5 +1,5 @@
 name: saldl mingw-w64 build deps
-run-name: ${{ github.actor }} is building ${{ github.repository }} using GitHub Actions (run_id=${{ github.run_id }}) 🚀
+run-name: ${{ github.actor }} is running mingw-w64 build deps workflow ${{ github.repository }} using GitHub Actions (run_id=${{ github.run_id }}) 🚀
 on:
   push:
     tags:
