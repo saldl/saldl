@@ -59,8 +59,10 @@ jobs:
 #          path: |
 #            mingw-w64-build/*/mingw-w64-*.pkg.*
       - name: Append successful run run_id ${{ github.run_id }} to successful_runs
+      # Adding safe.directory to avoid  'dubious ownership' errors from git cli
         run: |
           echo ${{ github.run_id }} >> mingw-w64-build/successful_runs
+          git config --global --add safe.directory '*'
           git status --verbose
           git remote -v
           git add mingw-w64-build/successful_runs
