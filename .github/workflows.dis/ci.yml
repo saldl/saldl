@@ -23,14 +23,14 @@ jobs:
         run: |
           pwd
           pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh
-      - name: download dep pkgs' artifact and install deps
+      - name: download pre-built dep pkgs artifact
         uses: actions/download-artifact@v4
         with:
           name: saldl-mingw-64-pkg-deps
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: mingw_w64_pre_built_pkgs
-      - name: list files
+      - name: list files and install pre-built deps 
         run: |
           pwd
           ls -l
