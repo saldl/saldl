@@ -49,6 +49,7 @@ jobs:
           cd mingw-w64-build
           pwd
           ./build_deps.zsh
+          ls -l **/*curl*.pkg.*  **/*libevent*.pkg.*
       - name: upload artifact containing dep packages
         uses: actions/upload-artifact@v4
         with:
