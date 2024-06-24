@@ -63,8 +63,10 @@ jobs:
         run: |
           echo ${{ github.run_id }} >> mingw-w64-build/successful_runs
           git config --global --add safe.directory '*'
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions (workflow commit)"
           git status --verbose
-          git remote -v
           git add mingw-w64-build/successful_runs
+          git status --verbose
           git commit -m "mingw-w64-build: Appending ${{ github.run_id }} to successful_runs"
           git push origin ${{ github.ref_name }}
