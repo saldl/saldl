@@ -43,30 +43,34 @@ jobs:
         uses: actions/checkout@v4
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-#      - name: build and install mingw-w64 deps packages
-#        run: |
-#          pwd
-#          cd mingw-w64-build
-#          pwd
-#          ./build_deps.zsh
-#      - name: upload artifact containing dep packages
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: saldl-mingw-64-pkg-deps
-#          overwrite: true
-#          if-no-files-found: error
-#          retention-days: 40
-#          path: |
-#            mingw-w64-build/*/mingw-w64-*.pkg.*
+      - name: build and install mingw-w64 deps packages
+        run: |
+          pwd
+          cd mingw-w64-build
+          pwd
+          ./build_deps.zsh
+      - name: upload artifact containing dep packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: saldl-mingw-64-pkg-deps
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 40
+          path: |
+            mingw-w64-build/*/mingw-w64-*.pkg.*
       - name: Append successful run run_id ${{ github.run_id }} to successful_runs
       # Adding safe.directory to avoid  'dubious ownership' errors from git cli
         run: |
           echo ${{ github.run_id }} >> mingw-w64-build/successful_runs
-          git config --global --add safe.directory '*'
+          echo 'set git user config'
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions (workflow commit)"
+          echo 'Pre-add git status'
           git status --verbose
           git add mingw-w64-build/successful_runs
+          echo 'Post-add git status'
           git status --verbose
+          echo 'Commit the change'
           git commit -m "mingw-w64-build: Appending ${{ github.run_id }} to successful_runs"
+          echo 'Push the change'
           git push origin ${{ github.ref_name }}
