@@ -30,6 +30,7 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: mingw_w64_pre_built_pkgs
+      - name: list files
         run: |
           pwd
           ls -l
