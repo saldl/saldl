@@ -33,13 +33,13 @@ jobs:
           echo "tail-ing"
           tail -1 mingw-w64-build/successful_runs
           echo "MINGW_RUN_ID=$(tail -1 mingw-w64-build/successful_runs)" >> "$GITHUB_ENV"
-          echo "MINGW_RUN_ID is $MINGW_RUN_ID"
+          echo "MINGW_RUN_ID is ${{ env.MINGW_RUN_ID }}"
       - name: download pre-built dep pkgs artifact
         uses: actions/download-artifact@v4
         with:
           name: saldl-mingw-64-pkg-deps
           repository: saldl/saldl
-          run-id: $MINGW_RUN_ID
+          run-id: ${{ env.MINGW_RUN_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: mingw_w64_pre_built_pkgs
       - name: list files and install pre-built deps 
