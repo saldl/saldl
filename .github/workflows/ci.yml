@@ -60,10 +60,12 @@ jobs:
           echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
           pacman -Sy --noconfirm wine
           pacman -R --noconfirm mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
-          WINEDEBUG='-all' wine ./saldl-win64/saldl-win64*.exe  -v
-          date --date="@$(WINEDEBUG='-all' wine ./saldl-win64/saldl-win64*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-          WINEDEBUG='-all' wine ./saldl-win32/saldl-win32*.exe  -v
-          date --date="@$(WINEDEBUG='-all' wine ./saldl-win32/saldl-win32*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+          export WINEPREFIX='.' # make sure configuration files can be created
+          export WINEDEBUG='-all' # silence message spam
+          wine ./saldl-win64/saldl-win64*.exe  -v
+          date --date="@$(wine ./saldl-win64/saldl-win64*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+          wine ./saldl-win32/saldl-win32*.exe  -v
+          date --date="@$(wine ./saldl-win32/saldl-win32*.exe  -v -I --no-status --stdout 'https://time.akamai.com/?iso/')"
       - name: Upload built executables as artifacts
         uses: actions/upload-artifact@v4
         with:
