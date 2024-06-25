@@ -3,7 +3,9 @@
 # python imports
 from os import environ as os_env
 from os import path
+from http import client as h_client
 import hashlib
+
 
 # waf imports
 from waflib.Configure import conf
@@ -246,44 +248,53 @@ def prep_man(conf):
 @conf
 def prep_inline_ca_bundle(conf):
     if conf.options.INLINE_CA_BUNDLE:
-        ca_bundle_url = 'https://curl.se/ca/cacert.pem'
-        ca_bundle_hash_url = 'https://curl.se/ca/cacert.pem.sha256'
+        ca_bundle_host = "curl.se"
+        ca_bundle_path = '/ca/cacert.pem'
+        ca_bundle_hash_path = '/ca/cacert.pem.sha256'
 
-        ca_bundle_dl_cmd = ['curl', '-Lf', ca_bundle_url]
-        ca_bundle_hash_dl_cmd = ['curl', '-Lf', ca_bundle_hash_url]
 
-        conf.start_msg('Download CA bundle from %s' % ca_bundle_url)
+        h_conn = h_client.HTTPSConnection(ca_bundle_host)
+
+        conf.start_msg('Download CA bundle from %s' % ca_bundle_host + ca_bundle_path)
         try:
-            ca_bundle_str = conf.cmd_and_log(ca_bundle_dl_cmd)
-            conf.end_msg("%s bytes" % str(len(ca_bundle_str)))
+            h_conn.request("GET", ca_bundle_path)
+            h_resp = h_conn.getresponse()
+            if h_resp.status != 200:
+                raise "HTTP req status is %s" % h_resp.status
+            ca_bundle_bytes = h_resp.read()
+            conf.end_msg("%s bytes" % str(len(ca_bundle_bytes)))
         except:
             conf.end_msg("failed", color="RED")
             conf.fatal("Failed to download CA bundle")
 
-        conf.start_msg('Download CA bundle_hash SHA256 hash from %s' % ca_bundle_hash_url)
+        conf.start_msg('Download CA bundle_hash SHA256 hash from %s' % ca_bundle_host + ca_bundle_hash_path)
         try:
-            ca_bundle_hash_str = conf.cmd_and_log(ca_bundle_hash_dl_cmd)
-            conf.end_msg("%s bytes" % str(len(ca_bundle_hash_str)))
+            h_conn.request("GET", ca_bundle_hash_path)
+            h_resp = h_conn.getresponse()
+            if h_resp.status != 200:
+                raise "HTTP req status is %s" % h_resp.status
+            ca_bundle_hash_bytes = h_resp.read()
+            conf.end_msg("%s bytes" % str(len(ca_bundle_hash_bytes)))
         except:
             conf.end_msg("failed", color="RED")
             conf.fatal("Failed to download CA bundle SHA256 hash")
 
-        if len(ca_bundle_str) < 128*1024 or len(ca_bundle_hash_str) < 64:
+        if len(ca_bundle_bytes) < 128*1024 or len(ca_bundle_hash_bytes) < 64:
             conf.msg("Checking size of downloaded CA bundle data", "failed", color="RED")
             conf.fatal("Failed size check for downloaded CA bundle data")
         else:
             conf.msg("Checking size of downloaded CA bundle data", "pass")
 
-        sha256_hex_str = hashlib.sha256(ca_bundle_str.encode()).hexdigest()
+        sha256_hex_str = hashlib.sha256(ca_bundle_bytes).hexdigest()
 
-        if ca_bundle_hash_str[0:64] == sha256_hex_str:
+        if ca_bundle_hash_bytes[0:64].decode() == sha256_hex_str:
             conf.msg("Check downloaded vs. expected CA bundle SHA256 hash", sha256_hex_str)
         else:
             conf.msg("Check downloaded CA bundle SHA256 hash", "failed", color="RED")
-            conf.fatal("Failed SHA256 hash check for downloaded CA bundle data: %s" % ca_bundle_hash_str[0:64] + " != " + sha256_hex_str)
+            conf.fatal("Failed SHA256 hash check for downloaded CA bundle data: %s" % ca_bundle_hash_bytes[0:64] + " != " + sha256_hex_str)
 
         conf.start_msg("Writing 'ca_bundle.h' file")
-        ca_bundle_str = ''.join(filter(lambda c: c.isascii(), ca_bundle_str)).replace('\n', '\\n\\\n')
+        ca_bundle_str = ''.join(filter(lambda c: c.isascii(), ca_bundle_bytes.decode())).replace('\n', '\\n\\\n')
         conf.env.WAF_CONFIG_H_PRELUDE = 'const char* CA_BUNDLE = "%s";' % ca_bundle_str
         conf.write_config_header('saldl_inline_ca_bundle.h')
         del conf.env.WAF_CONFIG_H_PRELUDE
