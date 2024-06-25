@@ -315,6 +315,32 @@ def set_defines(conf):
         conf.env.append_value('DEFINES', 'SALDL_DEF_CHUNK_SIZE=' + conf.options.SALDL_DEF_CHUNK_SIZE)
 
 @conf
+def prep_c_env(conf):
+    print("prep C env")
+
+    conf.load('compiler_c')
+
+    # Make sure INCLUDES, RPATH, CFLAGS and LDFLAGS exist
+    for v in ['INCLUDES', 'RPATH', 'CFLAGS', 'LDFLAGS']:
+        if not v in conf.env:
+            conf.env[v] = []
+
+    # Either LIB or STLIB should exist
+
+    if conf.options.ENABLE_STATIC:
+        conf.env['STLIBPATH'] = []
+        conf.env['STLIB'] = []
+        # Replace -Wl,-Bstatic with -static (for musl builds using alpine, void, ...)
+        conf.env['STLIB_MARKER'] = '-static'
+        # Prevent waf from adding -Wl,-Bdynamic
+        conf.env['SHLIB_MARKER'] = None
+    else:
+        conf.env['LIBPATH'] = []
+        conf.env['LIB'] = []
+
+    print(conf.env)
+
+@conf
 def check_func(conf, f_name, h_name, mandatory):
     fragment = ''
     if len(h_name) > 0:
@@ -343,9 +369,6 @@ def check_api(conf):
 
 @conf
 def check_flags(conf):
-    # Load this before checking flags
-    conf.load('compiler_c')
-
     # Set warning flags 1st so -Werror catches all warnings
     if not conf.options.DISABLE_COMPILER_WARNINGS:
         check_warning_cflags(conf)
@@ -614,22 +637,6 @@ def check_pkg_deps(conf):
 
     print('Check dependencies:')
 
-    # Make sure INCLUDES, RPATH, CFLAGS and LDFLAGS exist
-    for v in ['INCLUDES', 'RPATH', 'CFLAGS', 'LDFLAGS']:
-        if not v in conf.env:
-            conf.env[v] = []
-
-    # Either LIB or STLIB should exist
-
-    if conf.options.ENABLE_STATIC:
-        conf.env['STLIBPATH'] = []
-        conf.env['STLIB'] = []
-        # Prevent waf from adding -Wl,-Bdynamic
-        conf.env['SHLIB_MARKER'] = None
-    else:
-        conf.env['LIBPATH'] = []
-        conf.env['LIB'] = []
-
     # This order is important if we are providing flags ourselves
     check_libevent_pthreads(conf)
     check_libcurl(conf)
@@ -741,6 +748,7 @@ def check_pkg(conf, pkg_name, check_args, min_ver):
 def configure(conf):
     get_saldl_version(conf)
     prep_man(conf)
+    prep_c_env(conf)
     prep_inline_ca_bundle(conf)
     check_flags(conf)
     set_defines(conf)
