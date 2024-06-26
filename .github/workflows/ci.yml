@@ -89,8 +89,8 @@ jobs:
       # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
       - name: change to edge, update, and upgrade
         run: |
-          ls -l __e/*/bin/
           pwd
+          find _* || true
           sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
@@ -148,6 +148,7 @@ jobs:
       - name: change to edge, update, and upgrade
         run: |
           pwd
+          find _* || true
           sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
