@@ -86,9 +86,11 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: update and upgrade
+      # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
+      - name: change to edge, update, and upgrade
         run: |
           pwd
+          sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
       - name: install build deps
@@ -141,9 +143,11 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: update and upgrade
+      # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
+      - name: change to edge, update, and upgrade
         run: |
           pwd
+          sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
       - name: install build deps
