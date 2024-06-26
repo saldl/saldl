@@ -124,16 +124,15 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: mv build/saldl saldl-linux-i686-musl-static-`git describe --tags --long --dirty`
       - name: upload static binary artifact
-        run: |
-          mv build/saldl saldl-linux-i686-musl-static-`git describe --tags --long --dirty`
         uses: actions/upload-artifact@v4
         with:
           name: saldl-linux-i686-musl-static
           if-no-files-found: error
           retention-days: 8
           path: |
-            saldl-linux-x86_64-musl-static-*
+            saldl-linux-i686-musl-static-*
       - run: echo "🍏 This job's status is ${{ job.status }}."
   build_alpine_x86_64:
     runs-on: ubuntu-latest
@@ -180,9 +179,8 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
       - name: upload static binary artifact
-        run: |
-          mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
         uses: actions/upload-artifact@v4
         with:
           name: saldl-linux-x86_64-musl-static
