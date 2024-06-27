@@ -14,10 +14,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: setup alpine with x86 arch
+      - name: setup alpine with aarch64 arch
         uses: jirutka/setup-alpine@v1
         with:
-          arch: x86
+          arch: aarch64
       # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
       - name: change to edge, update, and upgrade
         shell: alpine.sh --root {0}
@@ -86,10 +86,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: setup alpine with x86 arch
+      - name: setup alpine with armv7 arch
         uses: jirutka/setup-alpine@v1
         with:
-          arch: x86
+          arch: armv7
       # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
       - name: change to edge, update, and upgrade
         shell: alpine.sh --root {0}
