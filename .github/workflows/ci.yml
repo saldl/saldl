@@ -155,187 +155,189 @@ jobs:
           retention-days: 8
           path: ${{ env.DIST_BIN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-#  build_arch_mingw_w64:
-#    runs-on: ubuntu-latest
-#    container: archlinux:latest
-#    steps:
-#      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-#      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-#      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-#      - name: update arch
-#        run: |
-#          pwd
-#          pacman -Syyu --noconfirm
-#      - name: install toolchain and base build deps
-#        run: |
-#          pwd
-#          pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh github-cli jq
-#      # NOTE: It's important to use the checkout action while git is in path
-#      #       to make sure it uses git, not the REST api, for checkout.
-#      - name: Check out repository code
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#      - name: Avoid 'dubious ownership' errors from git cli
-#        run: git config --global --add safe.directory '*'
-#      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-#      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-#      - name: Set run-id of mingw_w64_pre_built_pkgs artifact in env
-#        run: |
-#          pwd
-#          echo "cat-ing"
-#          cat mingw-w64-build/successful_runs
-#          echo "tail-ing"
-#          tail -1 mingw-w64-build/successful_runs
-#          echo "MINGW_RUN_ID=$(tail -1 mingw-w64-build/successful_runs)" >> "$GITHUB_ENV"
-#          echo "MINGW_RUN_ID is ${{ env.MINGW_RUN_ID }}"
-#      - name: download pre-built dep pkgs artifact
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: saldl-mingw-64-pkg-deps
-#          repository: saldl/saldl
-#          run-id: ${{ env.MINGW_RUN_ID }}
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#          path: mingw_w64_pre_built_pkgs
-#      - name: list files and install pre-built deps
-#        run: |
-#          pwd
-#          ls -l
-#          ls -l ..
-#          pacman -U --noconfirm mingw_w64_pre_built_pkgs/**/*.pkg.*
-#      - name: build saldl mingw-w64 for x86_64 and i686
-#        run: |
-#          pwd
-#          make -f Makefile.mingw64
-#          make -f Makefile.mingw32
-#          echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
-#          pacman -Sy --noconfirm wine
-#          pacman -R --noconfirm mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
-#          ls -l
-#          chown root .
-#          export WINEPREFIX="$PWD" # make sure configuration files can be created
-#          export WINEDEBUG='-all' # silence message spam
-#          wine ./saldl-win64/saldl-win64*.exe  -v
-#          date --date="@$(wine ./saldl-win64/saldl-win64*.exe -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-#          wine ./saldl-win32/saldl-win32*.exe  -v
-#          date --date="@$(wine ./saldl-win32/saldl-win32*.exe -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-#      - name: Upload built executables as artifacts
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: saldl-exes
-#          if-no-files-found: error
-#          retention-days: 8
-#          path: |
-#            saldl-win32/*.exe
-#            saldl-win64/*.exe
-#  build_arch_gcc:
-#    runs-on: ubuntu-latest
-#    container: archlinux:latest
-#    steps:
-#      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-#      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-#      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-#      - name: update arch
-#        run: |
-#          pwd
-#          pacman -Syyu --noconfirm
-#      - name: install build deps
-#        run: |
-#          pwd
-#          pacman -S --noconfirm base-devel curl libevent asciidoc git
-#      # NOTE: It's important to use the checkout action while git is in path
-#      #       to make sure it uses git, not the REST api, for checkout.
-#      - name: Check out repository code
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#      - name: Avoid 'dubious ownership' errors from git cli
-#        run: git config --global --add safe.directory '*'
-#      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-#      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-#      - name: build with gcc
-#        run: |
-#          pwd
-#          CC=gcc python3 waf configure -v
-#          python3 waf build -v
-#      - name: simple test
-#        run: |
-#          pwd
-#          readelf -d ./build/saldl
-#          ./build/saldl -v
-#          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-#      - run: echo "🍏 This job's status is ${{ job.status }}."
-#  build_arch_clang:
-#    runs-on: ubuntu-latest
-#    container: archlinux:latest
-#    steps:
-#      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-#      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-#      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-#      - name: update arch
-#        run: |
-#          pwd
-#          pacman -Syyu --noconfirm
-#      - name: install build deps
-#        run: |
-#          pwd
-#          pacman -S --noconfirm base-devel curl libevent asciidoc git clang
-#      # NOTE: It's important to use the checkout action while git is in path
-#      #       to make sure it uses git, not the REST api, for checkout.
-#      - name: Check out repository code
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#      - name: Avoid 'dubious ownership' errors from git cli
-#        run: git config --global --add safe.directory '*'
-#      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-#      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-#      - name: build with clang
-#        run: |
-#          pwd
-#          CC=clang python3 waf configure -v
-#          python3 waf build -v
-#      - name: simple test
-#        run: |
-#          pwd
-#          readelf -d ./build/saldl
-#          ./build/saldl -v
-#          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-#      - run: echo "🍏 This job's status is ${{ job.status }}."
-#  build_ubuntu:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-#      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-#      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-#      - name: update ubuntu
-#        run: |
-#          pwd
-#          sudo apt update
-#          sudo apt upgrade
-#      - name: install build deps
-#        run: |
-#          pwd
-#          sudo apt install -y --no-install-recommends build-essential pkg-config libcurl4-openssl-dev libevent-dev asciidoc docbook-xml git
-#      # NOTE: It's important to use the checkout action while git is in path
-#      #       to make sure it uses git, not the REST api, for checkout.
-#      - name: Check out repository code
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#      - name: Avoid 'dubious ownership' errors from git cli
-#        run: git config --global --add safe.directory '*'
-#      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-#      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-#      - name: build
-#        run: |
-#          pwd
-#          python3 waf configure -v
-#          python3 waf build -v
-#      - name: simple test
-#        run: |
-#          pwd
-#          readelf -d ./build/saldl
-#          ./build/saldl -v
-#          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-#      - run: echo "🍏 This job's status is ${{ job.status }}."
+  build_arch_mingw_w64:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install toolchain and base build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel mingw-w64-toolchain git python zsh github-cli jq
+      # NOTE: It's important to use the checkout action while git is in path
+      #       to make sure it uses git, not the REST api, for checkout.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Avoid 'dubious ownership' errors from git cli
+        run: git config --global --add safe.directory '*'
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: Set run-id of mingw_w64_pre_built_pkgs artifact in env
+        run: |
+          pwd
+          echo "cat-ing"
+          cat mingw-w64-build/successful_runs
+          echo "tail-ing"
+          tail -1 mingw-w64-build/successful_runs
+          echo "MINGW_RUN_ID=$(tail -1 mingw-w64-build/successful_runs)" >> "$GITHUB_ENV"
+          echo "MINGW_RUN_ID is ${{ env.MINGW_RUN_ID }}"
+      - name: download pre-built dep pkgs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: saldl-mingw-64-pkg-deps
+          repository: saldl/saldl
+          run-id: ${{ env.MINGW_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: mingw_w64_pre_built_pkgs
+      - name: list files and install pre-built deps
+        run: |
+          pwd
+          ls -l
+          ls -l ..
+          pacman -U --noconfirm mingw_w64_pre_built_pkgs/**/*.pkg.*
+      - name: build saldl mingw-w64 for x86_64 and i686
+        run: |
+          pwd
+          make -f Makefile.mingw64
+          make -f Makefile.mingw32
+          echo -e '\n[multilib]\nInclude = /etc/pacman.d/mirrorlist' >> /etc/pacman.conf
+          pacman -Sy --noconfirm wine
+          pacman -R --noconfirm mingw-w64-libevent-saldl mingw-w64-curl # make sure no dll dependencies exist
+          ls -l
+          chown root .
+          export WINEPREFIX="$PWD" # make sure configuration files can be created
+          export WINEDEBUG='-all' # silence message spam
+          wine ./saldl-win64/saldl-win64*.exe  -v
+          date --date="@$(wine ./saldl-win64/saldl-win64*.exe -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+          wine ./saldl-win32/saldl-win32*.exe  -v
+          date --date="@$(wine ./saldl-win32/saldl-win32*.exe -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - name: set SALDL_VERSION in env
+        run: echo "SALDL_VERSION=`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
+      - name: Upload built executables as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: saldl-EXEs-${{ env.SALDL_VERSION }}
+          if-no-files-found: error
+          retention-days: 8
+          path: |
+            saldl-win32/*.exe
+            saldl-win64/*.exe
+  build_arch_gcc:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel curl libevent asciidoc git
+      # NOTE: It's important to use the checkout action while git is in path
+      #       to make sure it uses git, not the REST api, for checkout.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Avoid 'dubious ownership' errors from git cli
+        run: git config --global --add safe.directory '*'
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: build with gcc
+        run: |
+          pwd
+          CC=gcc python3 waf configure -v
+          python3 waf build -v
+      - name: simple test
+        run: |
+          pwd
+          readelf -d ./build/saldl
+          ./build/saldl -v
+          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+  build_arch_clang:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: update arch
+        run: |
+          pwd
+          pacman -Syyu --noconfirm
+      - name: install build deps
+        run: |
+          pwd
+          pacman -S --noconfirm base-devel curl libevent asciidoc git clang
+      # NOTE: It's important to use the checkout action while git is in path
+      #       to make sure it uses git, not the REST api, for checkout.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Avoid 'dubious ownership' errors from git cli
+        run: git config --global --add safe.directory '*'
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: build with clang
+        run: |
+          pwd
+          CC=clang python3 waf configure -v
+          python3 waf build -v
+      - name: simple test
+        run: |
+          pwd
+          readelf -d ./build/saldl
+          ./build/saldl -v
+          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+  build_ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: update ubuntu
+        run: |
+          pwd
+          sudo apt update
+          sudo apt upgrade
+      - name: install build deps
+        run: |
+          pwd
+          sudo apt install -y --no-install-recommends build-essential pkg-config libcurl4-openssl-dev libevent-dev asciidoc docbook-xml git
+      # NOTE: It's important to use the checkout action while git is in path
+      #       to make sure it uses git, not the REST api, for checkout.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Avoid 'dubious ownership' errors from git cli
+        run: git config --global --add safe.directory '*'
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: build
+        run: |
+          pwd
+          python3 waf configure -v
+          python3 waf build -v
+      - name: simple test
+        run: |
+          pwd
+          readelf -d ./build/saldl
+          ./build/saldl -v
+          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - run: echo "🍏 This job's status is ${{ job.status }}."
