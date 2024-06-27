@@ -10,6 +10,10 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: setup alpine with x86 arch
         uses: jirutka/setup-alpine@v1
         with:
@@ -36,11 +40,6 @@ jobs:
         run: sed -i '/Libs.private/s;$; -lbrotlicommon -lunistring;' /usr/lib/pkgconfig/libcurl.pc
       # NOTE: It's important to use the checkout action while git is in path
       #       to make sure it uses git, not the REST api, for checkout.
-      - name: Check out repository code
-        shell: alpine.sh --root {0}
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
         shell: alpine.sh --root {0}
         run: git config --global --add safe.directory '*'
