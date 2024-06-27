@@ -8,11 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: alpine:latest
-      options: --cap-add SYS_ADMIN
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: setup alpine with x86 arch
+        uses: jirutka/setup-alpine@v1
+        with:
+          arch: x86
       # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
       - name: change to edge, update, and upgrade
         run: |
@@ -20,33 +23,15 @@ jobs:
           sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
-      - name: create x86 chroot
+      - name: install build deps
         run: |
-          apk update --arch x86
-          start_dir="`pwd`"
-          chroot_dir=~/x86
-          mkdir -p ${chroot_dir}
-          mkdir ${chroot_dir}/dev
-          mkdir ${chroot_dir}/proc
-          mkdir ${chroot_dir}/sys
-          mkdir ${chroot_dir}/etc
-          mount -o bind /dev/ ${chroot_dir}/dev
-          mount -t proc none ${chroot_dir}/proc
-          mount -o bind /sys/ ${chroot_dir}/sys
-          cp -L /etc/resolv.conf ${chroot_dir}/etc/
-          mkdir -p ${chroot_dir}/etc/apk
-          cp -L /etc/apk/repositories ${chroot_dir}/etc/apk/repositories
-          apk  add  --root ${chroot_dir} --initdb --allow-untrusted --arch x86 alpine-base
-          echo "CHROOT_DIR_=$chroot_dir" >> "$GITHUB_ENV"
-          cd $start_dir
-      - name: install build deps in chroot
-        run: chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'apk add  python3 git gcc pkgconfig curl-static curl-dev libevent-static libevent-dev musl-dev'
-      - name: install static build deps in chroot
+          apk add  python3 git gcc pkgconfig curl-static curl-dev libevent-static libevent-dev musl-dev
+      - name: install static build deps
         run: |
-          chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'while read p; do [ "." != ".$p" ] && (p=${p%[=<>]*}; apk add ${p%-dev}-static || true; apk add lib${p%-dev}-static || true; apk add ${p%-dev}-libs-static || true ); done < <(apk info -Rq curl-dev)'
-          chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'apk add libunistring-static'
-      - name: fix libcurl pkgconfig info in chroot
-        run: chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'sed -i ''/Libs.private/s;$; -lbrotlicommon -lunistring;'' /usr/lib/pkgconfig/libcurl.pc'
+          while read p; do [ "." != ".$p" ] && (p=${p%[=<>]*}; apk add ${p%-dev}-static || true; apk add lib${p%-dev}-static || true; apk add ${p%-dev}-libs-static || true ); done < <(apk info -Rq curl-dev)
+          apk add libunistring-static
+      - name: fix libcurl pkgconfig info
+        run: sed -i '/Libs.private/s;$; -lbrotlicommon -lunistring;' /usr/lib/pkgconfig/libcurl.pc
       # NOTE: It's important to use the checkout action while git is in path
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
@@ -57,15 +42,11 @@ jobs:
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: copy checkout to chroot and static build
+      - name: static build
         run: |
-          echo "CHECKOUT_DIR_=`pwd`" >> "$GITHUB_ENV"
-          cp -r `pwd` ${{ env.CHROOT_DIR_  }}/saldl
-          chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'cd /saldl; CFLAGS="-march=i686 -mtune=generic -O2 -pipe" python3 waf configure -v --enable-static --disable-man --inline-ca-bundle'
-          chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'cd /saldl; python3 waf build -v'
-          chroot ${{ env.CHROOT_DIR_ }} /bin/sh -c 'cd /saldl; strip build/saldl'
-      - name: move build dir to checkout dir
-        run: mv -f ${{ env.CHECKOUT_DIR_ }}/saldl/build ${{ env.CHECKOUT_DIR_ }}/
+          CFLAGS="-march=i686 -O2 -pipe" python3 waf configure -v --enable-static --disable-man --inline-ca-bundle
+          python3 waf build -v
+          strip build/saldl
       - name: check if static
         run: |
           readelf -d build/saldl
@@ -75,15 +56,15 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-      - run: mv build/saldl saldl-linux-i686-musl-static-`git describe --tags --long --dirty`
+      - run: mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
       - name: upload static binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: saldl-linux-i686-musl-static
+          name: saldl-linux-x86_64-musl-static
           if-no-files-found: error
           retention-days: 8
           path: |
-            saldl-linux-i686-musl-static-*
+            saldl-linux-x86_64-musl-static-*
       - run: echo "🍏 This job's status is ${{ job.status }}."
   build_alpine_x86_64:
     runs-on: ubuntu-latest
@@ -96,7 +77,6 @@ jobs:
       - name: change to edge, update, and upgrade
         run: |
           pwd
-          find /__e/*/bin || true
           sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
