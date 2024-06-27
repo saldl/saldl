@@ -62,17 +62,20 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+      - name: set SALDL_VERSION and DIST_BIN in env
+        run: |
+          echo "SALDL_VERSION=`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
+          echo "DIST_BIN=saldl-linux-x86_64-static-${{ env.SALDL_VERSION }}" >> "$GITHUB_ENV"
       - name: move binary
         shell: alpine.sh --root {0}
-        run: mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
+        run: mv build/saldl ${{ env.DIST_BIN }}
       - name: upload static binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: saldl-linux-x86_64-musl-static
+          name: ${{ env.DIST_BIN }}
           if-no-files-found: error
           retention-days: 8
-          path: |
-            saldl-linux-x86_64-musl-static-*
+          path: ${{ env.DIST_BIN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
   build_alpine_x86_64:
     runs-on: ubuntu-latest
@@ -141,15 +144,18 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-      - run: mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
+      - name: set SALDL_VERSION and DIST_BIN in env
+        run: |
+          echo "SALDL_VERSION=`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
+          echo "DIST_BIN=saldl-linux-x86_64-static-${{ env.SALDL_VERSION }}" >> "$GITHUB_ENV"
+      - run: mv build/saldl ${{ env.DIST_BIN }}
       - name: upload static binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: saldl-linux-x86_64-musl-static
+          name: ${{ env.DIST_BIN }}
           if-no-files-found: error
           retention-days: 8
-          path: |
-            saldl-linux-x86_64-musl-static-*
+          path: ${{ env.DIST_BIN }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
 #  build_arch_mingw_w64:
 #    runs-on: ubuntu-latest
