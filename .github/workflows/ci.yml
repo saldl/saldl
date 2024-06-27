@@ -96,15 +96,15 @@ jobs:
             ulimit -n 1024 # fix slow fakeroot
             apk add alpine-sdk sudo
             curr_dir=`pwd`
-            cd /root
+            cd ~
             mkdir -p packages/main
             git clone --depth 1 https://gitlab.alpinelinux.org/alpine/aports
             cd aports/main/libpsl/
             apkgrel -a APKBUILD
             abuild-keygen -ain
             abuild -rF
-            find /root/packages
-            apk add /root/packages/main/*/*apk
+            find ~/packages
+            apk add ~/packages/main/*/*apk
             cd $curr_dir
           fi
       # NOTE: It's important to use the checkout action while git is in path
