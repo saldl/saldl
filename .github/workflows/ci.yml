@@ -4,66 +4,66 @@ on: [push, pull_request]
   #schedule:
   #  - cron: '30 18 * * 3'
 jobs:
-  build_alpine_i686:
-    runs-on: ubuntu-latest
-    container:
-      image: alpine:latest
-      options: --platform linux/386
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
-      - name: change to edge, update, and upgrade
-        run: |
-          pwd
-          find /__e/*/bin || true
-          sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
-          apk update
-          apk upgrade
-      - name: install build deps
-        run: |
-          apk add  python3 git gcc pkgconfig curl-static curl-dev libevent-static libevent-dev musl-dev
-      - name: install static build deps
-        run: |
-          while read p; do [ "." != ".$p" ] && (p=${p%[=<>]*}; apk add ${p%-dev}-static || true; apk add lib${p%-dev}-static || true; apk add ${p%-dev}-libs-static || true ); done < <(apk info -Rq curl-dev)
-          apk add libunistring-static
-      - name: fix libcurl pkgconfig info
-        run: sed -i '/Libs.private/s;$; -lbrotlicommon -lunistring;' /usr/lib/pkgconfig/libcurl.pc
-      # NOTE: It's important to use the checkout action while git is in path
-      #       to make sure it uses git, not the REST api, for checkout.
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Avoid 'dubious ownership' errors from git cli
-        run: git config --global --add safe.directory '*'
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: static build
-        run: |
-          CFLAGS="-march=i686 -mtune=generic -O2 -pipe" python3 waf configure -v --enable-static --disable-man --inline-ca-bundle
-          python3 waf build -v
-          strip build/saldl
-      - name: check if static
-        run: |
-          readelf -d build/saldl
-          true; [ "`readelf --dyn-syms build/saldl`" = '' ]
-      - name: simple test
-        run: |
-          pwd
-          ./build/saldl -v
-          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-      - run: mv build/saldl saldl-linux-i686-musl-static-`git describe --tags --long --dirty`
-      - name: upload static binary artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: saldl-linux-i686-musl-static
-          if-no-files-found: error
-          retention-days: 8
-          path: |
-            saldl-linux-i686-musl-static-*
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+#  build_alpine_i686:
+#    runs-on: ubuntu-latest
+#    container:
+#      image: alpine:latest
+#      options: --platform linux/386
+#    steps:
+#      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+#      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+#      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+#      # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
+#      - name: change to edge, update, and upgrade
+#        run: |
+#          pwd
+#          find /__e/*/bin || true
+#          sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
+#          apk update
+#          apk upgrade
+#      - name: install build deps
+#        run: |
+#          apk add  python3 git gcc pkgconfig curl-static curl-dev libevent-static libevent-dev musl-dev
+#      - name: install static build deps
+#        run: |
+#          while read p; do [ "." != ".$p" ] && (p=${p%[=<>]*}; apk add ${p%-dev}-static || true; apk add lib${p%-dev}-static || true; apk add ${p%-dev}-libs-static || true ); done < <(apk info -Rq curl-dev)
+#          apk add libunistring-static
+#      - name: fix libcurl pkgconfig info
+#        run: sed -i '/Libs.private/s;$; -lbrotlicommon -lunistring;' /usr/lib/pkgconfig/libcurl.pc
+#      # NOTE: It's important to use the checkout action while git is in path
+#      #       to make sure it uses git, not the REST api, for checkout.
+#      - name: Check out repository code
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#      - name: Avoid 'dubious ownership' errors from git cli
+#        run: git config --global --add safe.directory '*'
+#      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+#      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+#      - name: static build
+#        run: |
+#          CFLAGS="-march=i686 -mtune=generic -O2 -pipe" python3 waf configure -v --enable-static --disable-man --inline-ca-bundle
+#          python3 waf build -v
+#          strip build/saldl
+#      - name: check if static
+#        run: |
+#          readelf -d build/saldl
+#          true; [ "`readelf --dyn-syms build/saldl`" = '' ]
+#      - name: simple test
+#        run: |
+#          pwd
+#          ./build/saldl -v
+#          date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
+#      - run: mv build/saldl saldl-linux-i686-musl-static-`git describe --tags --long --dirty`
+#      - name: upload static binary artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: saldl-linux-i686-musl-static
+#          if-no-files-found: error
+#          retention-days: 8
+#          path: |
+#            saldl-linux-i686-musl-static-*
+#      - run: echo "🍏 This job's status is ${{ job.status }}."
   build_alpine_x86_64:
     runs-on: ubuntu-latest
     container: alpine:latest
@@ -88,6 +88,23 @@ jobs:
           apk add libunistring-static
       - name: fix libcurl pkgconfig info
         run: sed -i '/Libs.private/s;$; -lbrotlicommon -lunistring;' /usr/lib/pkgconfig/libcurl.pc
+      - name: build fresh psl to avoid lto errors
+        run: |
+          # fix libpsl old lto objects
+          if [ "`apk info -q libpsl|head -1 | sed 's|libpsl-||;s|\s.*||'`" == "0.21.5-r1"  ]; then
+            echo "will build libpsl packages"
+            ulimit -n 1024 # fix slow fakeroot
+            apk add alpine-sdk sudo
+            curr_dir=`pwd`
+            cd /root
+            git clone --depth 1 https://gitlab.alpinelinux.org/alpine/aports
+            cd aports/main/libpsl/
+            apkgrel -a APKBUILD
+            abuild-keygen -ain
+            abuild -rF
+            apk add /root/packages/main/*/*apk
+            cd $curr_dir
+          fi
       # NOTE: It's important to use the checkout action while git is in path
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
