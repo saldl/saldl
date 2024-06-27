@@ -94,6 +94,7 @@ typedef struct {
   size_t timeout_low_speed;
   size_t timeout_low_speed_period;
   size_t timeout_connection_period;
+  char *dns_servers;
 } saldl_params;
 
 /* Static initializer.

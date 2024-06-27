@@ -1118,6 +1118,16 @@ void set_params(thread_s *thread, info_s *info_ptr, char *url) {
   curl_easy_setopt(thread->ehandle, CURLOPT_URL, url);
   curl_easy_setopt(thread->ehandle, CURLOPT_ERRORBUFFER, thread->err_buf);
 
+  if (params_ptr->dns_servers) {
+    CURLcode ret = curl_easy_setopt(thread->ehandle, CURLOPT_DNS_SERVERS, params_ptr->dns_servers);
+    if (ret != CURLE_OK) {
+      pre_fatal(FN, "Setting DNS servers from param \"%s\" failed.", params_ptr->dns_servers);
+      pre_fatal(FN, "Either loaded libcurl doesn't support this operation, or an invalid list was passed.");
+      fatal(FN, "libcurl returned error: %s", curl_easy_strerror(ret));
+    }
+    debug_msg(FN, "Using DNS servers set in param: %s", params_ptr->dns_servers);
+  }
+
 #ifdef INLINE_CA_BUNDLE
   /* Use inlined CA bundle */
   struct curl_blob ca_blob;

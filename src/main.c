@@ -153,6 +153,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 #define SAL_OPT_TIMEOUT_LOW_SPEED         CHAR_MAX+19
 #define SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD  CHAR_MAX+20
 #define SAL_OPT_TIMEOUT_CONNECTION_PERIOD CHAR_MAX+21
+#define SAL_OPT_DNS_SERVERS CHAR_MAX+22
     {"mirror-url", required_argument, 0, SAL_OPT_MIRROR_URL},
     {"fatal-if-invalid-mirror", no_argument, 0, SAL_OPT_FATAL_IF_INVALID_MIRROR},
     {"no-http2", no_argument, 0, SAL_OPT_NO_HTTP2},
@@ -174,6 +175,7 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
     {"timeout-low-speed", required_argument, 0, SAL_OPT_TIMEOUT_LOW_SPEED},
     {"timeout-low-speed-period", required_argument, 0, SAL_OPT_TIMEOUT_LOW_SPEED_PERIOD},
     {"timeout-connection-period", required_argument, 0, SAL_OPT_TIMEOUT_CONNECTION_PERIOD},
+    {"dns-servers", required_argument, 0, SAL_OPT_DNS_SERVERS},
     {0, 0, 0, 0}
   };
 
@@ -353,6 +355,10 @@ static int parse_opts(saldl_params *params_ptr, int full_argc, char **full_argv)
 
       case SAL_OPT_FORCE_GET_INFO:
         params_ptr->force_get_info = true;
+        break;
+
+      case SAL_OPT_DNS_SERVERS:
+        params_ptr->dns_servers = saldl_strdup(optarg);
         break;
 
       case SAL_OPT_MIRROR_URL:
