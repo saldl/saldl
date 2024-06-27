@@ -62,10 +62,9 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-      - name: set SALDL_VERSION and DIST_BIN in env
+      - name: set DIST_BIN in env
         run: |
-          echo "SALDL_VERSION=`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
-          echo "DIST_BIN=saldl-linux-x86_64-static-${{ env.SALDL_VERSION }}" >> "$GITHUB_ENV"
+          echo "DIST_BIN=saldl-linux-i686-static-`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
       - name: move binary
         shell: alpine.sh --root {0}
         run: mv build/saldl ${{ env.DIST_BIN }}
@@ -144,10 +143,9 @@ jobs:
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-      - name: set SALDL_VERSION and DIST_BIN in env
+      - name: set DIST_BIN in env
         run: |
-          echo "SALDL_VERSION=`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
-          echo "DIST_BIN=saldl-linux-x86_64-static-${{ env.SALDL_VERSION }}" >> "$GITHUB_ENV"
+          echo "DIST_BIN=saldl-linux-x86_64-static-`git describe --tags --long --dirty`" >> "$GITHUB_ENV"
       - run: mv build/saldl ${{ env.DIST_BIN }}
       - name: upload static binary artifact
         uses: actions/upload-artifact@v4
