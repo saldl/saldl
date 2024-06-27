@@ -16,45 +16,56 @@ jobs:
           arch: x86
       # edge to fix https://gitlab.alpinelinux.org/alpine/aports/-/issues/16246
       - name: change to edge, update, and upgrade
+        shell: alpine.sh --root {0}
         run: |
           pwd
           sed -i 's|/v[0-9][^/]*|/edge|' /etc/apk/repositories
           apk update
           apk upgrade
       - name: install build deps
+        shell: alpine.sh --root {0}
         run: |
           apk add  python3 git gcc pkgconfig curl-static curl-dev libevent-static libevent-dev musl-dev
       - name: install static build deps
+        shell: alpine.sh --root {0}
         run: |
           while read p; do [ "." != ".$p" ] && (p=${p%[=<>]*}; apk add ${p%-dev}-static || true; apk add lib${p%-dev}-static || true; apk add ${p%-dev}-libs-static || true ); done < <(apk info -Rq curl-dev)
           apk add libunistring-static
       - name: fix libcurl pkgconfig info
+        shell: alpine.sh --root {0}
         run: sed -i '/Libs.private/s;$; -lbrotlicommon -lunistring;' /usr/lib/pkgconfig/libcurl.pc
       # NOTE: It's important to use the checkout action while git is in path
       #       to make sure it uses git, not the REST api, for checkout.
       - name: Check out repository code
+        shell: alpine.sh --root {0}
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Avoid 'dubious ownership' errors from git cli
+        shell: alpine.sh --root {0}
         run: git config --global --add safe.directory '*'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: static build
+        shell: alpine.sh --root {0}
         run: |
           CFLAGS="-march=i686 -O2 -pipe" python3 waf configure -v --enable-static --disable-man --inline-ca-bundle
           python3 waf build -v
           strip build/saldl
       - name: check if static
+        shell: alpine.sh --root {0}
         run: |
           readelf -d build/saldl
           true; [ "`readelf --dyn-syms build/saldl`" = '' ]
       - name: simple test
+        shell: alpine.sh --root {0}
         run: |
           pwd
           ./build/saldl -v
           date --date="@$(./build/saldl -I --no-status --stdout 'https://time.akamai.com/?iso/')"
-      - run: mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
+      - name: move binary
+        shell: alpine.sh --root {0}
+        run: mv build/saldl saldl-linux-x86_64-musl-static-`git describe --tags --long --dirty`
       - name: upload static binary artifact
         uses: actions/upload-artifact@v4
         with:
